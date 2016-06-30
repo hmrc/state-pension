@@ -9,3 +9,7 @@ addSbtPlugin("uk.gov.hmrc" % "sbt-git-versioning" % "467a8b417f9d90ab863f3172f1b
 addSbtPlugin("uk.gov.hmrc" % "sbt-distributables" % "0.11.0")
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.10")
+
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.3")
+
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.6.0")
