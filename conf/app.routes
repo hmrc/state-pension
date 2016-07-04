@@ -1,3 +1,1 @@
-# microservice specific routes
-
-GET        /hello-world             uk.gov.hmrc.statepension.controllers.MicroserviceHelloWorld.hello
+GET        /hello-world             uk.gov.hmrc.statepension.controllers.HelloWorldController.hello
