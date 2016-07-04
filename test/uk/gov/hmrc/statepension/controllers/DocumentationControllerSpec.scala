@@ -16,26 +16,19 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import play.api.http.Status
 import play.api.test.FakeRequest
-import play.api.http.Status
-import play.api.test.FakeRequest
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.play.test.WithFakeApplication
+import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
+class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
 
-class HelloWorldControllerSpec extends UnitSpec with WithFakeApplication {
-
-  val fakeRequest = FakeRequest("GET", "/")
-
-
-  "GET /" should {
-    "return 200" in {
-      val result = HelloWorldController.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
+  "respond to GET /api/definition" in {
+    val result = route(FakeRequest(GET, "/api/definition"))
+    status(result.get) shouldNot be(NOT_FOUND)
   }
 
-
+  "respond to GET /api/documentation/1.0/hello-world" in {
+    val result = route(FakeRequest(GET, "/api/documentation/1.0/hello-world"))
+    status(result.get) shouldNot be(NOT_FOUND)
+  }
 }
