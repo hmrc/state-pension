@@ -1,0 +1,31 @@
+{
+  "scopes": [
+    {
+      "key": "read:state-pension",
+      "name": "access State Pension",
+      "description": "Access State Pension information"
+    }
+  ],
+  "api": {
+    "name": "State Pension",
+    "description": "Get a State Pension statement including forecast of the amount",
+    "context": "state-pension",
+    "versions": [
+      {
+        "version": "1.0",
+        "status": "PROTOTYPED",
+        "endpoints": [
+          {
+            "uriPattern": "/hello-world",
+            "endpointName": "Hello World",
+            "method": "GET",
+            "authType": "NONE",
+            "throttlingTier": "UNLIMITED",
+            "scope": "read:state-pension",
+            "queryParameters": []
+          }
+        ]
+      }
+    ]
+  }
+}

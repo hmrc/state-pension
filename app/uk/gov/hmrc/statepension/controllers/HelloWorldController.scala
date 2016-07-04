@@ -23,13 +23,19 @@ import play.api.mvc._
 
 import scala.concurrent.Future
 
+case class HelloWorld(message: String)
+
+object HelloWorld {
+  implicit val format = Json.format[HelloWorld]
+}
+
 object HelloWorldController extends HelloWorldController
 object SandboxHelloWorldController extends HelloWorldController
 
 trait HelloWorldController extends BaseController {
 
 	def hello(): Action[AnyContent] = Action.async { implicit request =>
-		Future.successful(Ok(Json.toJson("Hello world")))
+		Future.successful(Ok(Json.toJson(HelloWorld("Hello World"))))
 	}
 
 }
