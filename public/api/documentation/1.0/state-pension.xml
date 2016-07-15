@@ -1,0 +1,147 @@
+<endpoint>
+    <name>State Pension</name>
+    <description>Returns a State Pension statement</description>
+    <section id="resource">
+        <title>Resource</title>
+        <resource>GET /state-pension/{nino}</resource>
+    </section>
+    <section id="path-parameters">
+        <title>Path Parameters</title>
+        <table>
+            <headings>
+                <cell>Name</cell>
+                <cell>Type</cell>
+                <cell>Example</cell>
+                <cell>Description</cell>
+            </headings>
+            <rows>
+                <row>
+                    <cell><code>nino</code></cell>
+                    <cell><code>String</code></cell>
+                    <cell><code>QQ123456A</code></cell>
+                    <cell>A valid National Insurance Number</cell>
+                </row>
+            </rows>
+        </table>
+    </section>
+    <section id="authorisation">
+        <title>Authorisation</title>
+        <authorisation>
+            <type>APPLICATION</type>
+            <scope>read:state-pension</scope>
+        </authorisation>
+    </section>
+    <section id="content-types">
+        <title>Accepted Media Types</title>
+        <list>
+            <item>
+                <code>application/vnd.hmrc.1.0+json</code>
+            </item>
+        </list>
+    </section>
+    <section id="response">
+        <title>Regular Response</title>
+        <httpStatus>200 (OK)</httpStatus>
+        <json><![CDATA[{
+  "earningsIncludedUpTo": "2015-04-05",
+  "amounts": {
+    "protectedPayment": false,
+    "current": {
+      "weeklyAmount": 133.41,
+      "monthlyAmount": 580.1,
+      "annualAmount": 6961.14
+    },
+    "forecast": {
+      "yearsToWork": 3,
+      "weeklyAmount": 146.76,
+      "monthlyAmount": 638.14,
+      "annualAmount": 7657.73
+    },
+    "maximum": {
+      "yearsToWork": 3,
+      "gapsToFill": 2,
+      "weeklyAmount": 155.65,
+      "monthlyAmount": 676.8,
+      "annualAmount": 8121.59
+    },
+    "cope": {
+      "weeklyAmount": 0,
+      "monthlyAmount": 0,
+      "annualAmount": 0
+    }
+  },
+  "pensionAge": 64,
+  "pensionDate": "2018-07-06",
+  "finalRelevantYear": 2017,
+  "numberOfQualifyingYears": 30,
+  "pensionSharingOrder": false,
+  "currentWeeklyPensionAmount": 155.65
+}]]></json>
+        <table>
+            <headings>
+                <cell>Name</cell>
+                <cell>Type</cell>
+                <cell>Example</cell>
+                <cell>Description</cell>
+            </headings>
+            <rows>
+                <row>
+                    <cell><code>earningsIncludedUpTo</code></cell>
+                    <cell><code>Date</code></cell>
+                    <cell><code>"2015-04-05"</code></cell>
+                    <cell>The date which the calculations are based on. This is always the end date of the last posted tax year</cell>
+                </row>
+                <row>
+                    <cell><code>TODO</code></cell>
+                    <cell><code>TODO</code></cell>
+                    <cell><code>TODO</code></cell>
+                    <cell>TODO</cell>
+                </row>
+            </rows>
+        </table>
+    </section>
+    <section id="exclusion-response">
+        <title>Exclusion Response</title>
+        <httpStatus>200 (OK)</httpStatus>
+        <json><![CDATA[{
+  "exclusionReasons": [
+    "AmountDissonance"
+  ],
+  "pensionAge": 66,
+  "pensionDate": "2021-05-16"
+}]]></json>
+        <table>
+            <headings>
+                <cell>Name</cell>
+                <cell>Type</cell>
+                <cell>Example</cell>
+                <cell>Description</cell>
+            </headings>
+            <rows>
+                <row>
+                    <cell><code>TODO</code></cell>
+                    <cell><code>TODO</code></cell>
+                    <cell><code>TODO</code></cell>
+                    <cell>TODO</cell>
+                </row>
+            </rows>
+        </table>
+    </section>
+    <section id="error-scenarios">
+        <title>Error Scenarios</title>
+        <table>
+            <headings>
+                <cell>Error Scenario</cell>
+                <cell>HTTP Status</cell>
+                <cell>Code</cell>
+            </headings>
+            <rows>
+                <row>
+                    <cell>TODO</cell>
+                    <cell><code>TODO</code></cell>
+                    <cell><code>TODO</code></cell>
+                </row>
+            </rows>
+        </table>
+    </section>
+</endpoint>

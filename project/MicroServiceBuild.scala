@@ -1,3 +1,4 @@
+import play.PlayImport.PlayKeys._
 import sbt._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
@@ -12,6 +13,7 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   override lazy val appDependencies: Seq[ModuleID] = AppDependencies()
+  override lazy val playSettings = Seq(routesImport += "uk.gov.hmrc.domain.Nino")
 }
 
 private object AppDependencies {

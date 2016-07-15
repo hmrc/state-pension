@@ -1,5 +1,6 @@
+import play.PlayImport.PlayKeys._
 import sbt.Keys._
-import sbt.Tests.{SubProcess, Group}
+import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
@@ -42,6 +43,7 @@ trait MicroService {
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
     .settings(resolvers += Resolver.bintrayRepo("hmrc", "releases"))
+    .settings(routesImport += "uk.gov.hmrc.statepension.config.Binders._")
 }
 
 private object TestPhases {
