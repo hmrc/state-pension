@@ -1,2 +1,2 @@
 GET        /hello-world             uk.gov.hmrc.statepension.controllers.HelloWorldController.hello
-GET        /state-pension/:nino     uk.gov.hmrc.statepension.controllers.StatePensionController.get(nino: uk.gov.hmrc.domain.Nino)
+GET        /:nino                   uk.gov.hmrc.statepension.controllers.StatePensionController.get(nino: uk.gov.hmrc.domain.Nino)

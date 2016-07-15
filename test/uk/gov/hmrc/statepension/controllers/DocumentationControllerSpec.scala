@@ -31,4 +31,9 @@ class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
     val result = route(FakeRequest(GET, "/api/documentation/1.0/hello-world"))
     status(result.get) shouldNot be(NOT_FOUND)
   }
+
+  "respond to GET /api/documentation/1.0/state-pension" in {
+    val result = route(FakeRequest(GET, "/api/documentation/1.0/state-pension"))
+    status(result.get) shouldNot be(NOT_FOUND)
+  }
 }
