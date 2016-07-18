@@ -21,7 +21,6 @@
             "method": "GET",
             "authType": "NONE",
             "throttlingTier": "UNLIMITED",
-            "scope": "read:state-pension",
             "queryParameters": []
           },
           {
@@ -30,7 +29,6 @@
             "method": "GET",
             "authType": "APPLICATION",
             "throttlingTier": "UNLIMITED",
-            "scope": "read:state-pension",
             "queryParameters": []
           }
         ]
