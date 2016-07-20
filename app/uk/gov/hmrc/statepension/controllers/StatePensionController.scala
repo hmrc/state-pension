@@ -24,23 +24,26 @@ import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.statepension.services.{SandboxStatePensionService, StatePensionService}
 
-import scala.concurrent.Future
-
-trait StatePensionController extends BaseController with HeaderValidator {
+trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling {
   val statePensionService: StatePensionService
 	def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>
-      statePensionService.getStatement(nino).map {
+      errorWrapper(statePensionService.getStatement(nino).map {
         case Left(exclusion) => Ok(Json.toJson(exclusion))
         case Right(statePension) => Ok(Json.toJson(statePension))
-      }
+      })
   }
 }
 
 object StatePensionController extends StatePensionController {
   override val statePensionService: StatePensionService = StatePensionService
+  override val app: String = "State-Pension"
 }
 
 object SandboxStatePensionController extends StatePensionController {
   override val statePensionService: StatePensionService = SandboxStatePensionService
+  override val app: String = "Sandbox-State-Pension"
 }
+
+
+

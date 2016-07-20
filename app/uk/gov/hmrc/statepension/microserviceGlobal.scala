@@ -25,9 +25,17 @@ import uk.gov.hmrc.play.http.logging.filters.LoggingFilter
 import uk.gov.hmrc.play.microservice.bootstrap.DefaultMicroserviceGlobal
 import uk.gov.hmrc.play.auth.microservice.filters.AuthorisationFilter
 import net.ceedubs.ficus.Ficus._
+import play.api.libs.json.Json
+import play.api.mvc.Results._
+import play.api.mvc.{RequestHeader, Result}
 import uk.gov.hmrc.api.config.{ServiceLocatorConfig, ServiceLocatorRegistration}
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.api.connector.ServiceLocatorConnector
+import uk.gov.hmrc.api.controllers.ErrorGenericBadRequest
+import uk.gov.hmrc.statepension.controllers.ErrorResponses
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.ErrorNinoInvalid
+
+import scala.concurrent.Future
 
 
 object ControllerConfiguration extends ControllerConfig {
@@ -68,5 +76,13 @@ object MicroserviceGlobal extends DefaultMicroserviceGlobal with RunMode with Se
   override val slConnector: ServiceLocatorConnector = ServiceLocatorConnector(WSHttp)
 
   override implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  override def onBadRequest(request: RequestHeader, error: String): Future[Result] = {
+    val errorScenario = error match {
+      case ErrorResponses.CODE_INVALID_NINO => ErrorNinoInvalid
+      case _ => ErrorGenericBadRequest(error)
+    }
+    Future.successful(Status(errorScenario.httpStatusCode)(Json.toJson(errorScenario)))
+  }
 
 }

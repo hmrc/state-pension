@@ -18,8 +18,20 @@ package uk.gov.hmrc.statepension.config
 
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.binders.SimpleObjectBinder
+import uk.gov.hmrc.statepension.controllers.ErrorResponses
+
+import scala.util.{Failure, Success, Try}
 
 object Binders {
-  implicit val ninoBinder: PathBindable[Nino] = new SimpleObjectBinder[Nino](Nino.apply, _.nino)
+  implicit val ninoBinder: PathBindable[Nino] = new PathBindable[Nino] {
+
+    override def bind(key: String, value: String): Either[String, Nino] = {
+      Try[Nino](Nino.apply(value)) match {
+        case Success(nino) => Right(nino)
+        case Failure(e) => Left(ErrorResponses.CODE_INVALID_NINO)
+      }
+    }
+
+    override def unbind(key: String, value: Nino): String = value.value
+  }
 }
