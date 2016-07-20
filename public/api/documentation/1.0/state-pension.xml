@@ -42,41 +42,43 @@
     <section id="response">
         <title>Regular Response</title>
         <httpStatus>200 (OK)</httpStatus>
-        <json><![CDATA[{
-  "earningsIncludedUpTo": "2015-04-05",
-  "amounts": {
-    "protectedPayment": false,
-    "current": {
-      "weeklyAmount": 133.41,
-      "monthlyAmount": 580.1,
-      "annualAmount": 6961.14
-    },
-    "forecast": {
-      "yearsToWork": 3,
-      "weeklyAmount": 146.76,
-      "monthlyAmount": 638.14,
-      "annualAmount": 7657.73
-    },
-    "maximum": {
-      "yearsToWork": 3,
-      "gapsToFill": 2,
-      "weeklyAmount": 155.65,
-      "monthlyAmount": 676.8,
-      "annualAmount": 8121.59
-    },
-    "cope": {
-      "weeklyAmount": 0,
-      "monthlyAmount": 0,
-      "annualAmount": 0
-    }
-  },
-  "pensionAge": 64,
-  "pensionDate": "2018-07-06",
-  "finalRelevantYear": 2017,
-  "numberOfQualifyingYears": 30,
-  "pensionSharingOrder": false,
-  "currentWeeklyPensionAmount": 155.65
-}]]></json>
+        <json>
+            <![CDATA[{
+              "earningsIncludedUpTo": "2015-04-05",
+              "amounts": {
+                "protectedPayment": false,
+                "current": {
+                  "weeklyAmount": 133.41,
+                  "monthlyAmount": 580.1,
+                  "annualAmount": 6961.14
+                },
+                "forecast": {
+                  "yearsToWork": 3,
+                  "weeklyAmount": 146.76,
+                  "monthlyAmount": 638.14,
+                  "annualAmount": 7657.73
+                },
+                "maximum": {
+                  "yearsToWork": 3,
+                  "gapsToFill": 2,
+                  "weeklyAmount": 155.65,
+                  "monthlyAmount": 676.8,
+                  "annualAmount": 8121.59
+                },
+                "cope": {
+                  "weeklyAmount": 0,
+                  "monthlyAmount": 0,
+                  "annualAmount": 0
+                }
+              },
+              "pensionAge": 64,
+              "pensionDate": "2018-07-06",
+              "finalRelevantYear": 2017,
+              "numberOfQualifyingYears": 30,
+              "pensionSharingOrder": false,
+              "currentWeeklyPensionAmount": 155.65
+            }]]>
+        </json>
         <table>
             <headings>
                 <cell>Name</cell>
@@ -88,14 +90,122 @@
                 <row>
                     <cell><code>earningsIncludedUpTo</code></cell>
                     <cell><code>Date</code></cell>
-                    <cell><code>"2015-04-05"</code></cell>
+                    <cell><code>2015-04-05</code></cell>
                     <cell>The date which the calculations are based on. This is always the end date of the last posted tax year</cell>
                 </row>
                 <row>
-                    <cell><code>TODO</code></cell>
-                    <cell><code>TODO</code></cell>
-                    <cell><code>TODO</code></cell>
-                    <cell>TODO</cell>
+                    <cell><code>amounts.protectedPayment</code></cell>
+                    <cell><code>Boolean</code></cell>
+                    <cell><code>false</code></cell>
+                    <cell>Whether the customer has an amount higher than the full rate at the end of the 2015/16 tax year</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.current.weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>133.41</code></cell>
+                    <cell>The amount of accrued State Pension to date per week</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.current.monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>580.1</code></cell>
+                    <cell>The amount of accrued State Pension to date per month</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.current.annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>6961.14</code></cell>
+                    <cell>The amount of accrued State Pension to date per year</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.forecast.yearsToWork</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>1</code></cell>
+                    <cell>The number of future qualifying years needed to achieve the forecast amount</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.forecast.weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>146.76</code></cell>
+                    <cell>The forecasted amount of State Pension per week</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.forecast.monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>638.14.1</code></cell>
+                    <cell>The forecasted amount of State Pension per month</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.forecast.annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>7657.73</code></cell>
+                    <cell>The forecasted amount of State Pension per year</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.yearsToWork</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>3</code></cell>
+                    <cell>The number of future qualifying years needed to achieve the maximum amount</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.gapsToFill</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>2</code></cell>
+                    <cell>The minimum number of National Insurance gaps that need to be filled to achieve the maximum amount</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>155.65</code></cell>
+                    <cell>The maximum amount of State Pension per week</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>676.8</code></cell>
+                    <cell>The maximum amount of State Pension per month</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>8121.59</code></cell>
+                    <cell>The maximum amount of State Pension per year</cell>
+                </row>
+                <row>
+                    <cell><code>pensionAge</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>64</code></cell>
+                    <cell>The customer&#8217;s age when they can claim State Pension</cell>
+                </row>
+                <row>
+                    <cell><code>pensionDate</code></cell>
+                    <cell><code>Date</code></cell>
+                    <cell><code>"2018-07-06"</code></cell>
+                    <cell>The date the customer can claim State Pension</cell>
+                </row>
+                <row>
+                    <cell><code>finalRelevantYear</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>2017</code></cell>
+                    <cell>The last full Tax Year before the customer&#8217;s State Pension Date, for example 2017/18 with a date of 06/07/2018</cell>
+                </row>
+                <row>
+                    <cell><code>numberOfQualifyingYears</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>30</code></cell>
+                    <cell>The number of qualifying years of National Insurance</cell>
+                </row>
+                <row>
+                    <cell><code>pensionSharingOrder</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>7657.73</code></cell>
+                    <cell>Whether the customer has a Pension Sharing Order in effect</cell>
+                </row>
+                <row>
+                    <cell><code>currentWeeklyPensionAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>155.65</code></cell>
+                    <cell>The full rate of State Pension per week</cell>
                 </row>
             </rows>
         </table>
@@ -103,13 +213,15 @@
     <section id="exclusion-response">
         <title>Exclusion Response</title>
         <httpStatus>200 (OK)</httpStatus>
-        <json><![CDATA[{
-  "exclusionReasons": [
-    "AmountDissonance"
-  ],
-  "pensionAge": 66,
-  "pensionDate": "2021-05-16"
-}]]></json>
+        <json><![CDATA[
+        {
+          "exclusionReasons": [
+            "AmountDissonance"
+            ],
+            "pensionAge": 66,
+            "pensionDate": "2021-05-16"
+        }]]>
+        </json>
         <table>
             <headings>
                 <cell>Name</cell>
@@ -119,10 +231,62 @@
             </headings>
             <rows>
                 <row>
-                    <cell><code>TODO</code></cell>
-                    <cell><code>TODO</code></cell>
-                    <cell><code>TODO</code></cell>
-                    <cell>TODO</cell>
+                    <cell><code>exclusionReasons</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>8121.59</code></cell>
+                    <cell>A list of exclusion reasons (see below)</cell>
+                </row>
+                <row>
+                    <cell><code>pensionAge</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>66</code></cell>
+                    <cell>The customer&#8217;s age when they can claim State Pension</cell>
+                </row>
+                <row>
+                    <cell><code>pensionDate</code></cell>
+                    <cell><code>Date</code></cell>
+                    <cell><code>"2021-05-16"</code></cell>
+                    <cell>The date the customer can claim State Pension</cell>
+                </row>
+            </rows>
+        </table>
+        <title>Exclusion Reasons</title>
+        <table>
+            <headings>
+                <cell>Exclusion</cell>
+                <cell>Criteria</cell>
+                <cell>Description</cell>
+            </headings>
+            <rows>
+                <row>
+                    <cell><code>Abroad</code></cell>
+                    <cell>Male who has an overseas address (outside United Kingdom and Isle of Man) and retires before 06/10/2018</cell>
+                    <cell>Unable to automate currently, manual intervention required</cell>
+                </row>
+                <row>
+                    <cell><code>IsleOfMan</code></cell>
+                    <cell>The customer has National Insurance contributions from the Isle of Man</cell>
+                    <cell>Manual separation of National Insurance record required, customer should contact the National Insurance Helpline</cell>
+                </row>
+                <row>
+                    <cell><code>MarriedWomensReducedRateElection</code></cell>
+                    <cell>The customer has Reduced Rate Election in force at the beginning of the tax year 35 years before the tax year of State Pension Age</cell>
+                    <cell>Current marital status required, unable to determine State Pension amounts</cell>
+                </row>
+                <row>
+                    <cell><code>Dead</code></cell>
+                    <cell>The customer has a Date of Death present on their record</cell>
+                    <cell>If this is incorrect the customer should call the National Insurance Helpline to have this amended</cell>
+                </row>
+                <row>
+                    <cell><code>AmountDissonance</code></cell>
+                    <cell>Contention between amounts on internal systems</cell>
+                    <cell>There is contention between the pension amounts in the internal systems, therefore a reliable forecast cannot be provided</cell>
+                </row>
+                <row>
+                    <cell><code>PostStatePensionAge</code></cell>
+                    <cell>The current date is equal to or greater than the day before the customer&#8217;s State Pension date</cell>
+                    <cell>The customer is eligible for State Pension and therefore we do not provide a forecast</cell>
                 </row>
             </rows>
         </table>
