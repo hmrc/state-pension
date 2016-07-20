@@ -42,41 +42,43 @@
     <section id="response">
         <title>Regular Response</title>
         <httpStatus>200 (OK)</httpStatus>
-        <json><![CDATA[{
-  "earningsIncludedUpTo": "2015-04-05",
-  "amounts": {
-    "protectedPayment": false,
-    "current": {
-      "weeklyAmount": 133.41,
-      "monthlyAmount": 580.1,
-      "annualAmount": 6961.14
-    },
-    "forecast": {
-      "yearsToWork": 3,
-      "weeklyAmount": 146.76,
-      "monthlyAmount": 638.14,
-      "annualAmount": 7657.73
-    },
-    "maximum": {
-      "yearsToWork": 3,
-      "gapsToFill": 2,
-      "weeklyAmount": 155.65,
-      "monthlyAmount": 676.8,
-      "annualAmount": 8121.59
-    },
-    "cope": {
-      "weeklyAmount": 0,
-      "monthlyAmount": 0,
-      "annualAmount": 0
-    }
-  },
-  "pensionAge": 64,
-  "pensionDate": "2018-07-06",
-  "finalRelevantYear": 2017,
-  "numberOfQualifyingYears": 30,
-  "pensionSharingOrder": false,
-  "currentWeeklyPensionAmount": 155.65
-}]]></json>
+        <json>
+            <![CDATA[{
+              "earningsIncludedUpTo": "2015-04-05",
+              "amounts": {
+                "protectedPayment": false,
+                "current": {
+                  "weeklyAmount": 133.41,
+                  "monthlyAmount": 580.1,
+                  "annualAmount": 6961.14
+                },
+                "forecast": {
+                  "yearsToWork": 3,
+                  "weeklyAmount": 146.76,
+                  "monthlyAmount": 638.14,
+                  "annualAmount": 7657.73
+                },
+                "maximum": {
+                  "yearsToWork": 3,
+                  "gapsToFill": 2,
+                  "weeklyAmount": 155.65,
+                  "monthlyAmount": 676.8,
+                  "annualAmount": 8121.59
+                },
+                "cope": {
+                  "weeklyAmount": 0,
+                  "monthlyAmount": 0,
+                  "annualAmount": 0
+                }
+              },
+              "pensionAge": 64,
+              "pensionDate": "2018-07-06",
+              "finalRelevantYear": 2017,
+              "numberOfQualifyingYears": 30,
+              "pensionSharingOrder": false,
+              "currentWeeklyPensionAmount": 155.65
+            }]]>
+        </json>
         <table>
             <headings>
                 <cell>Name</cell>
@@ -88,14 +90,86 @@
                 <row>
                     <cell><code>earningsIncludedUpTo</code></cell>
                     <cell><code>Date</code></cell>
-                    <cell><code>"2015-04-05"</code></cell>
+                    <cell><code>2015-04-05</code></cell>
                     <cell>The date which the calculations are based on. This is always the end date of the last posted tax year</cell>
                 </row>
                 <row>
-                    <cell><code>TODO</code></cell>
-                    <cell><code>TODO</code></cell>
-                    <cell><code>TODO</code></cell>
-                    <cell>TODO</cell>
+                    <cell><code>amounts: protectedPayment</code></cell>
+                    <cell><code>Boolean</code></cell>
+                    <cell><code>false</code></cell>
+                    <cell>Indicator if customer has protected payment</cell>
+                </row>
+                <row>
+                    <cell><code>amounts: current: weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>133.41</code></cell>
+                    <cell>Weekly new State Pension Current Amount</cell>
+                </row>
+                <row>
+                    <cell><code>amounts: current: monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>580.1</code></cell>
+                    <cell>Monthly new State Pension Current Amount</cell>
+                </row>
+                <row>
+                    <cell><code>amounts: current: annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>6961.14</code></cell>
+                    <cell>Annual new State Pension Current Amount</cell>
+                </row>
+                <row>
+                    <cell><code>forecast: yearsToWork</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>1</code></cell>
+                    <cell>Minimum no of years to pay NI which will give Customer his forecast Amount</cell>
+                </row>
+                <row>
+                    <cell><code>forecast: weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>146.76</code></cell>
+                    <cell>Weekly new State Pension Forecast Amount</cell>
+                </row>
+                <row>
+                    <cell><code>forecast: monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>638.14.1</code></cell>
+                    <cell>Monthly new State Pension Forecast Amount</cell>
+                </row>
+                <row>
+                    <cell><code>forecast: annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>7657.73</code></cell>
+                    <cell>Annual new State Pension Forecast Amount</cell>
+                </row>
+                <row>
+                    <cell><code>maximum: yearsToWork</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>3</code></cell>
+                    <cell>Minimum no of years to pay NI which will give Customer his forecast Amount</cell>
+                </row>
+                <row>
+                    <cell><code>maximum: gapsToFill</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>2</code></cell>
+                    <cell>Minimum gap years to be filled to get Customer his Personal Max</cell>
+                </row>
+                <row>
+                    <cell><code>maximum: weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>146.76</code></cell>
+                    <cell>Weekly new State Pension maximum Amount</cell>
+                </row>
+                <row>
+                    <cell><code>maximum: monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>638.14.1</code></cell>
+                    <cell>Monthly new State Pension maximum Amount</cell>
+                </row>
+                <row>
+                    <cell><code>maximum: annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>7657.73</code></cell>
+                    <cell>Annual new State Pension maximum Amount</cell>
                 </row>
             </rows>
         </table>
@@ -104,12 +178,13 @@
         <title>Exclusion Response</title>
         <httpStatus>200 (OK)</httpStatus>
         <json><![CDATA[{
-  "exclusionReasons": [
-    "AmountDissonance"
-  ],
-  "pensionAge": 66,
-  "pensionDate": "2021-05-16"
-}]]></json>
+                  "exclusionReasons": [
+                    "AmountDissonance"
+                  ],
+                  "pensionAge": 66,
+                  "pensionDate": "2021-05-16"
+               }]]>
+        </json>
         <table>
             <headings>
                 <cell>Name</cell>

@@ -17,7 +17,7 @@
         "endpoints": [
           {
             "uriPattern": "/hello-world",
-            "endpointName": "hello-world",
+            "endpointName": "Hello World",
             "method": "GET",
             "authType": "NONE",
             "throttlingTier": "UNLIMITED",
@@ -25,7 +25,7 @@
           },
           {
             "uriPattern": "/{nino}",
-            "endpointName": "state-pension",
+            "endpointName": "State Pension",
             "method": "GET",
             "authType": "APPLICATION",
             "throttlingTier": "UNLIMITED",
