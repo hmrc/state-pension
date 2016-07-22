@@ -17,33 +17,22 @@
 package uk.gov.hmrc.statepension.controllers
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.services.{SandboxStatePensionService, StatePensionService}
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.statepension.services.StatePensionService
 
-trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling {
+trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling with HalSupport with Links {
+
   val statePensionService: StatePensionService
 	def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>
       errorWrapper(statePensionService.getStatement(nino).map {
-        case Left(exclusion) => Ok(Json.toJson(exclusion))
-        case Right(statePension) => Ok(Json.toJson(statePension))
+        case Left(exclusion) => Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
+        case Right(statePension) => Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       })
   }
 }
-
-object StatePensionController extends StatePensionController {
-  override val statePensionService: StatePensionService = StatePensionService
-  override val app: String = "State-Pension"
-}
-
-object SandboxStatePensionController extends StatePensionController {
-  override val statePensionService: StatePensionService = SandboxStatePensionService
-  override val app: String = "Sandbox-State-Pension"
-}
-
-
 
