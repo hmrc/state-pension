@@ -16,25 +16,46 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.{HttpResponse, HttpReads, HeaderCarrier, HttpGet}
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.WSHttp
-import uk.gov.hmrc.statepension.domain.{StatePensionExclusion, StatePension}
+import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionExclusion}
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 trait NispConnector {
   def http: HttpGet
+
   def nispBaseUrl: String
-  private def ninoWithoutSuffix(nino: Nino): String = nino.value.substring(0, 8)
 
   def getStatePension(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
-    val response = http.GET[HttpResponse](s"/$nispBaseUrl/${ninoWithoutSuffix(nino)}") (rds = HttpReads.readRaw, hc)
-    val x = StatePensionExclusion(Nil,1,new LocalDate)
-    Future.successful(Left(x))
-   //TODO
+
+    val response = http.GET[HttpResponse](s"$nispBaseUrl/state-pension/$nino")(rds = HttpReads.readRaw, hc)
+    response.flatMap { httpResponse =>
+      val isExclusion = (httpResponse.json \ "exclusionReasons").asOpt[List[Exclusion]].isDefined
+
+      if(isExclusion) {
+        Try(httpResponse.json.validate[StatePensionExclusion]).flatMap(
+          jsResult =>
+            jsResult.fold(errs => Failure(new Exception(errs.toString())), valid => Success(Left(valid)))
+        ) match {
+          case Success(s: Either[StatePensionExclusion, StatePension]) => Future.successful(s)
+          case Failure(ex) => Future.failed(ex)
+        }
+      } else {
+        Try(httpResponse.json.validate[StatePension]).flatMap(
+          jsResult =>
+            jsResult.fold(errs => Failure(new Exception(errs.toString())), valid => Success(Right(valid)))
+        ) match {
+          case Success(s: Either[StatePensionExclusion, StatePension]) => Future.successful(s)
+          case Failure(ex) => Future.failed(ex)
+        }
+      }
+    }
   }
 }
 
