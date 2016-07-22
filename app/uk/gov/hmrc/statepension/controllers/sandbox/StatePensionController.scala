@@ -21,7 +21,7 @@ import uk.gov.hmrc.statepension.controllers.StatePensionController
 import uk.gov.hmrc.statepension.services.{SandboxStatePensionService, StatePensionService}
 
 
-object SandboxStatePensionController extends StatePensionController {
+object StatePensionController extends StatePensionController {
   override val statePensionService: StatePensionService = SandboxStatePensionService
   override val app: String = "Sandbox-State-Pension"
   override val context: String = AppContext.apiGatewayContext
