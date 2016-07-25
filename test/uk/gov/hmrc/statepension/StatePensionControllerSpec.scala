@@ -90,7 +90,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "finalRelevantYear").as[Int] shouldBe 2018
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
-      (json \ "currentWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/$nino"
     }
 
