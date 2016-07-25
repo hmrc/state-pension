@@ -59,11 +59,6 @@ trait NispConnector {
   }
 }
 
-object SandboxNispConnector extends NispConnector with ServicesConfig {
-  override val nispBaseUrl: String = baseUrl("nisp")
-  override def http: HttpGet = WSHttp
-}
-
 object NispConnector extends NispConnector with ServicesConfig {
   override val nispBaseUrl: String = baseUrl("nisp")
   override def http: HttpGet = WSHttp
