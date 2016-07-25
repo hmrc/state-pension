@@ -49,7 +49,7 @@ case class StatePension(earningsIncludedUpTo: LocalDate,
                         finalRelevantYear: Int,
                         numberOfQualifyingYears: Int,
                         pensionSharingOrder: Boolean,
-                        currentWeeklyPensionAmount: BigDecimal)
+                        currentFullWeeklyPensionAmount: BigDecimal)
 
 object StatePension {
   implicit val formats = Json.format[StatePension]

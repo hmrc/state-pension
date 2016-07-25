@@ -16,45 +16,36 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import play.api.data.validation.ValidationError
+import play.api.libs.json.JsPath
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.WSHttp
-import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionExclusion}
+import uk.gov.hmrc.statepension.util.EitherReads.eitherReads
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
 
 trait NispConnector {
   def http: HttpGet
 
   def nispBaseUrl: String
 
-  def getStatePension(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
+  class JsonValidationException(message: String) extends Exception(message)
 
+  private def formatJsonErrors(errors: Seq[(JsPath, Seq[ValidationError])]): String = {
+    "JSON Validation Error: " + errors.map(p => p._1 + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
+  }
+
+  def getStatePension(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
     val response = http.GET[HttpResponse](s"$nispBaseUrl/state-pension/$nino")(rds = HttpReads.readRaw, hc)
     response.flatMap { httpResponse =>
-      val isExclusion = (httpResponse.json \ "exclusionReasons").asOpt[List[Exclusion]].isDefined
-
-      if(isExclusion) {
-        Try(httpResponse.json.validate[StatePensionExclusion]).flatMap(
-          jsResult =>
-            jsResult.fold(errs => Failure(new Exception(errs.toString())), valid => Success(Left(valid)))
-        ) match {
-          case Success(s: Either[StatePensionExclusion, StatePension]) => Future.successful(s)
-          case Failure(ex) => Future.failed(ex)
-        }
-      } else {
-        Try(httpResponse.json.validate[StatePension]).flatMap(
-          jsResult =>
-            jsResult.fold(errs => Failure(new Exception(errs.toString())), valid => Success(Right(valid)))
-        ) match {
-          case Success(s: Either[StatePensionExclusion, StatePension]) => Future.successful(s)
-          case Failure(ex) => Future.failed(ex)
-        }
-      }
+      httpResponse.json.validate[Either[StatePensionExclusion, StatePension]].fold(
+        invalid => Future.failed(new JsonValidationException(formatJsonErrors(invalid))),
+        valid => Future.successful(valid)
+      )
     }
   }
 }

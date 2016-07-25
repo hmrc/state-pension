@@ -75,7 +75,7 @@ object SandboxStatePensionService extends StatePensionService {
     finalRelevantYear = 2017,
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
-    currentWeeklyPensionAmount = 155.65
+    currentFullWeeklyPensionAmount = 155.65
   )
 
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Future.successful(Right(dummyStatement))
