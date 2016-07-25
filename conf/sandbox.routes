@@ -1,2 +1,2 @@
 GET        /hello-world             uk.gov.hmrc.statepension.controllers.SandboxHelloWorldController.hello
-GET        /:nino     uk.gov.hmrc.statepension.controllers.SandboxStatePensionController.get(nino: Nino)
+GET        /:nino     uk.gov.hmrc.statepension.controllers.sandbox.StatePensionController.get(nino: Nino)

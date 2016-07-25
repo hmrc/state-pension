@@ -41,6 +41,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     override val statePensionService: StatePensionService = spService
 
     override val app: String = "Test State Pension"
+    override val context: String = "test"
   }
 
   val testStatePension = StatePension(
@@ -90,6 +91,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "currentWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/$nino"
     }
 
     "return BadRequest and message for Upstream BadRequest" in {
