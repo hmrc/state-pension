@@ -27,7 +27,7 @@
             "uriPattern": "/{nino}",
             "endpointName": "State Pension",
             "method": "GET",
-            "authType": "APPLICATION",
+            "authType": "USER",
             "throttlingTier": "UNLIMITED",
             "queryParameters": []
           }
