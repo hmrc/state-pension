@@ -18,20 +18,24 @@ package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.statepension.connectors.NispConnector
 import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
 
 import scala.concurrent.Future
 
 trait StatePensionService {
-  def getStatement(nino: Nino): Future[Either[StatePensionExclusion, StatePension]]
+  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
 }
 
 object StatePensionService extends StatePensionService {
-  override def getStatement(nino: Nino): Future[Either[StatePensionExclusion, StatePension]] = ???
+  val nisp = NispConnector
+  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
+    nisp.getStatePension(nino)
+  }
 }
 
 object SandboxStatePensionService extends StatePensionService {
-
   private val dummyStatement: StatePension = StatePension(
     // scalastyle:off magic.number
     earningsIncludedUpTo = new LocalDate(2015, 4, 5),
@@ -71,8 +75,8 @@ object SandboxStatePensionService extends StatePensionService {
     finalRelevantYear = 2017,
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
-    currentWeeklyPensionAmount = 155.65
+    currentFullWeeklyPensionAmount = 155.65
   )
 
-  override def getStatement(nino: Nino): Future[Either[StatePensionExclusion, StatePension]] = Future.successful(Right(dummyStatement))
+  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Future.successful(Right(dummyStatement))
 }

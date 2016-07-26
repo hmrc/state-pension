@@ -25,7 +25,7 @@ import uk.gov.hmrc.statepension.controllers.StatePensionController
 import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.http.BadRequestException
+import uk.gov.hmrc.play.http.{HeaderCarrier, BadRequestException}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -64,7 +64,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
   "get" should {
     "return status code 406 when the headers are invalid" in {
       val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino): Future[Either[StatePensionExclusion, StatePension]] = ???
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = ???
       }).get(nino)(emptyRequest)
 
       status(response) shouldBe 406
@@ -73,7 +73,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 
     "return 200 with a Response" in {
       val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePension)
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePension)
       }).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
@@ -90,13 +90,13 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "finalRelevantYear").as[Int] shouldBe 2018
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
-      (json \ "currentWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/$nino"
     }
 
     "return BadRequest and message for Upstream BadRequest" in {
       val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino): Future[Either[StatePensionExclusion, StatePension]] = Future.failed(new BadRequestException("Upstream 400"))
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Future.failed(new BadRequestException("Upstream 400"))
       }).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 400
