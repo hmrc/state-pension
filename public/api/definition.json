@@ -29,6 +29,7 @@
             "method": "GET",
             "authType": "USER",
             "throttlingTier": "UNLIMITED",
+            "scope": "read:state-pension",
             "queryParameters": []
           }
         ]
