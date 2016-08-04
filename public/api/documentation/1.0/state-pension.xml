@@ -183,13 +183,13 @@
                     <cell>The amount of Contracted Out Pension Equivalent per week</cell>
                 </row>
                 <row>
-                    <cell><code>amounts.maximum.monthlyAmount</code></cell>
+                    <cell><code>amounts.cope.monthlyAmount</code></cell>
                     <cell><code>Number</code></cell>
                     <cell><code>0</code></cell>
                     <cell>The amount of Contracted Out Pension Equivalent per month</cell>
                 </row>
                 <row>
-                    <cell><code>amounts.maximum.annualAmount</code></cell>
+                    <cell><code>amounts.cope.annualAmount</code></cell>
                     <cell><code>Number</code></cell>
                     <cell><code>0</code></cell>
                     <cell>The amount of Contracted Out Pension Equivalent per year</cell>
