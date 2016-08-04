@@ -77,6 +77,11 @@
               "numberOfQualifyingYears": 30,
               "pensionSharingOrder": false,
               "currentWeeklyPensionAmount": 155.65
+              "_links" : {
+                "self": {
+                  "href": "/state-pension/QQ123456A"
+                },
+              }
             }]]>
         </json>
         <table>
@@ -172,6 +177,24 @@
                     <cell>The maximum amount of State Pension per year</cell>
                 </row>
                 <row>
+                    <cell><code>amounts.cope.weeklyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>155.65</code></cell>
+                    <cell>The amount of Contracted Out Pension Equivalent per week</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.monthlyAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>676.8</code></cell>
+                    <cell>The amount of  Contracted Out Pension Equivalent per month</cell>
+                </row>
+                <row>
+                    <cell><code>amounts.maximum.annualAmount</code></cell>
+                    <cell><code>Number</code></cell>
+                    <cell><code>8121.59</code></cell>
+                    <cell>The amount of  Contracted Out Pension Equivalent per year</cell>
+                </row>
+                <row>
                     <cell><code>pensionAge</code></cell>
                     <cell><code>Number</code></cell>
                     <cell><code>64</code></cell>
@@ -217,9 +240,14 @@
         {
           "exclusionReasons": [
             "AmountDissonance"
-            ],
-            "pensionAge": 66,
-            "pensionDate": "2021-05-16"
+          ],
+          "pensionAge": 66,
+          "pensionDate": "2021-05-16"
+          "_links" : {
+            "self": {
+              "href": "/state-pension/QQ123456A"
+            },
+          }
         }]]>
         </json>
         <table>
