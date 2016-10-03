@@ -19,7 +19,7 @@
             "uriPattern": "/hello-world",
             "endpointName": "Hello World",
             "method": "GET",
-            "authType": "NONE",
+            "authType": "USER",
             "throttlingTier": "UNLIMITED",
             "queryParameters": []
           },
@@ -27,7 +27,7 @@
             "uriPattern": "/{nino}",
             "endpointName": "State Pension",
             "method": "GET",
-            "authType": "APPLICATION",
+            "authType": "USER",
             "throttlingTier": "UNLIMITED",
             "queryParameters": []
           }
