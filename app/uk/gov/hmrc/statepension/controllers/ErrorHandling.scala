@@ -35,11 +35,12 @@ trait ErrorHandling {
     func.recover {
       case e: NotFoundException =>
         NotFound(Json.toJson(ErrorNotFound))
-      case e: GatewayTimeoutException => GatewayTimeout
-      case e: BadGatewayException => BadGateway
+
+      case e: GatewayTimeoutException => Logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
+      case e: BadGatewayException => Logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case e: BadRequestException => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
-      case e: Upstream4xxResponse => BadGateway
-      case e: Upstream5xxResponse => BadGateway
+      case e: Upstream4xxResponse => Logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
+      case e: Upstream5xxResponse => Logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
 
       case e: Throwable =>
         Logger.error(s"$app Internal server error: ${e.getMessage}", e)
