@@ -25,7 +25,7 @@
             "queryParameters": []
           },
           {
-            "uriPattern": "/paye/{nino}",
+            "uriPattern": "/{nino}",
             "endpointName": "State Pension",
             "method": "GET",
             "authType": "USER",
