@@ -40,7 +40,7 @@ trait NispConnector {
   }
 
   def getStatePension(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
-    val response = http.GET[HttpResponse](s"$nispBaseUrl/state-pension/$nino")(rds = HttpReads.readRaw, hc)
+    val response = http.GET[HttpResponse](s"$nispBaseUrl/paye/$nino")(rds = HttpReads.readRaw, hc)
     response.flatMap { httpResponse =>
       httpResponse.json.validate[Either[StatePensionExclusion, StatePension]].fold(
         invalid => Future.failed(new JsonValidationException(formatJsonErrors(invalid))),
