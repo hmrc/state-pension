@@ -3,7 +3,7 @@
     <description>Returns a State Pension statement</description>
     <section id="resource">
         <title>Resource</title>
-        <resource>GET /state-pension/{nino}</resource>
+        <resource>GET /state-pension/paye/{nino}</resource>
     </section>
     <section id="path-parameters">
         <title>Path Parameters</title>
