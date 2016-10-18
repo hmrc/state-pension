@@ -24,5 +24,9 @@ trait StatePensionUnitSpec extends uk.gov.hmrc.play.test.UnitSpec {
 
   private val ninoGenerator = new Generator(new Random())
   def generateNino(): Nino = ninoGenerator.nextNino
+  def generateNinoWithPrefix(prefix: String): Nino = {
+    require(prefix.length == 2)
+    Nino(ninoGenerator.nextNino.toString().replaceFirst("[A-Z]{2}", prefix))
+  }
 
 }

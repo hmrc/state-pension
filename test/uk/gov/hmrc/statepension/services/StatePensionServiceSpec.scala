@@ -17,31 +17,15 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import play.api.Logger
-import play.api.libs.json.Json
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.statepension.connectors.NispConnector
-import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
+import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.domain._
 
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import play.api.Play.current
-import uk.gov.hmrc.statepension.util.EitherReads._
+class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite with ScalaFutures {
 
-import scala.concurrent.Future
-
-trait StatePensionService {
-  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
-}
-
-object StatePensionService extends StatePensionService {
-  val nisp = NispConnector
-  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
-    nisp.getStatePension(nino)
-  }
-}
-
-object SandboxStatePensionService extends StatePensionService {
   private val dummyStatement: StatePension = StatePension(
     // scalastyle:off magic.number
     earningsIncludedUpTo = new LocalDate(2015, 4, 5),
@@ -83,17 +67,24 @@ object SandboxStatePensionService extends StatePensionService {
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65
   )
-  private val defaultResponse = Right(dummyStatement)
 
-  private val resourcePath = "conf/resources/sandbox/"
-
-  private def getFileFromPrefix(nino: Nino): Either[StatePensionExclusion, StatePension] = {
-    val prefix = nino.toString.substring(0, 2)
-    play.api.Play.getExistingFile(resourcePath + prefix + ".json") match {
-      case Some(file) => Json.parse(scala.io.Source.fromFile(file).mkString).as[Either[StatePensionExclusion, StatePension]]
-      case None => Logger.info(s"Sandbox: Resource not found for $prefix, using default"); defaultResponse
+  "Sandbox" should {
+    "return dummy data for non-existent prefix" in {
+      val nino: Nino = generateNinoWithPrefix("ZX")
+      whenReady(SandboxStatePensionService.getStatement(nino)(HeaderCarrier())) { result =>
+        result shouldBe Right(dummyStatement)
+      }
     }
-  }
 
-  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Future(getFileFromPrefix(nino))
+    "PS prefix should return a Post State Pension Age exclusion" in {
+      whenReady(SandboxStatePensionService.getStatement(generateNinoWithPrefix("PS"))(HeaderCarrier())) { result =>
+        result shouldBe Left(StatePensionExclusion(
+          exclusionReasons = List(Exclusion.PostStatePensionAge),
+          pensionAge = 66,
+          pensionDate = new LocalDate(2021, 5, 16)
+        ))
+      }
+    }
+    
+  }
 }
