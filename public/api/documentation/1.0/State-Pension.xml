@@ -336,4 +336,24 @@
             </rows>
         </table>
     </section>
+    <section id="sandbox-responses">
+        <title>Specific Sandbox Payloads</title>
+        <table>
+            <headings>
+                <cell>Prefix</cell>
+                <cell>Response Summary</cell>
+            </headings>
+            <rows>
+                <row>
+                    <cell>Not Listed</cell>
+                    <cell>The regular response at the top of this document</cell>
+                </row>
+                <row>
+                    <cell><code>PS</code></cell>
+                    <cell>A user with the PostStatePensionAge exclusion</cell>
+                </row>
+            </rows>
+        </table>
+
+    </section>
 </endpoint>
