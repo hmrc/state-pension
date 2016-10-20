@@ -352,6 +352,58 @@
                     <cell><code>PS</code></cell>
                     <cell>A user with the PostStatePensionAge exclusion</cell>
                 </row>
+                <row>
+                    <cell><code>AM</code></cell>
+                    <cell>A user with the AmountDissonance exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>AB</code></cell>
+                    <cell>A user with the Abroad exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>OM</code></cell>
+                    <cell>A user with the IsleOfMan exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>MW</code></cell>
+                    <cell>A user with the MarriedWomenReducedRateElection exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>MX</code></cell>
+                    <cell>A user with the Multiple exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>CR</code></cell>
+                    <cell>A user with COPE</cell>
+                </row>
+                <row>
+                    <cell><code>PP</code></cell>
+                    <cell>A user with ProtectedPaymentTrue</cell>
+                </row>
+                <row>
+                    <cell><code>CA</code></cell>
+                    <cell>A user with MQPCant</cell>
+                </row>
+                <row>
+                    <cell><code>MA</code></cell>
+                    <cell>A user with MQPMay</cell>
+                </row>
+                <row>
+                    <cell><code>AE</code></cell>
+                    <cell>A user with MQPCanFillGaps</cell>
+                </row>
+                <row>
+                    <cell><code>AH</code></cell>
+                    <cell>A user with NonMQPGaps</cell>
+                </row>
+                <row>
+                    <cell><code>AK</code></cell>
+                    <cell>A user with NonMQPContinueWorking</cell>
+                </row>
+                <row>
+                    <cell><code>AP</code></cell>
+                    <cell>A user with NonMQPReached</cell>
+                </row>
             </rows>
         </table>
 

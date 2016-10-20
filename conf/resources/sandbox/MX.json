@@ -1,0 +1,9 @@
+{
+  "exclusionReasons": [
+    "PostStatePensionAge",
+    "AmountDissonance",
+    "Abroad"
+  ],
+  "pensionAge": 66,
+  "pensionDate": "2021-05-16"
+}
