@@ -73,7 +73,7 @@
               },
               "pensionAge": 64,
               "pensionDate": "2018-07-06",
-              "finalRelevantYear": 2017,
+              "finalRelevantYear": "2017-18",
               "numberOfQualifyingYears": 30,
               "pensionSharingOrder": false,
               "currentWeeklyPensionAmount": 155.65
@@ -208,8 +208,8 @@
                 </row>
                 <row>
                     <cell><code>finalRelevantYear</code></cell>
-                    <cell><code>Number</code></cell>
-                    <cell><code>2017</code></cell>
+                    <cell><code>TaxYear</code></cell>
+                    <cell><code>"2017-18"</code></cell>
                     <cell>The last full Tax Year before the customer&#8217;s State Pension Date, for example 2017/18 with a date of 06/07/2018</cell>
                 </row>
                 <row>
