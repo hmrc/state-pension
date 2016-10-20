@@ -46,7 +46,7 @@ case class StatePension(earningsIncludedUpTo: LocalDate,
                         amounts: StatePensionAmounts,
                         pensionAge: Int,
                         pensionDate: LocalDate,
-                        finalRelevantYear: Int,
+                        finalRelevantYear: String,
                         numberOfQualifyingYears: Int,
                         pensionSharingOrder: Boolean,
                         currentFullWeeklyPensionAmount: BigDecimal)

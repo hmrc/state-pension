@@ -103,7 +103,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
             |  },
             |  "pensionAge": 67,
             |  "pensionDate": "2019-07-01",
-            |  "finalRelevantYear": 2018,
+            |  "finalRelevantYear": "2018-19",
             |  "numberOfQualifyingYears": 30,
             |  "pensionSharingOrder": false,
             |  "currentFullWeeklyPensionAmount": 155.65
@@ -124,7 +124,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
         ),
         67,
         new LocalDate(2019, 7 ,1),
-        2018,
+        "2018-19",
         30,
         pensionSharingOrder = false,
         155.65
