@@ -28,7 +28,7 @@
   },
   "pensionAge": 66,
   "pensionDate": "2024-05-19",
-  "finalRelevantYear": 2023,
+  "finalRelevantYear": "2023-24",
   "numberOfQualifyingYears": 25,
   "pensionSharingOrder": false,
   "currentFullWeeklyPensionAmount": 155.65

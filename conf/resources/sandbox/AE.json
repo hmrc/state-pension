@@ -28,7 +28,7 @@
   },
   "pensionAge": 65,
   "pensionDate": "2019-09-06",
-  "finalRelevantYear": 2018,
+  "finalRelevantYear": "2018-19",
   "numberOfQualifyingYears": 7,
   "pensionSharingOrder": false,
   "currentFullWeeklyPensionAmount": 155.65

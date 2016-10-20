@@ -28,7 +28,7 @@
   },
   "pensionAge": 67,
   "pensionDate": "2029-02-19",
-  "finalRelevantYear": 2027,
+  "finalRelevantYear": "2027-28",
   "numberOfQualifyingYears": 24,
   "pensionSharingOrder": false,
   "currentFullWeeklyPensionAmount": 155.65

@@ -28,7 +28,7 @@
   },
   "pensionAge": 65,
   "pensionDate": "2016-12-06",
-  "finalRelevantYear": 2016,
+  "finalRelevantYear": "2016-17",
   "numberOfQualifyingYears": 7,
   "pensionSharingOrder": false,
   "currentFullWeeklyPensionAmount": 155.65
