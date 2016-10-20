@@ -78,7 +78,7 @@ object SandboxStatePensionService extends StatePensionService {
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),
-    finalRelevantYear = 2017,
+    finalRelevantYear = "2017-18",
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65
