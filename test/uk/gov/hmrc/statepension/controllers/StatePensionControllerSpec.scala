@@ -91,7 +91,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
-      (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/$nino"
+      (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
 
     "return BadRequest and message for Upstream BadRequest" in {
