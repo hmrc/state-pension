@@ -1,0 +1,35 @@
+{
+  "earningsIncludedUpTo": "2015-04-05",
+  "amounts": {
+    "protectedPayment": false,
+    "current": {
+      "weeklyAmount": 0,
+      "monthlyAmount": 0,
+      "annualAmount": 0
+    },
+    "forecast": {
+      "yearsToWork": 4,
+      "weeklyAmount": 67.49,
+      "monthlyAmount": 293.46,
+      "annualAmount": 3521.53
+    },
+    "maximum": {
+      "yearsToWork": 4,
+      "gapsToFill": 9,
+      "weeklyAmount": 103.28,
+      "monthlyAmount": 449.08,
+      "annualAmount": 5389
+    },
+    "cope": {
+      "weeklyAmount": 0,
+      "monthlyAmount": 0,
+      "annualAmount": 0
+    }
+  },
+  "pensionAge": 65,
+  "pensionDate": "2019-09-06",
+  "finalRelevantYear": "2018-19",
+  "numberOfQualifyingYears": 7,
+  "pensionSharingOrder": false,
+  "currentFullWeeklyPensionAmount": 155.65
+}

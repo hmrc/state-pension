@@ -352,6 +352,58 @@
                     <cell><code>PS</code></cell>
                     <cell>A user with the PostStatePensionAge exclusion</cell>
                 </row>
+                <row>
+                    <cell><code>AM</code></cell>
+                    <cell>A user with the AmountDissonance exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>AB</code></cell>
+                    <cell>A user with the Abroad exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>MA</code></cell>
+                    <cell>A user with the IsleOfMan exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>MW</code></cell>
+                    <cell>A user with the MarriedWomenReducedRateElection exclusion</cell>
+                </row>
+                <row>
+                    <cell><code>MX</code></cell>
+                    <cell>A user that is excluded for multiple reasons</cell>
+                </row>
+                <row>
+                    <cell><code>CR</code></cell>
+                    <cell>A user with COPE</cell>
+                </row>
+                <row>
+                    <cell><code>PP</code></cell>
+                    <cell>A user with a protected payment</cell>
+                </row>
+                <row>
+                    <cell><code>CA</code></cell>
+                    <cell>A user below the minimum qualifying period who cannot get any State Pension even by working until State Pension age and filling payable gaps</cell>
+                </row>
+                <row>
+                    <cell><code>AL</code></cell>
+                    <cell>A user below the minimum qualifying period who can get some State Pension by working until State Pension age and also filling payable gaps</cell>
+                </row>
+                <row>
+                    <cell><code>AE</code></cell>
+                    <cell>A user below the minimum qualifying period that can get some State Pension by just working to State Pension age, but can get more by filling payable gaps as well</cell>
+                </row>
+                <row>
+                    <cell><code>AH</code></cell>
+                    <cell>A user who will not reach the full rate by working until State Pension age, but can make up the difference by filling a gap</cell>
+                </row>
+                <row>
+                    <cell><code>AK</code></cell>
+                    <cell>A user who will reach the maximum by continuing to work, they will reach the maximum before their State Pension age</cell>
+                </row>
+                <row>
+                    <cell><code>AP</code></cell>
+                    <cell>A user who has already reached the full State Pension rate</cell>
+                </row>
             </rows>
         </table>
 
