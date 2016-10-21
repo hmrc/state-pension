@@ -382,23 +382,23 @@
                 </row>
                 <row>
                     <cell><code>CA</code></cell>
-                    <cell>A user below the minimum qualifying period that cannot get any State Pension even by working to pension age and filling payable gaps</cell>
+                    <cell>A user below the minimum qualifying period who cannot get any State Pension even by working until State Pension age and filling payable gaps</cell>
                 </row>
                 <row>
                     <cell><code>AL</code></cell>
-                    <cell>A user below the minimum qualifying period that can get some State Pension by working to pension age and also filling payable gaps</cell>
+                    <cell>A user below the minimum qualifying period who can get some State Pension by working until State Pension age and also filling payable gaps</cell>
                 </row>
                 <row>
                     <cell><code>AE</code></cell>
-                    <cell>A user below the minimum qualifying period that can get some State Pension by just working to pension age, but can get more by also filling payable gaps</cell>
+                    <cell>A user below the minimum qualifying period that can get some State Pension by just working to State Pension age, but can get more by filling payable gaps as well</cell>
                 </row>
                 <row>
                     <cell><code>AH</code></cell>
-                    <cell>A user that will not reach the full rate by working to State Pension age, but can make up the difference by filling a gap</cell>
+                    <cell>A user who will not reach the full rate by working until State Pension age, but can make up the difference by filling a gap</cell>
                 </row>
                 <row>
                     <cell><code>AK</code></cell>
-                    <cell>A user who will reach the maximum through continuing to work, they will reach the maximum before their State Pension age.</cell>
+                    <cell>A user who will reach the maximum by continuing to work, they will reach the maximum before their State Pension age</cell>
                 </row>
                 <row>
                     <cell><code>AP</code></cell>
