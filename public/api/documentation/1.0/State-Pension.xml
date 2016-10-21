@@ -3,7 +3,7 @@
     <description>Returns a State Pension statement</description>
     <section id="resource">
         <title>Resource</title>
-        <resource>GET /state-pension/{nino}</resource>
+        <resource>GET /state-pension/ni/{nino}</resource>
     </section>
     <section id="path-parameters">
         <title>Path Parameters</title>
@@ -79,7 +79,7 @@
               "currentWeeklyPensionAmount": 155.65
               "_links" : {
                 "self": {
-                  "href": "/state-pension/QQ123456A"
+                  "href": "/state-pension/ni/QQ123456A"
                 },
               }
             }]]>
@@ -245,7 +245,7 @@
           "pensionDate": "2021-05-16"
           "_links" : {
             "self": {
-              "href": "/state-pension/QQ123456A"
+              "href": "/state-pension/ni/QQ123456A"
             },
           }
         }]]>
