@@ -361,7 +361,7 @@
                     <cell>A user with the Abroad exclusion</cell>
                 </row>
                 <row>
-                    <cell><code>OM</code></cell>
+                    <cell><code>MA</code></cell>
                     <cell>A user with the IsleOfMan exclusion</cell>
                 </row>
                 <row>
@@ -385,7 +385,7 @@
                     <cell>A user below the minimum qualifying period that cannot get any State Pension even by working to pension age and filling payable gaps</cell>
                 </row>
                 <row>
-                    <cell><code>MA</code></cell>
+                    <cell><code>AL</code></cell>
                     <cell>A user below the minimum qualifying period that can get some State Pension by working to pension age and also filling payable gaps</cell>
                 </row>
                 <row>
