@@ -22,6 +22,7 @@ import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.services.StatePensionService
 
 trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling with HalSupport with Links {
@@ -30,6 +31,8 @@ trait StatePensionController extends BaseController with HeaderValidator with Er
 	def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>
       errorWrapper(statePensionService.getStatement(nino).map {
+        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.Dead) => Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
+        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.ManualCorrespondenceIndicator) => Forbidden(Json.toJson(ErrorResponses.ExclusionManualCorrespondence))
         case Left(exclusion) => Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
         case Right(statePension) => Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       })
