@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.events
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.statepension.domain.StatePensionAmounts
+import uk.gov.hmrc.statepension.domain.{StatePensionAmount, StatePensionAmounts}
 
 object StatePension{
   def apply(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
@@ -35,10 +35,13 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
   extends BusinessEvent("StatePension",
     Map("nino" -> nino.value,
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
-      "currentAmount" -> amounts.current.toString,
-      "forecastAmount" -> amounts.forecast.toString,
-      "maximumAmount" -> amounts.maximum.toString,
-      "copeAmount" -> amounts.cope.toString,
+      "currentAmount.week" -> amounts.current.weeklyAmount.toString,
+      "forecastAmount.week" -> amounts.forecast.weeklyAmount.toString,
+      "forecastAmount.yearsToWork" -> amounts.forecast.yearsToWork.map(_.toString).getOrElse(""),
+      "maximumAmount.week" -> amounts.maximum.weeklyAmount.toString,
+      "maximumAmount.yearsToWork" -> amounts.maximum.yearsToWork.map(_.toString).getOrElse(""),
+      "maximumAmount.gapsToFill" -> amounts.maximum.gapsToFill.map(_.toString).getOrElse(""),
+      "copeAmount.week" -> amounts.cope.weeklyAmount.toString(),
       "pensionAge" -> pensionAge.toString,
       "pensionDate" -> pensionDate.toString,
       "finalRelevantYear" -> finalRelevantYear,
@@ -46,4 +49,5 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "pensionSharingOrder" -> pensionSharingOrder.toString,
       "currentFullWeeklyPensionAmount" -> currentFullWeeklyPensionAmount.toString()
     )
+
   )
