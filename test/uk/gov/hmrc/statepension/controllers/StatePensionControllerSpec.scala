@@ -22,10 +22,10 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import uk.gov.hmrc.statepension.controllers.StatePensionController
-import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
+import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.http.{HeaderCarrier, BadRequestException}
+import uk.gov.hmrc.play.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -101,6 +101,38 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 
       status(response) shouldBe 400
       contentAsJson(response) shouldBe Json.parse("""{"code":"BAD_REQUEST","message":"Upstream Bad Request. Is this customer below State Pension Age?"}""")
+    }
+
+    "return 403 with an error message for an MCI exclusion" in {
+      val response = testStatePensionController(new StatePensionService {
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.ManualCorrespondenceIndicator), 0, new LocalDate(2050, 1, 1)))
+      }).get(nino)(emptyRequestWithHeader)
+
+      status(response) shouldBe 403
+      contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_MANUAL_CORRESPONDENCE","message":"The customer cannot access the service, they should contact HMRC"}""")
+    }
+
+    "return 403 with an error message for a Dead exclusion" in {
+      val response = testStatePensionController(new StatePensionService {
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.Dead), 0, new LocalDate(2050, 1, 1)))
+      }).get(nino)(emptyRequestWithHeader)
+
+      status(response) shouldBe 403
+      contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")
+    }
+
+    "return 403 with the dead error message if user is Dead and has MCI" in {
+      val response = testStatePensionController(new StatePensionService {
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] =
+          Left(StatePensionExclusion(
+            List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
+            0,
+            new LocalDate(2050, 1, 1)
+          ))
+      }).get(nino)(emptyRequestWithHeader)
+
+      status(response) shouldBe 403
+      contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")
     }
 
   }
