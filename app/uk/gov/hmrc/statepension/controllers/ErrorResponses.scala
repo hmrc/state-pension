@@ -24,6 +24,6 @@ object ErrorResponses {
   val CODE_DEAD = "EXCLUSION_DEAD"
 
   object ErrorNinoInvalid extends ErrorResponse(400, CODE_INVALID_NINO, "The provided NINO is not valid")
-  object ExclusionManualCorrespondence extends ErrorResponse(403, CODE_MANUAL_CORRESPONDENCE, "User cannot access the service, the customer needs to contact HMRC")
+  object ExclusionManualCorrespondence extends ErrorResponse(403, CODE_MANUAL_CORRESPONDENCE, "The customer cannot access the service, they should contact HMRC")
   object ExclusionDead extends ErrorResponse(403, CODE_DEAD, "The customer needs to contact the National Insurance helpline")
 }

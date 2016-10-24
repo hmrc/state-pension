@@ -85,6 +85,32 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         ))
       }
     }
+
+    "EZ prefix should return Dead exclusion" in {
+      whenReady(SandboxStatePensionService.getStatement(generateNinoWithPrefix("EZ"))(HeaderCarrier())) { result =>
+        result shouldBe Left(StatePensionExclusion(
+          exclusionReasons = List(Exclusion.Dead),
+          pensionAge = 66,
+          pensionDate = new LocalDate(2021, 5, 16)
+        ))
+      }
+    }
+
+    "PG prefix should return MCI exclusion" in {
+      whenReady(SandboxStatePensionService.getStatement(generateNinoWithPrefix("PG"))(HeaderCarrier())) { result =>
+        result shouldBe Left(StatePensionExclusion(
+          exclusionReasons = List(Exclusion.ManualCorrespondenceIndicator),
+          pensionAge = 66,
+          pensionDate = new LocalDate(2021, 5, 16)
+        ))
+      }
+    }
+
+
+
+
+
+
     
   }
 }
