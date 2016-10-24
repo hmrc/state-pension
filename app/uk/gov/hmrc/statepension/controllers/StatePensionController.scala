@@ -22,19 +22,38 @@ import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.services.StatePensionService
+import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 
 trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling with HalSupport with Links {
-
+  val customAuditConnector = CustomAuditConnector
   val statePensionService: StatePensionService
 	def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>
       errorWrapper(statePensionService.getStatement(nino).map {
-        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.Dead) => Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
-        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.ManualCorrespondenceIndicator) => Forbidden(Json.toJson(ErrorResponses.ExclusionManualCorrespondence))
-        case Left(exclusion) => Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
-        case Right(statePension) => Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
+
+        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.Dead) =>
+        customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.Dead),
+          exclusion.pensionAge, exclusion.pensionDate))
+        Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
+
+        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.ManualCorrespondenceIndicator) =>
+          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.ManualCorrespondenceIndicator),
+            exclusion.pensionAge, exclusion.pensionDate))
+          Forbidden(Json.toJson(ErrorResponses.ExclusionManualCorrespondence))
+
+        case Left(exclusion) =>
+          customAuditConnector.sendEvent(StatePensionExclusion(nino, exclusion.exclusionReasons,
+            exclusion.pensionAge, exclusion.pensionDate))
+          Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
+
+        case Right(statePension) =>
+          customAuditConnector.sendEvent(StatePension(nino, statePension.earningsIncludedUpTo, statePension.amounts,
+            statePension.pensionAge, statePension.pensionDate, statePension.finalRelevantYear, statePension.numberOfQualifyingYears,
+            statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount))
+          Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       })
   }
 }
