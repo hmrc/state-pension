@@ -344,6 +344,11 @@
                     <cell><code>BAD_REQUEST</code></cell>
                 </row>
                 <row>
+                    <cell>The requested NINO is valid but does not exist in the system</cell>
+                    <cell><code>404</code></cell>
+                    <cell><code>NOT_FOUND</code></cell>
+                </row>
+                <row>
                     <cell>Internal Server Error</cell>
                     <cell><code>500</code></cell>
                     <cell><code>INTERNAL_SERVER_ERROR</code></cell>
