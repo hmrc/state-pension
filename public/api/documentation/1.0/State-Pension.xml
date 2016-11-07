@@ -76,7 +76,7 @@
               "finalRelevantYear": "2017-18",
               "numberOfQualifyingYears": 30,
               "pensionSharingOrder": false,
-              "currentWeeklyPensionAmount": 155.65
+              "currentFullWeeklyPensionAmount": 155.65
               "_links" : {
                 "self": {
                   "href": "/state-pension/ni/QQ123456A"
