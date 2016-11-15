@@ -16,14 +16,25 @@
 
 package uk.gov.hmrc.statepension.controllers.sandbox
 
+import play.api.Logger
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.AuditEvent
+import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
 import uk.gov.hmrc.statepension.controllers.StatePensionController
 import uk.gov.hmrc.statepension.services.{SandboxStatePensionService, StatePensionService}
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 
 
 object StatePensionController extends StatePensionController {
   override val statePensionService: StatePensionService = SandboxStatePensionService
   override val app: String = "Sandbox-State-Pension"
   override val context: String = AppContext.apiGatewayContext
+  override val customAuditConnector: CustomAuditConnector = new CustomAuditConnector {
+    override lazy val auditConnector: AuditConnector = ???
+    override def sendEvent(event: AuditEvent)(implicit hc: HeaderCarrier): Unit = Logger.info(s"Sandbox Audit event sent: ${event.auditType}")
+  }
 }
 
