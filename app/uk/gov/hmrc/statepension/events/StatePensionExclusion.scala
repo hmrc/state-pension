@@ -30,9 +30,8 @@ object StatePensionExclusion{
 }
 
 class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int, pensionDate: LocalDate) (implicit hc: HeaderCarrier)
-  extends BusinessEvent("StatePensionExclusion",
+  extends BusinessEvent("StatePensionExclusion", nino,
     Map(
-      "nino" -> nino.toString,
       "reasons" -> exclusionReasons.map(_.toString).mkString(","),
       "pensionAge" -> pensionAge.toString,
       "pensionDate" -> pensionDate.toString

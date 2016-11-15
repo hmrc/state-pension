@@ -28,16 +28,17 @@ import uk.gov.hmrc.statepension.services.StatePensionService
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 
 trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling with HalSupport with Links {
-  val customAuditConnector = CustomAuditConnector
   val statePensionService: StatePensionService
+  val customAuditConnector: CustomAuditConnector
+
 	def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>
       errorWrapper(statePensionService.getStatement(nino).map {
 
         case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.Dead) =>
-        customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.Dead),
-          exclusion.pensionAge, exclusion.pensionDate))
-        Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
+          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.Dead),
+            exclusion.pensionAge, exclusion.pensionDate))
+          Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
 
         case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.ManualCorrespondenceIndicator) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.ManualCorrespondenceIndicator),
@@ -53,6 +54,7 @@ trait StatePensionController extends BaseController with HeaderValidator with Er
           customAuditConnector.sendEvent(StatePension(nino, statePension.earningsIncludedUpTo, statePension.amounts,
             statePension.pensionAge, statePension.pensionDate, statePension.finalRelevantYear, statePension.numberOfQualifyingYears,
             statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount))
+
           Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       })
   }

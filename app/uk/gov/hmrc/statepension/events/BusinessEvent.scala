@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.statepension.events
 
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.http.HeaderCarrier
 
-abstract class BusinessEvent(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier)
-  extends DataEvent(auditSource = "state-pension", auditType = auditType, detail = detail)
+abstract class BusinessEvent(auditType: String, nino: Nino, detail: Map[String, String])(implicit hc: HeaderCarrier)
+  extends DataEvent(auditSource = "state-pension", auditType = auditType, detail = detail + ("nino" -> nino.value))

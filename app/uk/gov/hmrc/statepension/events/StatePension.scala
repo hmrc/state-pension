@@ -32,8 +32,8 @@ object StatePension{
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
                         pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int,
                         pensionSharingOrder: Boolean, currentFullWeeklyPensionAmount: BigDecimal) (implicit hc: HeaderCarrier)
-  extends BusinessEvent("StatePension",
-    Map("nino" -> nino.value,
+  extends BusinessEvent("StatePension", nino,
+    Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
       "currentAmount.week" -> amounts.current.weeklyAmount.toString,
       "forecastAmount.week" -> amounts.forecast.weeklyAmount.toString,
