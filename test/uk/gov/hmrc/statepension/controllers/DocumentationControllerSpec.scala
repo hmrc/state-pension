@@ -37,49 +37,55 @@ class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
     status(result.get) shouldNot be(NOT_FOUND)
   }
 
+  def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
+
+    new DocumentationController {
+      override val appContext: AppContext = new AppContext {
+        override def appName: String = ""
+
+        override def apiGatewayContext: String = ""
+
+        override def appUrl: String = ""
+
+        override def access: Option[Configuration] = apiConfig
+
+        override def status: Option[String] = apiStatus
+      }
+    }.definition()(FakeRequest())
+
+  }
+
   "/definition access" should {
 
-    def getDefinitionResultFromConfig(apiConfig: Option[Configuration]): Result = {
 
-      new DocumentationController {
-        override val appContext: AppContext = new AppContext {
-          override def appName: String = ""
-          override def apiGatewayContext: String = ""
-          override def appUrl: String = ""
-
-          override def access: Option[Configuration] = apiConfig
-        }
-      }.definition()(FakeRequest())
-
-    }
 
     "return PRIVATE and no Whitelist IDs if there is no application config" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" \ "type" shouldBe JsString("PRIVATE")
-      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray()
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsString("PRIVATE")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray()
     }
 
     "return PRIVATE if the application config says PRIVATE" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" \ "type" shouldBe JsString("PRIVATE")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsString("PRIVATE")
     }
 
     "return PUBLIC if the application config says PUBLIC" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" \ "type" shouldBe JsString("PUBLIC")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsString("PUBLIC")
     }
 
     "return No Whitelist IDs if the application config has an entry for whiteListIds but no Ids" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq()))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray()
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray()
 
     }
 
@@ -87,8 +93,36 @@ class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq("A", "B", "C")))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray(Seq(JsString("A"), JsString("B"), JsString("C")))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray(Seq(JsString("A"), JsString("B"), JsString("C")))
 
     }
+  }
+
+  "/definition status" should {
+
+
+
+    "return PROTOTYPED if there is no application config" in {
+
+      val result = getDefinitionResultFromConfig(apiStatus = None)
+      status(result) shouldBe OK
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsString("PROTOTYPED")
+    }
+
+    "return PROTOTYPED if the application config says PROTOTYPED" in {
+
+      val result = getDefinitionResultFromConfig(apiStatus = Some("PROTOTYPED"))
+      status(result) shouldBe OK
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsString("PROTOTYPED")
+    }
+
+    "return PUBLISHED if the application config says PUBLISHED" in {
+
+      val result = getDefinitionResultFromConfig(apiStatus = Some("PUBLISHED"))
+      status(result) shouldBe OK
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsString("PUBLISHED")
+
+    }
+
   }
 }

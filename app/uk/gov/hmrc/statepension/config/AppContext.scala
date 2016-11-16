@@ -25,6 +25,7 @@ trait AppContext {
   def appUrl: String
   def apiGatewayContext: String
   def access: Option[Configuration]
+  def status: Option[String]
 }
 
 object AppContext extends AppContext with ServicesConfig {
@@ -33,4 +34,5 @@ object AppContext extends AppContext with ServicesConfig {
   lazy val apiGatewayContext = current.configuration.getString("api.gateway.context")
     .getOrElse(throw new RuntimeException("api.gateway.context is not configured"))
   lazy val access = current.configuration.getConfig("api.access")
+  lazy val status = current.configuration.getString("api.status")
 }
