@@ -26,13 +26,15 @@ trait DocumentationController extends uk.gov.hmrc.api.controllers.DocumentationC
   val appContext: AppContext
 
   override def definition(): Action[AnyContent] = Action {
-    Ok(txt.definition(buildAccess())).withHeaders("Content-Type" -> "application/json")
+    Ok(txt.definition(buildAccess(), buildStatus())).withHeaders("Content-Type" -> "application/json")
   }
 
   private def buildAccess(): APIAccess = {
     val access = APIAccessConfig(appContext.access)
     APIAccess(access.accessType, access.whiteListedApplicationIds)
   }
+
+  private def buildStatus(): String = appContext.status.getOrElse("PROTOTYPED")
 }
 
 object DocumentationController extends DocumentationController {

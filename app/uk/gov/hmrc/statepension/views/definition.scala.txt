@@ -2,7 +2,7 @@
 @import play.api.libs.json.Json
 
 
-@(access: APIAccess)
+@(access: APIAccess, status: String)
 {
   "scopes": [
     {
@@ -18,7 +18,7 @@
     "versions": [
       {
         "version": "1.0",
-        "status": "PUBLISHED",
+        "status": "@status",
         "access" : @Json.toJson(access),
         "endpoints": [
           {
