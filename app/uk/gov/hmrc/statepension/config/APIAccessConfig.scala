@@ -30,10 +30,11 @@ case class APIAccessConfig(value: Option[Configuration]) {
   }
 
   def whiteListedApplicationIds: Option[Seq[String]] = {
-    if(accessType == PRIVATE)
-    value match {
-      case Some(config) => Some(config.getStringSeq("whitelist.applicationIds").getOrElse(Seq()))
-      case None => Some(Seq())
+    if(accessType == PRIVATE) {
+      value match {
+        case Some(config) => Some(config.getStringSeq("whitelist.applicationIds").getOrElse(Seq()))
+        case None => Some(Seq())
+      }
     } else {
       None
     }
