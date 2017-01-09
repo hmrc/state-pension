@@ -1,0 +1,12 @@
+{
+  "exclusionReasons": [
+    "AmountDissonance"
+  ],
+  "pensionAge": 66,
+  "pensionDate": "2021-05-16"
+  "_links" : {
+    "self": {
+      "href": "/state-pension/ni/QQ123456A"
+    },
+  }
+}

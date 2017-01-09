@@ -29,6 +29,10 @@ trait DocumentationController extends uk.gov.hmrc.api.controllers.DocumentationC
     Ok(txt.definition(buildAccess(), buildStatus())).withHeaders("Content-Type" -> "application/json")
   }
 
+  override def documentation(version: String, file: String): Action[AnyContent] = {
+    super.at(s"/public/api/conf/$version", file)
+  }
+
   private def buildAccess(): APIAccess = {
     val access = APIAccessConfig(appContext.access)
     APIAccess(access.accessType, access.whiteListedApplicationIds)
