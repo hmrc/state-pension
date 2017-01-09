@@ -41,7 +41,7 @@ uses:
           200:
             body:
               application/json:
-                type: string
+                type: !include schemas/ni.json
                 examples:
                   ExampleOne:
                     value: !include examples/ni-example-1.json
