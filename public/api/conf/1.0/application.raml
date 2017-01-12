@@ -27,11 +27,11 @@ uses:
     /{nino}:
       uriParameters:
         nino:
-          description: A valid National Insurance Number
+          description: A valid National Insurance number
           type: string
           example: QQ123456A
       get:
-        displayName: State Pension
+        displayName: Get State Pension statement
         description: Returns a State Pension statement
         is: [headers.acceptHeader]
         (annotations.scope): "read:state-pension"
