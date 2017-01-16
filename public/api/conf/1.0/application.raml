@@ -44,9 +44,11 @@ uses:
               application/json:
                 type: !include schemas/state-pension.json
                 examples:
-                  Regular response:
+                  Regular:
+                    description: Regular response
                     value: !include examples/ni-example-1.json
-                  Exclusion response:
+                  Exclusion:
+                    description: Exclusion response
                     value: !include examples/ni-example-2.json
 
           400:
