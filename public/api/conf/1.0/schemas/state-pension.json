@@ -85,7 +85,7 @@
             "monthlyAmount": {
               "type": "number",
               "description": "The forecasted amount of State Pension per month",
-              "example": "638.14.1"
+              "example": "638.14"
             },
             "annualAmount": {
               "type": "number",
