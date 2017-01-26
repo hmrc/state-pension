@@ -19,18 +19,7 @@
       {
         "version": "1.0",
         "status": "@status",
-        "access" : @Json.toJson(access),
-        "endpoints": [
-          {
-            "uriPattern": "/ni/{nino}",
-            "endpointName": "State Pension",
-            "method": "GET",
-            "authType": "USER",
-            "throttlingTier": "UNLIMITED",
-            "scope": "read:state-pension",
-            "queryParameters": []
-          }
-        ]
+        "access" : @Json.toJson(access)
       }
     ]
   }
