@@ -10,7 +10,7 @@
         "oneOf": [
           {
             "enum": [ "Abroad" ],
-            "description": "Male who has an overseas address (outside United Kingdom and Isle of Man) and retires before 06/10/2018. Unable to automate currently, manual intervention required."
+            "description": "Male who has an address outside United Kingdom and Isle of Man, and retires before 6 October 2018. Unable to automate currently, manual intervention required."
           },
           {
             "enum": ["IsleOfMan"],
@@ -19,7 +19,7 @@
           
           {
             "enum": ["MarriedWomensReducedRateElection"],
-            "description": "The customer has Reduced Rate Election in force at the beginning of the tax year 35 years before the tax year of State Pension Age. Current marital status required, unable to determine State Pension amounts."
+            "description": "The customer has a \u2018reduced rate election\u2019 in force at the beginning of the tax year 35 years before the tax year of State Pension age. Current marital status required, unable to determine State Pension amounts."
           },
           
           {
@@ -29,7 +29,7 @@
           
           {
             "enum": ["PostStatePensionAge"],
-            "description": "The current date is equal to or greater than the day before the customer&#8217;s State Pension date. The customer is eligible for State Pension and therefore we do not provide a forecast."
+            "description": "The current date is equal to or greater than the day before the customer\u2019s State Pension date. The customer is eligible for State Pension and therefore we do not provide a forecast."
           }
         ],
         "description": "A list of exclusion reasons",
@@ -54,17 +54,17 @@
           "properties": {
             "weeklyAmount": {
               "type": "number",
-              "description": "The amount of accrued State Pension to date per week",
+              "description": "The amount of accrued State Pension to date each week",
               "example": "133.41"
             },
             "monthlyAmount": {
               "type": "number",
-              "description": "The amount of accrued State Pension to date per month",
+              "description": "The amount of accrued State Pension to date each month",
               "example": "580.1"
             },
             "annualAmount": {
               "type": "number",
-              "description": "The amount of accrued State Pension to date per year",
+              "description": "The amount of accrued State Pension to date each year",
               "example": "6961.14"
             }
           }
@@ -74,22 +74,22 @@
           "properties": {
             "yearsToWork": {
               "type": "number",
-              "description": "The number of future qualifying years needed to achieve the forecast amount",
+              "description": "The number of future qualifying years needed to get the forecast amount",
               "example": "1"
             },
             "weeklyAmount": {
               "type": "number",
-              "description": "The forecasted amount of State Pension per week",
+              "description": "The forecasted amount of State Pension each week",
               "example": "146.76"
             },
             "monthlyAmount": {
               "type": "number",
-              "description": "The forecasted amount of State Pension per month",
+              "description": "The forecasted amount of State Pension each month",
               "example": "638.14"
             },
             "annualAmount": {
               "type": "number",
-              "description": "The forecasted amount of State Pension per year",
+              "description": "The forecasted amount of State Pension each year",
               "example": "7657.73"
             }
           }
@@ -99,27 +99,27 @@
           "properties": {
             "yearsToWork": {
               "type": "number",
-              "description": "The number of future qualifying years needed to achieve the maximum amount",
+              "description": "The number of future qualifying years needed to get the most amount possible",
               "example": "3"
             },
             "gapsToFill": {
               "type": "number",
-              "description": "The minimum number of National Insurance gaps that need to be filled to achieve the maximum amount",
+              "description": "The least number of National Insurance gaps that need to be filled to get the most possible",
               "example": "2"
             },
             "weeklyAmount": {
               "type": "number",
-              "description": "The maximum amount of State Pension per week",
+              "description": "The maximum amount of State Pension each week",
               "example": "155.65"
             },
             "monthlyAmount": {
               "type": "number",
-              "description": "The maximum amount of State Pension per month",
+              "description": "The maximum amount of State Pension each month",
               "example": "676.8"
             },
             "annualAmount": {
               "type": "number",
-              "description": "The maximum amount of State Pension per year",
+              "description": "The maximum amount of State Pension each year",
               "example": "8121.59"
             }
           }
@@ -129,17 +129,17 @@
           "properties": {
             "weeklyAmount": {
               "type": "number",
-              "description": "The amount of Contracted Out Pension Equivalent per week",
+              "description": "The amount of Contracted Out Pension Equivalent each week",
               "example": "0"
             },
             "monthlyAmount": {
               "type": "number",
-              "description": "The amount of Contracted Out Pension Equivalent per month",
+              "description": "The amount of Contracted Out Pension Equivalent every month",
               "example": "0"
             },
             "annualAmount": {
               "type": "number",
-              "description": "The amount of Contracted Out Pension Equivalent per year",
+              "description": "The amount of Contracted Out Pension Equivalent each year",
               "example": "0"
             }
           }
@@ -158,7 +158,7 @@
     },
     "finalRelevantYear": {
       "type": "string",
-      "description": "The last full Tax Year before the customer\u2019s State Pension Date, for example 2017/18 with a date of 06/07/2018",
+      "description": "The last full tax year before the customer\u2019s State Pension date, for example 2017/18 with a date of 6 July 2018",
       "example": "2017-18"
     },
     "numberOfQualifyingYears": {
@@ -168,12 +168,12 @@
     },
     "pensionSharingOrder": {
       "type": "boolean",
-      "description": "Whether the customer has a Pension Sharing Order in effect",
+      "description": "Whether the customer has a \u2018pension sharing order\u2019 in effect",
       "example": "true"
     },
     "currentWeeklyPensionAmount": {
       "type": "number",
-      "description": "The full rate of State Pension per week",
+      "description": "The full rate of State Pension each week ",
       "example": "155.65"
     }
   }
