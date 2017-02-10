@@ -50,6 +50,8 @@ class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
         override def access: Option[Configuration] = apiConfig
 
         override def status: Option[String] = apiStatus
+
+        override def connectToHOD: Boolean = false
       }
     }.definition()(FakeRequest())
 

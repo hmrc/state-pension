@@ -34,12 +34,19 @@ trait StatePensionService {
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
 }
 
-object StatePensionService extends StatePensionService {
+trait NispConnection extends StatePensionService {
   val nisp = NispConnector
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
     nisp.getStatePension(nino)
   }
 }
+
+trait NpsConnection extends StatePensionService {
+  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = ???
+}
+
+object StatePensionServiceViaNisp extends StatePensionService with NispConnection
+object StatePensionService extends StatePensionService with NpsConnection
 
 object SandboxStatePensionService extends StatePensionService {
   private val dummyStatement: StatePension = StatePension(
