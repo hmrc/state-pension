@@ -17,14 +17,21 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import org.mockito.Matchers
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.statepension.domain.nps.{NpsAmountA2016, NpsAmountB2016, NpsStatePensionAmounts, NpsSummary}
+import org.mockito.Mockito._
 
-class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite with ScalaFutures {
+import scala.concurrent.Future
+
+class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite with ScalaFutures with MockitoSugar {
 
   private val dummyStatement: StatePension = StatePension(
     // scalastyle:off magic.number
@@ -34,29 +41,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       current = StatePensionAmount(
         None,
         None,
-        133.41,
-        580.10,
-        6961.14
+        133.41
       ),
       forecast = StatePensionAmount(
         yearsToWork = Some(3),
         None,
-        146.76,
-        638.14,
-        7657.73
+        146.76
       ),
       maximum = StatePensionAmount(
         yearsToWork = Some(3),
         gapsToFill = Some(2),
-        weeklyAmount = 155.65,
-        monthlyAmount = 676.80,
-        annualAmount = 8121.59
+        weeklyAmount = 155.65
       ),
       cope = StatePensionAmount(
         None,
         None,
-        0.00,
-        0.00,
         0.00
       )
     ),
@@ -107,10 +106,199 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
 
+  }
+
+  "StatePensionService with a HOD Connection" when {
+
+    val service = new NpsConnection {
+      override lazy val nps: NpsConnector = mock[NpsConnector]
+    }
+
+    "there is a regular statement" should {
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        qualifyingYears = 36,
+        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS =  false,
+        dateOfBirth = new LocalDate(1954, 3, 9),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 161.18,
+          startingAmount2016 = 161.18,
+          protectedPayment2016 = 5.53,
+          additionalPensionAccruedLastTaxYear = 2.36,
+          NpsAmountA2016(
+            basicPension = 119.3,
+            pre97AP = 17.79,
+            post97AP = 6.03,
+            post02AP = 15.4,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            grb = 2.66
+          ),
+          NpsAmountB2016(
+            mainComponent = 155.65,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "return earningsIncludedUpTo of 2016-4-5" in {
+        whenReady(statePensionF) { sp =>
+          sp.earningsIncludedUpTo shouldBe new LocalDate(2016, 4, 5)
+        }
+      }
+
+      "return qualifying years of 36" in {
+        whenReady(statePensionF) { sp =>
+          sp.numberOfQualifyingYears shouldBe 36
+        }
+      }
+
+      "return pension date of 2019-9-6" in {
+        whenReady(statePensionF) { sp =>
+          sp.pensionDate shouldBe new LocalDate(2019,9,6)
+        }
+      }
+
+      "return final relevant year" in {
+        whenReady(statePensionF) { sp =>
+          sp.finalRelevantYear shouldBe "2018-19"
+        }
+      }
+
+      "when there is a pensionSharingOrder return true" in {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(pensionSharingOrderSERPS = true)
+        ))
+        service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
+      }
+
+      "when there is no pensionSharingOrder return false" in {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(pensionSharingOrderSERPS = false)
+        ))
+        service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
+      }
+
+      "return pension age of 65" in {
+        whenReady(statePensionF) { sp =>
+          sp.pensionAge shouldBe 65
+        }
+      }
+
+      "return full state pension rate of 155.65" in {
+        whenReady(statePensionF) { sp =>
+          sp.currentFullWeeklyPensionAmount shouldBe 155.65
+        }
+      }
+
+      "when there is a protected payment of some value return true" in {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
+        ))
+        service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
+      }
+
+      "when there is a protected payment of 0 return false" in {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
+        ))
+        service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
+      }
+
+      "when there is a rebate derived amount of 12.34 it" should {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
+        ))
+
+        val statement = service.getStatement(generateNino()).right.get
+        
+        "return a weekly cope amount of 12.34" in {
+          statement.amounts.cope.weeklyAmount shouldBe 12.34
+        }
+        
+        "return a monthly cope amount of 12.34" in {
+          statement.amounts.cope.monthlyAmount shouldBe 53.66
+        }
+        
+        "return an annual cope amount of 12.34" in {
+          statement.amounts.cope.annualAmount shouldBe 643.88
+        }
+      }
+
+      "when there is a rebate derived amount of 0 it" should {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
+        ))
+
+        val statement = service.getStatement(generateNino()).right.get
+
+        "return a weekly cope amount of 0" in {
+         statement.amounts.cope.weeklyAmount shouldBe 0
+        }
+
+        "return a monthly cope amount of 0" in {
+          statement.amounts.cope.monthlyAmount shouldBe 0
+        }
+
+        "return an annual cope amount of 0" in {
+          statement.amounts.cope.annualAmount shouldBe 0
+        }
+        
+      }
 
 
+      "when there is an entitlement of 161.18 it" should {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
+        ))
 
+        val statement = service.getStatement(generateNino()).right.get
 
-    
+        "return a weekly current amount of 161.18" in {
+          statement.amounts.current.weeklyAmount shouldBe 161.18
+        }
+
+        "return a monthly current amount of 161.18" in {
+          statement.amounts.current.monthlyAmount shouldBe 700.85
+        }
+
+        "return an annual current amount of 161.18" in {
+          service.getStatement(generateNino()).right.get.amounts.current.annualAmount shouldBe 8410.14
+        }
+      }
+
+      "when there is an entitlement of 0 it" should {
+        when(service.nps.getSummary).thenReturn(Future.successful(
+          regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 0))
+        ))
+
+        val statement = service.getStatement(generateNino()).right.get
+
+        "return a weekly current amount of 0" in {
+          statement.amounts.current.weeklyAmount shouldBe 0
+        }
+
+        "return a monthly current amount of 0" in {
+          statement.amounts.current.monthlyAmount shouldBe 0
+        }
+
+        "return an annual current amount of 0" in {
+          statement.amounts.current.annualAmount shouldBe 0
+        }
+      }
+
+    }
   }
 }

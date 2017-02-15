@@ -17,17 +17,28 @@
 package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, JsPath, Json, Writes}
+import play.api.libs.functional.syntax._
+
+import scala.math.BigDecimal.RoundingMode
 
 case class StatePensionAmount(yearsToWork: Option[Int],
                               gapsToFill: Option[Int],
-                              weeklyAmount: BigDecimal,
-                              monthlyAmount: BigDecimal,
-                              annualAmount: BigDecimal) {
-
+                              weeklyAmount: BigDecimal) {
+  val monthlyAmount: BigDecimal = (((weeklyAmount / 7) * 365.25) / 12).setScale(2, RoundingMode.HALF_UP)
+  val annualAmount: BigDecimal = ((weeklyAmount / 7) * 365.25).setScale(2, RoundingMode.HALF_UP)
 }
 object StatePensionAmount {
-  implicit val formats = Json.format[StatePensionAmount]
+  implicit val reads = Json.reads[StatePensionAmount]
+  implicit val writes: Writes[StatePensionAmount] = (
+    (JsPath \ "yearsToWork").writeNullable[Int] and
+      (JsPath \ "gapsToFill").writeNullable[Int] and
+      (JsPath \ "weeklyAmount").write[BigDecimal] and
+      (JsPath \ "monthlyAmount").write[BigDecimal] and
+      (JsPath \ "annualAmount").write[BigDecimal]
+    )((sp: StatePensionAmount) => (sp.yearsToWork, sp.gapsToFill, sp.weeklyAmount, sp.monthlyAmount, sp.annualAmount))
+
+  implicit val formats: Format[StatePensionAmount] = Format(reads, writes)
 }
 
 

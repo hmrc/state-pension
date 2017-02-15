@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import org.joda.time.LocalDate
+import org.joda.time.{LocalDate, Period}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
@@ -25,25 +25,39 @@ case class NpsSummary(
                        earningsIncludedUpTo: LocalDate,
                        sex: String,
                        qualifyingYears: Int,
+                       statePensionAgeDate: LocalDate,
+                       finalRelevantStartYear: Int,
+                       pensionSharingOrderSERPS: Boolean,
+                       dateOfBirth: LocalDate,
                        amounts: NpsStatePensionAmounts
-                     )
+                     ) {
+  val finalRelevantYear: String = s"$finalRelevantStartYear-${(finalRelevantStartYear + 1).toString.takeRight(2)}"
+  val statePensionAge: Int = new Period(dateOfBirth, statePensionAgeDate).getYears
+}
 
 object NpsSummary {
+
+  val readBooleanFromInt: JsPath => Reads[Boolean] =
+    jsPath => jsPath.readNullable[Int].map(_.getOrElse(0) != 0)
 
   implicit val reads: Reads[NpsSummary] = (
     (JsPath \ "earnings_included_upto").read[LocalDate] and
       (JsPath \ "sex").read[String] and
       (JsPath \ "nsp_qualifying_years").read[Int] and
+      (JsPath \ "spa_date").read[LocalDate] and
+      (JsPath \ "final_relevant_year").read[Int] and
+      readBooleanFromInt(JsPath \ "pension_share_order_serps") and
+      (JsPath \ "date_of_birth").read[LocalDate] and
       (JsPath \ "npsSpnam").read[NpsStatePensionAmounts]
     ) (NpsSummary.apply _)
 
 }
 
 case class NpsStatePensionAmounts(
-                                   pensionEntitlement: BigDecimal,
-                                   startingAmount2016: BigDecimal,
-                                   protectedPayment2016: BigDecimal,
-                                   additionalPensionAccruedLastTaxYear: BigDecimal,
+                                   pensionEntitlement: BigDecimal = 0,
+                                   startingAmount2016: BigDecimal = 0,
+                                   protectedPayment2016: BigDecimal = 0,
+                                   additionalPensionAccruedLastTaxYear: BigDecimal = 0,
                                    amountA2016: NpsAmountA2016,
                                    amountB2016: NpsAmountB2016
                                  )
@@ -64,15 +78,15 @@ object NpsStatePensionAmounts {
 }
 
 case class NpsAmountA2016(
-                           basicPension: BigDecimal,
-                           pre97AP: BigDecimal,
-                           post97AP: BigDecimal,
-                           post02AP: BigDecimal,
-                           pre88GMP: BigDecimal,
-                           post88GMP: BigDecimal,
-                           pre88COD: BigDecimal,
-                           post88COD: BigDecimal,
-                           grb: BigDecimal
+                           basicPension: BigDecimal = 0,
+                           pre97AP: BigDecimal = 0,
+                           post97AP: BigDecimal = 0,
+                           post02AP: BigDecimal = 0,
+                           pre88GMP: BigDecimal = 0,
+                           post88GMP: BigDecimal = 0,
+                           pre88COD: BigDecimal = 0,
+                           post88COD: BigDecimal = 0,
+                           grb: BigDecimal = 0
                          ) {
   val totalAP: BigDecimal = (pre97AP - (pre88GMP + post88GMP + pre88COD + post88COD)).max(0) + post97AP + post02AP + grb
   val total: BigDecimal = totalAP + basicPension
@@ -97,7 +111,7 @@ object NpsAmountA2016 {
 
 }
 
-case class NpsAmountB2016(mainComponent: BigDecimal, rebateDerivedAmount: BigDecimal)
+case class NpsAmountB2016(mainComponent: BigDecimal = 0, rebateDerivedAmount: BigDecimal = 0)
 
 object NpsAmountB2016 {
   val readBigDecimal: JsPath => Reads[BigDecimal] =

@@ -21,12 +21,12 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.statepension.connectors.NispConnector
+import uk.gov.hmrc.statepension.connectors.{NispConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
-
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.util.EitherReads._
+import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
@@ -42,11 +42,39 @@ trait NispConnection extends StatePensionService {
 }
 
 trait NpsConnection extends StatePensionService {
-  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = ???
+  def nps: NpsConnector
+
+  final val FULL_RATE = 155.65
+
+  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
+
+    nps.getSummary map { summary =>
+      Right(StatePension(
+        earningsIncludedUpTo = summary.earningsIncludedUpTo,
+        StatePensionAmounts(
+          summary.amounts.protectedPayment2016 > 0,
+          StatePensionAmount(None, None, summary.amounts.pensionEntitlement),
+          StatePensionAmount(None, None, 0),
+          StatePensionAmount(Some(0), None, 0),
+          StatePensionAmount(Some(0), Some(0), summary.amounts.amountB2016.rebateDerivedAmount)
+        ),
+        summary.statePensionAge,
+        summary.statePensionAgeDate,
+        summary.finalRelevantYear,
+        numberOfQualifyingYears = 36,
+        summary.pensionSharingOrderSERPS,
+        FULL_RATE
+      ))
+    }
+
+
+  }
 }
 
 object StatePensionServiceViaNisp extends StatePensionService with NispConnection
-object StatePensionService extends StatePensionService with NpsConnection
+object StatePensionService extends StatePensionService with NpsConnection {
+  override lazy val nps: NpsConnector = ???
+}
 
 object SandboxStatePensionService extends StatePensionService {
   private val dummyStatement: StatePension = StatePension(
@@ -57,29 +85,21 @@ object SandboxStatePensionService extends StatePensionService {
       current = StatePensionAmount(
         None,
         None,
-        133.41,
-        580.10,
-        6961.14
+        133.41
       ),
       forecast = StatePensionAmount(
         yearsToWork = Some(3),
         None,
-        146.76,
-        638.14,
-        7657.73
+        146.76
       ),
       maximum = StatePensionAmount(
         yearsToWork = Some(3),
         gapsToFill = Some(2),
-        weeklyAmount = 155.65,
-        monthlyAmount = 676.80,
-        annualAmount = 8121.59
+        weeklyAmount = 155.65
       ),
       cope = StatePensionAmount(
         None,
         None,
-        0.00,
-        0.00,
         0.00
       )
     ),
