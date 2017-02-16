@@ -75,7 +75,7 @@ class NpsSummarySpec extends UnitSpec {
       |  "minimum_qualifying_period": 1,
       |  "address_postcode": "WS9 8LL",
       |  "rre_to_consider": 0,
-      |  "pension_share_order_serps": 0,
+      |  "pension_share_order_serps": 1,
       |  "nino": "QQ123456A",
       |  "earnings_included_upto": "2015-04-05"
       |}
@@ -90,6 +90,30 @@ class NpsSummarySpec extends UnitSpec {
     }
     "parse qualifying_years correctly" in {
       summaryJson.as[NpsSummary].qualifyingYears shouldBe 36
+    }
+
+    "parse state pension age date correctly" when {
+      "it exists as 2019-09-06" in {
+        summaryJson.as[NpsSummary].statePensionAgeDate shouldBe new LocalDate(2019, 9, 6)
+      }
+    }
+
+    "parse final relevant start year correctly" when {
+      "it exists as 2019-09-06" in {
+        summaryJson.as[NpsSummary].finalRelevantStartYear shouldBe 2018
+      }
+    }
+
+    "parse pension sharing order correctly" when {
+      "it exists as true" in {
+        summaryJson.as[NpsSummary].pensionSharingOrderSERPS shouldBe true
+      }
+    }
+
+    "parse date of birth correctly" when {
+      "it exists as 1954-03-09" in {
+        summaryJson.as[NpsSummary].dateOfBirth shouldBe new LocalDate(1954, 3, 9)
+      }
     }
 
     "parse the amounts correctly" in {
@@ -300,7 +324,7 @@ class NpsSummarySpec extends UnitSpec {
 
       "be parsing Amount B correctly and therefore" should {
         "parse main component correctly" when {
-          "it exists as 12.12q" in {
+          "it exists as 12.12" in {
             amountJson.as[NpsStatePensionAmounts].amountB2016.mainComponent shouldBe 12.12
           }
 
@@ -359,6 +383,83 @@ class NpsSummarySpec extends UnitSpec {
 
       "return £4319 for pre97 AP 1, post97 AP 19, post02 AP 300, grb 4000, post88 cod 2, pre88 cod 1" in {
         NpsAmountA2016(115.95, 1, 19, 300, 0, 0, 2, 1, 4000).totalAP shouldBe 4319
+      }
+    }
+  }
+
+  "finalRelevantYear" when {
+
+    def summaryWithFinalRelevantStartYear(finalRelevantStartYear: Int) = NpsSummary(
+      new LocalDate(2016, 4, 5),
+      "F",
+      20,
+      new LocalDate(2020, 6, 9),
+      finalRelevantStartYear,
+      false,
+      new LocalDate(1954, 3, 9),
+      NpsStatePensionAmounts(amountA2016 = NpsAmountA2016(), amountB2016 = NpsAmountB2016())
+    )
+
+
+    "finalRelevantStartYear is 2015" should {
+      "return 2015-16" in {
+        summaryWithFinalRelevantStartYear(2015).finalRelevantYear shouldBe "2015-16"
+      }
+    }
+
+    "finalRelevantStartYear is 1999" should {
+      "return 1999-99" in {
+        summaryWithFinalRelevantStartYear(1999).finalRelevantYear shouldBe "1999-00"
+      }
+    }
+
+    "finalRelevantStartYear is 2009" should {
+      "return 2009-10" in {
+        summaryWithFinalRelevantStartYear(2009).finalRelevantYear shouldBe "2009-10"
+      }
+    }
+
+    "finalRelevantStartYear is 1975" should {
+      "return 1975-76" in {
+        summaryWithFinalRelevantStartYear(1975).finalRelevantYear shouldBe "1975-76"
+      }
+    }
+  }
+
+  "statePensionAge" when {
+
+    def summaryWithDOBandSPA(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate) = NpsSummary(
+      new LocalDate(2016, 4, 5),
+      "F",
+      20,
+      statePensionAgeDate,
+      2020,
+      false,
+      dateOfBirth,
+      NpsStatePensionAmounts(amountA2016 = NpsAmountA2016(), amountB2016 = NpsAmountB2016())
+    )
+
+    "when the date of birth is 1950-1-1 and the state pension age date is 2017-1-1" should {
+      "return 67" in {
+        summaryWithDOBandSPA(new LocalDate(1950, 1, 1), new LocalDate(2017, 1, 1)).statePensionAge shouldBe 67
+      }
+    }
+
+    "when the date of birth is 1950-1-1 and the state pension age date is 2017-1-2" should {
+      "return 67" in {
+        summaryWithDOBandSPA(new LocalDate(1950, 1, 1), new LocalDate(2017, 1, 2)).statePensionAge shouldBe 67
+      }
+    }
+
+    "when the date of birth is 1950-1-1 and the state pension age date is 2017-5-2" should {
+      "return 67" in {
+        summaryWithDOBandSPA(new LocalDate(1950, 1, 1), new LocalDate(2017, 5, 2)).statePensionAge shouldBe 67
+      }
+    }
+
+    "when the date of birth is 2017-1-2 and the state pension age date is 2017-1-1"  should {
+      "return 66" in {
+        summaryWithDOBandSPA(new LocalDate(1950, 1, 2), new LocalDate(2017, 1, 1)).statePensionAge shouldBe 66
       }
     }
   }

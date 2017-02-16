@@ -58,10 +58,10 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     new LocalDate(2015, 4, 5),
     StatePensionAmounts(
       protectedPayment = false,
-      StatePensionAmount(None, None, 123.65, 537.66, 6451.88),
-      StatePensionAmount(Some(4), None, 151.25, 657.67, 7892.01),
-      StatePensionAmount(Some(4), Some(1), 155.65, 676.80, 8121.59),
-      StatePensionAmount(None, None, 0.25, 1.09, 13.04)
+      StatePensionAmount(None, None, 123.65),
+      StatePensionAmount(Some(4), None, 151.25),
+      StatePensionAmount(Some(4), Some(1), 155.65),
+      StatePensionAmount(None, None, 0.25)
     ),
     67,
     new LocalDate(2019, 7 ,1),
