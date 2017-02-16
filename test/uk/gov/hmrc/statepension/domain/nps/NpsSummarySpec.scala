@@ -351,7 +351,7 @@ class NpsSummarySpec extends UnitSpec {
         }
 
         "parse post 88 GMP  correctly" when {
-          "it exists as 27.27" in {
+          "it exists as 26.26" in {
             amountJson.as[NpsStatePensionAmounts].amountA2016.post88GMP shouldBe 26.26
           }
 
@@ -403,7 +403,7 @@ class NpsSummarySpec extends UnitSpec {
         }
 
         "parse rebate derived amount correctly" when {
-          "it exists as 23.23" in {
+          "it exists as 13.13" in {
             amountJson.as[NpsStatePensionAmounts].amountB2016.rebateDerivedAmount shouldBe 13.13
           }
 
