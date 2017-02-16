@@ -114,6 +114,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
       }
 
       val regularStatement = NpsSummary(
@@ -305,6 +306,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
       }
 
       val summary = NpsSummary(
@@ -334,13 +336,57 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "have a pension age of 67" in {
         whenReady(exclusionF) { exclusion =>
-          exclusion.pensionAge
+          exclusion.pensionAge shouldBe 67
         }
       }
 
       "have a pension date of 2050-7-7" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2050, 7, 7)
+        }
+      }
+    }
+
+    "the customer is over state pension age" should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(1954, 4, 5),
+        sex = "F",
+        qualifyingYears = 35,
+        statePensionAgeDate = new LocalDate(2016, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1954, 7, 7),
+        dateOfDeath = None,
+        NpsStatePensionAmounts()
+      )
+
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        summary
+      ))
+
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+
+      "return post state pension age exclusion" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.PostStatePensionAge)
+        }
+      }
+
+      "have a pension age of 61" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
+        }
+      }
+
+      "have a pension date of 2050-7-7" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
         }
       }
     }
