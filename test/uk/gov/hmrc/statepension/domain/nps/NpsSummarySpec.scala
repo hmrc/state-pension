@@ -116,6 +116,75 @@ class NpsSummarySpec extends UnitSpec {
       }
     }
 
+    "parse date of death correctly" when {
+
+      "it is null" in {
+        summaryJson.as[NpsSummary].dateOfDeath shouldBe None
+      }
+
+      "it exists as 2001-9-11" in {
+        Json.parse(
+          """
+            |{
+            |  "contracted_out_flag": 0,
+            |  "sensitive_flag": 0,
+            |  "spa_date": "2019-09-06",
+            |  "final_relevant_year": 2018,
+            |  "account_not_maintained_flag": null,
+            |  "npsPenfor": {
+            |    "forecast_amount": 160.19,
+            |    "nsp_max": 155.65,
+            |    "qualifying_years_at_spa": 40,
+            |    "forecast_amount_2016": 160.19
+            |  },
+            |  "pension_share_order_coeg": 0,
+            |  "date_of_death": "2000-09-13",
+            |  "sex": "M",
+            |  "npsSpnam": {
+            |    "nsp_entitlement": 161.18,
+            |    "ap_amount": 2.36,
+            |    "npsAmnbpr16": {
+            |      "main_component": 155.65,
+            |      "rebate_derived_amount": 0.0
+            |    },
+            |    "npsAmnapr16": {
+            |      "ltb_post97_ap_cash_value": 6.03,
+            |      "ltb_cat_a_cash_value": 119.3,
+            |      "ltb_post88_cod_cash_value": null,
+            |      "ltb_pre97_ap_cash_value": 17.79,
+            |      "ltb_pre88_cod_cash_value": null,
+            |      "grb_cash": 2.66,
+            |      "ltb_pst88_gmp_cash_value": null,
+            |      "pre88_gmp": null,
+            |      "ltb_post02_ap_cash_value": 15.4
+            |    },
+            |    "protected_payment_2016": 5.53,
+            |    "starting_amount": 161.18
+            |  },
+            |  "npsErrlist": {
+            |    "count": 0,
+            |    "mgt_check": 0,
+            |    "commit_status": 2,
+            |    "npsErritem": [],
+            |    "bfm_return_code": 0,
+            |    "data_not_found": 0
+            |  },
+            |  "date_of_birth": "1954-03-09",
+            |  "nsp_qualifying_years": 36,
+            |  "country_code": 1,
+            |  "nsp_requisite_years": 35,
+            |  "minimum_qualifying_period": 1,
+            |  "address_postcode": "WS9 8LL",
+            |  "rre_to_consider": 0,
+            |  "pension_share_order_serps": 1,
+            |  "nino": "QQ123456A",
+            |  "earnings_included_upto": "2015-04-05"
+            |}
+          """.stripMargin).as[NpsSummary].dateOfDeath shouldBe Some(new LocalDate(2000, 9, 13))
+      }
+
+    }
+
     "parse the amounts correctly" in {
 
       summaryJson.as[NpsSummary].amounts shouldBe NpsStatePensionAmounts(
@@ -397,6 +466,7 @@ class NpsSummarySpec extends UnitSpec {
       finalRelevantStartYear,
       false,
       new LocalDate(1954, 3, 9),
+      None,
       NpsStatePensionAmounts(amountA2016 = NpsAmountA2016(), amountB2016 = NpsAmountB2016())
     )
 
@@ -436,6 +506,7 @@ class NpsSummarySpec extends UnitSpec {
       2020,
       false,
       dateOfBirth,
+      None,
       NpsStatePensionAmounts(amountA2016 = NpsAmountA2016(), amountB2016 = NpsAmountB2016())
     )
 

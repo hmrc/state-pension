@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.connectors.{NispConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
+import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.util.EitherReads._
@@ -49,22 +49,31 @@ trait NpsConnection extends StatePensionService {
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
     nps.getSummary map { summary =>
-      Right(StatePension(
-        earningsIncludedUpTo = summary.earningsIncludedUpTo,
-        StatePensionAmounts(
-          summary.amounts.protectedPayment2016 > 0,
-          StatePensionAmount(None, None, summary.amounts.pensionEntitlement),
-          StatePensionAmount(None, None, 0),
-          StatePensionAmount(Some(0), None, 0),
-          StatePensionAmount(Some(0), Some(0), summary.amounts.amountB2016.rebateDerivedAmount)
-        ),
-        summary.statePensionAge,
-        summary.statePensionAgeDate,
-        summary.finalRelevantYear,
-        numberOfQualifyingYears = 36,
-        summary.pensionSharingOrderSERPS,
-        FULL_RATE
-      ))
+
+      if (summary.dateOfDeath.isDefined) {
+        Left(StatePensionExclusion(
+          exclusionReasons = List(Exclusion.Dead),
+          pensionAge = summary.statePensionAge,
+          pensionDate = summary.statePensionAgeDate
+        ))
+      } else {
+        Right(StatePension(
+          earningsIncludedUpTo = summary.earningsIncludedUpTo,
+          amounts = StatePensionAmounts(
+            summary.amounts.protectedPayment2016 > 0,
+            StatePensionAmount(None, None, summary.amounts.pensionEntitlement),
+            StatePensionAmount(None, None, 0),
+            StatePensionAmount(Some(0), None, 0),
+            StatePensionAmount(Some(0), Some(0), summary.amounts.amountB2016.rebateDerivedAmount)
+          ),
+          pensionAge = summary.statePensionAge,
+          pensionDate = summary.statePensionAgeDate,
+          finalRelevantYear = summary.finalRelevantYear,
+          numberOfQualifyingYears = 36,
+          pensionSharingOrder = summary.pensionSharingOrderSERPS,
+          currentFullWeeklyPensionAmount = FULL_RATE
+        ))
+      }
     }
 
 
