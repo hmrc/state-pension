@@ -21,22 +21,40 @@ import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
-class ExclusionService(dateOfDeath: Option[LocalDate], pensionDate: LocalDate, now: LocalDate, reducedRateElection: Boolean) {
+class ExclusionService(dateOfDeath: Option[LocalDate],
+                       pensionDate: LocalDate,
+                       now: LocalDate,
+                       reducedRateElection: Boolean,
+                       isAbroad: Boolean,
+                       sex: String) {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
-  val checkDead: (List[Exclusion]) => List[Exclusion] = (exclusionList: List[Exclusion]) =>
+  private val checkDead = (exclusionList: List[Exclusion]) =>
     dateOfDeath.fold(exclusionList)(_ => Exclusion.Dead :: exclusionList)
 
-  val checkPostStatePensionAge: (List[Exclusion]) => List[Exclusion] = (exclusionList: List[Exclusion]) =>
+  private val checkPostStatePensionAge = (exclusionList: List[Exclusion]) =>
     if (!now.isBefore(pensionDate.minusDays(1))) {
       Exclusion.PostStatePensionAge :: exclusionList
     } else {
       exclusionList
     }
 
-  val checkMarriedWomensReducedRateElection: (List[Exclusion]) => List[Exclusion] = (exclusionList: List[Exclusion]) =>
+  private val checkMarriedWomensReducedRateElection = (exclusionList: List[Exclusion]) =>
     if (reducedRateElection) Exclusion.MarriedWomenReducedRateElection :: exclusionList else exclusionList
 
-  private val exclusions = FunctionHelper.composeAll(List(checkDead, checkPostStatePensionAge, checkMarriedWomensReducedRateElection))
+  final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
+
+  private val checkOverseasMaleAutoCredits = (exclusionList: List[Exclusion]) => {
+    if (sex.equalsIgnoreCase("M") && isAbroad && pensionDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE)) {
+      Exclusion.Abroad :: exclusionList
+    } else {
+      exclusionList
+    }
+
+  }
+
+  private val exclusions = FunctionHelper.composeAll(List(
+    checkDead, checkPostStatePensionAge, checkMarriedWomensReducedRateElection, checkOverseasMaleAutoCredits
+  ))
 }

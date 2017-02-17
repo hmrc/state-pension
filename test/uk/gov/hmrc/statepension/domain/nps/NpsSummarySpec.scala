@@ -252,6 +252,12 @@ class NpsSummarySpec extends UnitSpec {
       }
     }
 
+    "parse the country code correctly" when {
+      "it exists as 1" in {
+        summaryJson.as[NpsSummary].countryCode shouldBe 1
+      }
+    }
+
     "parse the amounts correctly" in {
 
       summaryJson.as[NpsSummary].amounts shouldBe NpsStatePensionAmounts(
@@ -527,16 +533,13 @@ class NpsSummarySpec extends UnitSpec {
   "finalRelevantYear" when {
 
     def summaryWithFinalRelevantStartYear(finalRelevantStartYear: Int) = NpsSummary(
-      new LocalDate(2016, 4, 5),
-      "F",
-      20,
-      new LocalDate(2020, 6, 9),
-      finalRelevantStartYear,
-      false,
-      new LocalDate(1954, 3, 9),
-      None,
-      false,
-      NpsStatePensionAmounts(amountA2016 = NpsAmountA2016(), amountB2016 = NpsAmountB2016())
+      earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+      sex = "F",
+      qualifyingYears = 20,
+      statePensionAgeDate = new LocalDate(2020, 6, 9),
+      finalRelevantStartYear = finalRelevantStartYear,
+      pensionSharingOrderSERPS = false,
+      dateOfBirth = new LocalDate(1960, 4, 5)
     )
 
 
@@ -568,16 +571,13 @@ class NpsSummarySpec extends UnitSpec {
   "statePensionAge" when {
 
     def summaryWithDOBandSPA(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate) = NpsSummary(
-      new LocalDate(2016, 4, 5),
-      "F",
-      20,
-      statePensionAgeDate,
-      2020,
-      false,
-      dateOfBirth,
-      None,
-      false,
-      NpsStatePensionAmounts(amountA2016 = NpsAmountA2016(), amountB2016 = NpsAmountB2016())
+      earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+      sex = "F",
+      qualifyingYears = 20,
+      statePensionAgeDate = statePensionAgeDate,
+      finalRelevantStartYear = 2020,
+      pensionSharingOrderSERPS = false,
+      dateOfBirth
     )
 
     "when the date of birth is 1950-1-1 and the state pension age date is 2017-1-1" should {

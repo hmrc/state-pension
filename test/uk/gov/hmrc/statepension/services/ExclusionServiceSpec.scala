@@ -25,8 +25,13 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
   val exampleNow = new LocalDate(2017, 2, 16)
   val examplePensionDate = new LocalDate(2022, 2, 2)
 
-  def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None, pensionDate: LocalDate = examplePensionDate, now: LocalDate = exampleNow, reducedRateElection: Boolean = false) =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection)
+  def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None,
+                              pensionDate: LocalDate = examplePensionDate,
+                              now: LocalDate = exampleNow,
+                              reducedRateElection: Boolean = false,
+                              isAbroad: Boolean = false,
+                              sex: String = "F") =
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex)
 
 
   "getExclusions" when {
@@ -74,14 +79,56 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "the overseas male auto credits (abroad) exclusion criteria is met" when {
+      "the user is currently female" should {
+        "return no exclusion" in {
+          exclusionServiceBuilder(sex = "F").getExclusions shouldBe Nil
+          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2017, 4, 5)).getExclusions shouldBe Nil
+          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2017, 4, 5), isAbroad = true).getExclusions shouldBe Nil
+          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2017, 4, 5), isAbroad = false).getExclusions shouldBe Nil
+          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2020, 4, 5), isAbroad = true).getExclusions shouldBe Nil
+        }
+      }
+
+      "the user is currently male" when {
+
+        "the user is not abroad" should  {
+          "return no exclusions" in {
+            exclusionServiceBuilder(sex = "M", pensionDate = new LocalDate(2017, 4, 5), isAbroad = false).getExclusions shouldBe Nil
+            exclusionServiceBuilder(sex = "M", pensionDate = new LocalDate(2020, 4, 5), isAbroad = false).getExclusions shouldBe Nil
+          }
+        }
+
+        "the user is abroad" when {
+          "the user retires on 05/10/2018" should {
+            "return the abroad exclusion" in {
+              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 5)).getExclusions shouldBe List(Exclusion.Abroad)
+            }
+          }
+          "the user retires on 06/10/2018" should {
+            "return no exclusion" in {
+              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 6)).getExclusions shouldBe Nil
+            }
+          }
+          "the user retires on 07/10/2018" should {
+            "return no exclusion" in {
+              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 7)).getExclusions shouldBe Nil
+            }
+          }
+        }
+      }
+    }
+
     "all the exclusion criteria are met" should {
       "return a sorted list of Dead, PostSPA, MWRRE" in {
         exclusionServiceBuilder(
           dateOfDeath = Some(new LocalDate(1999, 12, 31)),
           pensionDate = new LocalDate(2000, 1, 1),
           now = new LocalDate(2000, 1, 1),
-          reducedRateElection = true
-        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.MarriedWomenReducedRateElection)
+          reducedRateElection = true,
+          isAbroad = true,
+          sex = "M"
+        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.MarriedWomenReducedRateElection, Exclusion.Abroad)
       }
     }
   }

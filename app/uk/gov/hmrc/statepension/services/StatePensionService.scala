@@ -28,6 +28,7 @@ import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.Country
 import uk.gov.hmrc.statepension.util.EitherReads._
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -58,7 +59,9 @@ trait NpsConnection extends StatePensionService {
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
         now,
-        reducedRateElection = summary.reducedRateElection
+        reducedRateElection = summary.reducedRateElection,
+        isAbroad = Country.isAbroad(summary.countryCode),
+        sex = summary.sex
       ).getExclusions
 
       if (exclusions.nonEmpty) {
