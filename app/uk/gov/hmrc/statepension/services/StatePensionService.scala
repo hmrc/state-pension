@@ -47,6 +47,7 @@ trait NispConnection extends StatePensionService {
 
 trait NpsConnection extends StatePensionService {
   def nps: NpsConnector
+  def citizenDetailsService: CitizenDetailsService
   def now: LocalDate
 
   final val FULL_RATE = 155.65
@@ -55,10 +56,12 @@ trait NpsConnection extends StatePensionService {
 
     val summaryF = nps.getSummary
     val liablitiesF = nps.getLiabilities
+    val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator
 
     for(
       summary <- summaryF;
-      liablities <- liablitiesF
+      liablities <- liablitiesF;
+      manualCorrespondence <- manualCorrespondenceF
     ) yield {
 
       val exclusions: List[Exclusion] = new ExclusionService(
@@ -71,7 +74,8 @@ trait NpsConnection extends StatePensionService {
         summary.amounts.pensionEntitlement,
         summary.amounts.startingAmount2016,
         ForecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
-        liablities
+        liablities,
+        manualCorrespondence
       ).getExclusions
 
       if (exclusions.nonEmpty) {
@@ -105,6 +109,7 @@ trait NpsConnection extends StatePensionService {
 object StatePensionServiceViaNisp extends StatePensionService with NispConnection
 object StatePensionService extends StatePensionService with NpsConnection {
   override lazy val nps: NpsConnector = ???
+  override lazy val citizenDetailsService: CitizenDetailsService = ???
   override def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
 }
 

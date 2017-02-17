@@ -22,7 +22,7 @@ import org.joda.time.LocalDate
 import play.Logger
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.NpsLiability
+import uk.gov.hmrc.statepension.domain.nps.{LiabilityType, NpsLiability}
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
 class ExclusionService(dateOfDeath: Option[LocalDate],
@@ -34,12 +34,17 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
                        entitlement: BigDecimal,
                        startingAmount: BigDecimal,
                        calculatedStartingAmount: BigDecimal,
-                       liabilities: List[NpsLiability]) {
+                       liabilities: List[NpsLiability],
+                       manualCorrespondenceOnly: Boolean) {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
   private val checkDead = (exclusionList: List[Exclusion]) =>
     dateOfDeath.fold(exclusionList)(_ => Exclusion.Dead :: exclusionList)
+
+  private val checkManualCorrespondence = (exclusionList: List[Exclusion]) =>
+    if (manualCorrespondenceOnly) Exclusion.ManualCorrespondenceIndicator :: exclusionList
+    else exclusionList
 
   private val checkPostStatePensionAge = (exclusionList: List[Exclusion]) =>
     if (!now.isBefore(pensionDate.minusDays(1))) {
@@ -56,10 +61,8 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
       exclusionList
     }
 
-  final val ISLE_OF_MAN_LIABILITY = 15
-
   private val checkIsleOfMan = (exclusionList: List[Exclusion]) =>
-    if (liabilities.exists(_.liabilityType == ISLE_OF_MAN_LIABILITY)) Exclusion.IsleOfMan :: exclusionList
+    if (liabilities.exists(_.liabilityType == LiabilityType.ISLE_OF_MAN)) Exclusion.IsleOfMan :: exclusionList
     else exclusionList
 
   private val checkMarriedWomensReducedRateElection = (exclusionList: List[Exclusion]) =>
@@ -77,6 +80,12 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
   }
 
   private val exclusions = FunctionHelper.composeAll(List(
-    checkDead, checkPostStatePensionAge, checkAmountDissonance, checkIsleOfMan, checkMarriedWomensReducedRateElection, checkOverseasMaleAutoCredits
+    checkDead,
+    checkManualCorrespondence,
+    checkPostStatePensionAge,
+    checkAmountDissonance,
+    checkIsleOfMan,
+    checkMarriedWomensReducedRateElection,
+    checkOverseasMaleAutoCredits
   ))
 }

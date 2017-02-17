@@ -35,8 +35,9 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               entitlement: BigDecimal = 0,
                               startingAmount: BigDecimal = 0,
                               calculatedStartingAmount: BigDecimal = 0,
-                              liabilities: List[NpsLiability] = List()) =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities)
+                              liabilities: List[NpsLiability] = List(),
+                              manualCorrespondenceOnly: Boolean = false) =
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
 
   "getExclusions" when {
@@ -153,6 +154,18 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "there is manual correspondence only" should {
+      "return List(ManualCorrespondenceIndicator)" in {
+        exclusionServiceBuilder(manualCorrespondenceOnly = true).getExclusions shouldBe List(Exclusion.ManualCorrespondenceIndicator)
+      }
+    }
+
+    "there is not manual correspondence only" should {
+      "return no exclusions" in {
+        exclusionServiceBuilder(manualCorrespondenceOnly = false).getExclusions shouldBe Nil
+      }
+    }
+
     "all the exclusion criteria are met" should {
       "return a sorted list of Dead, PostSPA, MWRRE" in {
         exclusionServiceBuilder(
@@ -165,9 +178,11 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           entitlement = 100,
           startingAmount = 100,
           calculatedStartingAmount = 101,
-          liabilities = List(NpsLiability(15), NpsLiability(15), NpsLiability(1))
+          liabilities = List(NpsLiability(15), NpsLiability(15), NpsLiability(1)),
+          manualCorrespondenceOnly = true
         ).getExclusions shouldBe List(
           Exclusion.Dead,
+          Exclusion.ManualCorrespondenceIndicator,
           Exclusion.PostStatePensionAge,
           Exclusion.AmountDissonance,
           Exclusion.IsleOfMan,
