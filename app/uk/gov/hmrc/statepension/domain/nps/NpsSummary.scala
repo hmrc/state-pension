@@ -29,7 +29,10 @@ case class NpsSummary(
                        finalRelevantStartYear: Int,
                        pensionSharingOrderSERPS: Boolean,
                        dateOfBirth: LocalDate,
-                       amounts: NpsStatePensionAmounts
+                       dateOfDeath: Option[LocalDate] = None,
+                       reducedRateElection: Boolean = false,
+                       countryCode: Int = 0,
+                       amounts: NpsStatePensionAmounts = NpsStatePensionAmounts()
                      ) {
   val finalRelevantYear: String = s"$finalRelevantStartYear-${(finalRelevantStartYear + 1).toString.takeRight(2)}"
   val statePensionAge: Int = new Period(dateOfBirth, statePensionAgeDate).getYears
@@ -48,6 +51,9 @@ object NpsSummary {
       (JsPath \ "final_relevant_year").read[Int] and
       readBooleanFromInt(JsPath \ "pension_share_order_serps") and
       (JsPath \ "date_of_birth").read[LocalDate] and
+      (JsPath \ "date_of_death").readNullable[LocalDate] and
+      readBooleanFromInt(JsPath \ "rre_to_consider") and
+      (JsPath \ "country_code").read[Int] and
       (JsPath \ "npsSpnam").read[NpsStatePensionAmounts]
     ) (NpsSummary.apply _)
 
@@ -58,8 +64,8 @@ case class NpsStatePensionAmounts(
                                    startingAmount2016: BigDecimal = 0,
                                    protectedPayment2016: BigDecimal = 0,
                                    additionalPensionAccruedLastTaxYear: BigDecimal = 0,
-                                   amountA2016: NpsAmountA2016,
-                                   amountB2016: NpsAmountB2016
+                                   amountA2016: NpsAmountA2016 = NpsAmountA2016(),
+                                   amountB2016: NpsAmountB2016 = NpsAmountB2016()
                                  )
 
 object NpsStatePensionAmounts {
