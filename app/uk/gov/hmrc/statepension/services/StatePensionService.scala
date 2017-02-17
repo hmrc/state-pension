@@ -61,7 +61,10 @@ trait NpsConnection extends StatePensionService {
         now,
         reducedRateElection = summary.reducedRateElection,
         isAbroad = Country.isAbroad(summary.countryCode),
-        sex = summary.sex
+        sex = summary.sex,
+        summary.amounts.pensionEntitlement,
+        summary.amounts.startingAmount2016,
+        ForecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent)
       ).getExclusions
 
       if (exclusions.nonEmpty) {

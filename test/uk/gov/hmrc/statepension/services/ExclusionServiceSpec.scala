@@ -30,8 +30,11 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               now: LocalDate = exampleNow,
                               reducedRateElection: Boolean = false,
                               isAbroad: Boolean = false,
-                              sex: String = "F") =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex)
+                              sex: String = "F",
+                              entitlement: BigDecimal = 0,
+                              startingAmount: BigDecimal = 0,
+                              calculatedStartingAmount: BigDecimal = 0) =
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount)
 
 
   "getExclusions" when {
@@ -119,6 +122,19 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "the amount dissonance criteria is met" when  {
+      "the entitlement and calculatedStartingAmount are the same" should {
+        "return no exclusions" in {
+          exclusionServiceBuilder(entitlement = 155.65, startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
+        }
+      }
+      "the entitlement and calculatedStartingAmount are different" should {
+        "return List(AmountDissonance)" in {
+          exclusionServiceBuilder(entitlement = 155.65, startingAmount = 155.65, calculatedStartingAmount = 101).getExclusions shouldBe List(Exclusion.AmountDissonance)
+        }
+      }
+    }
+
     "all the exclusion criteria are met" should {
       "return a sorted list of Dead, PostSPA, MWRRE" in {
         exclusionServiceBuilder(
@@ -127,8 +143,11 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           now = new LocalDate(2000, 1, 1),
           reducedRateElection = true,
           isAbroad = true,
-          sex = "M"
-        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.MarriedWomenReducedRateElection, Exclusion.Abroad)
+          sex = "M",
+          entitlement = 100,
+          startingAmount = 100,
+          calculatedStartingAmount = 101
+        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.AmountDissonance, Exclusion.MarriedWomenReducedRateElection, Exclusion.Abroad)
       }
     }
   }

@@ -282,7 +282,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "when there is an entitlement of 0 it" should {
         when(service.nps.getSummary).thenReturn(Future.successful(
-          regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 0))
+          regularStatement.copy(amounts = NpsStatePensionAmounts())
         ))
 
         val statement = service.getStatement(generateNino()).right.get
@@ -471,6 +471,54 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "return abroad" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.Abroad)
+        }
+      }
+
+      "have a pension age of 61" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
+        }
+      }
+
+      "have a pension date of 2050-7-7" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        }
+      }
+    }
+
+    "the customer has amount dissonance" should  {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "M",
+        qualifyingYears = 35,
+        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1956, 7, 7),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 155.65,
+          startingAmount2016 = 155.65,
+          amountB2016 = NpsAmountB2016(
+            mainComponent = 155.64
+          )
+        )
+      )
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        summary
+      ))
+
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+
+      "return amount dissonance" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
         }
       }
 
