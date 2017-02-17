@@ -30,6 +30,7 @@ case class NpsSummary(
                        pensionSharingOrderSERPS: Boolean,
                        dateOfBirth: LocalDate,
                        dateOfDeath: Option[LocalDate] = None,
+                       reducedRateElection: Boolean = false,
                        amounts: NpsStatePensionAmounts
                      ) {
   val finalRelevantYear: String = s"$finalRelevantStartYear-${(finalRelevantStartYear + 1).toString.takeRight(2)}"
@@ -50,6 +51,7 @@ object NpsSummary {
       readBooleanFromInt(JsPath \ "pension_share_order_serps") and
       (JsPath \ "date_of_birth").read[LocalDate] and
       (JsPath \ "date_of_death").readNullable[LocalDate] and
+      readBooleanFromInt(JsPath \ "rre_to_consider") and
       (JsPath \ "npsSpnam").read[NpsStatePensionAmounts]
     ) (NpsSummary.apply _)
 

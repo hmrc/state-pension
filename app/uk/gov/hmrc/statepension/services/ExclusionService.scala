@@ -19,10 +19,11 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.util.FunctionHelper
 
-class ExclusionService(dateOfDeath: Option[LocalDate], pensionDate: LocalDate, now: LocalDate) {
+class ExclusionService(dateOfDeath: Option[LocalDate], pensionDate: LocalDate, now: LocalDate, reducedRateElection: Boolean) {
 
-  lazy val getExclusions: List[Exclusion] = checkDead(checkPostStatePensionAge(Nil))
+  lazy val getExclusions: List[Exclusion] = exclusions(List())
 
   val checkDead: (List[Exclusion]) => List[Exclusion] = (exclusionList: List[Exclusion]) =>
     dateOfDeath.fold(exclusionList)(_ => Exclusion.Dead :: exclusionList)
@@ -34,4 +35,8 @@ class ExclusionService(dateOfDeath: Option[LocalDate], pensionDate: LocalDate, n
       exclusionList
     }
 
+  val checkMarriedWomensReducedRateElection: (List[Exclusion]) => List[Exclusion] = (exclusionList: List[Exclusion]) =>
+    if (reducedRateElection) Exclusion.MarriedWomenReducedRateElection :: exclusionList else exclusionList
+
+  private val exclusions = FunctionHelper.composeAll(List(checkDead, checkPostStatePensionAge, checkMarriedWomensReducedRateElection))
 }

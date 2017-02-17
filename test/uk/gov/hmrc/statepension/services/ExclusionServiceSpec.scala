@@ -25,8 +25,8 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
   val exampleNow = new LocalDate(2017, 2, 16)
   val examplePensionDate = new LocalDate(2022, 2, 2)
 
-  def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None, pensionDate: LocalDate = examplePensionDate, now: LocalDate = exampleNow) =
-    new ExclusionService(dateOfDeath, pensionDate, now)
+  def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None, pensionDate: LocalDate = examplePensionDate, now: LocalDate = exampleNow, reducedRateElection: Boolean = false) =
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection)
 
 
   "getExclusions" when {
@@ -62,8 +62,27 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "there is reduced rate election" should {
+      "return a List(MarriwedWomensReducedRateElection" in {
+        exclusionServiceBuilder(reducedRateElection = true).getExclusions shouldBe List(Exclusion.MarriedWomenReducedRateElection)
+      }
+    }
+
+    "there is no reduced rate election" should {
+      "return no exclusions" in {
+        exclusionServiceBuilder(reducedRateElection = false).getExclusions shouldBe Nil
+      }
+    }
+
     "all the exclusion criteria are met" should {
-      exclusionServiceBuilder(dateOfDeath = Some(new LocalDate(1999, 12, 31)), pensionDate = new LocalDate(2000, 1, 1), now = new LocalDate(2000, 1, 1)).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge)
+      "return a sorted list of Dead, PostSPA, MWRRE" in {
+        exclusionServiceBuilder(
+          dateOfDeath = Some(new LocalDate(1999, 12, 31)),
+          pensionDate = new LocalDate(2000, 1, 1),
+          now = new LocalDate(2000, 1, 1),
+          reducedRateElection = true
+        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.MarriedWomenReducedRateElection)
+      }
     }
   }
 

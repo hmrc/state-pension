@@ -57,7 +57,8 @@ trait NpsConnection extends StatePensionService {
       val exclusions: List[Exclusion] = new ExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
-        now
+        now,
+        reducedRateElection = summary.reducedRateElection
       ).getExclusions
 
       if (exclusions.nonEmpty) {
