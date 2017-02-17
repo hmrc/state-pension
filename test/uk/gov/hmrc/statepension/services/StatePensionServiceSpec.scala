@@ -388,7 +388,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2016-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
         }
@@ -434,7 +434,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2018-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
@@ -480,7 +480,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2018-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
@@ -528,7 +528,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2018-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
