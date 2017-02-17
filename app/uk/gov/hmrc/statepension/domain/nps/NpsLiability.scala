@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.connectors
+package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.statepension.domain.nps.{NpsLiability, NpsSummary}
+import play.api.libs.json._
 
-import scala.concurrent.Future
+case class NpsLiability(liabilityType: Int)
 
-trait NpsConnector {
-    def getSummary: Future[NpsSummary]
-    def getLiabilities: Future[List[NpsLiability]]
+object NpsLiability {
+  implicit val reads: Reads[NpsLiability] = (__ \ "liability_type").read[Int].map(NpsLiability.apply)
 }

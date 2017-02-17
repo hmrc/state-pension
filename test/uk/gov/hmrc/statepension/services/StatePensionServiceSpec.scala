@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.domain.nps.{NpsAmountA2016, NpsAmountB2016, NpsStatePensionAmounts, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 
 import scala.concurrent.Future
@@ -150,6 +150,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       when(service.nps.getSummary).thenReturn(Future.successful(
         regularStatement
+      ))
+
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -328,6 +332,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
       "return dead exclusion" in {
@@ -372,6 +380,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       when(service.nps.getSummary).thenReturn(Future.successful(
         summary
+      ))
+
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -420,6 +432,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+
+
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
       "return post state pension age exclusion" in {
@@ -464,6 +481,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       when(service.nps.getSummary).thenReturn(Future.successful(
         summary
+      ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -513,12 +533,61 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       when(service.nps.getSummary).thenReturn(Future.successful(
         summary
       ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
       "return amount dissonance" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
+        }
+      }
+
+      "have a pension age of 61" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
+        }
+      }
+
+      "have a pension date of 2018-1-1" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        }
+      }
+    }
+
+    "the customer has contributed national insurance in the isle of man" should  {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "M",
+        qualifyingYears = 35,
+        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1956, 7, 7)
+      )
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        summary
+      ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List(NpsLiability(15))
+      ))
+
+
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+
+      "return isle of man exclusion" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.IsleOfMan)
         }
       }
 

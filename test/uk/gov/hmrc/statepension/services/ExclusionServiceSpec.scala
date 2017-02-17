@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.NpsLiability
 
 class ExclusionServiceSpec extends StatePensionUnitSpec {
 
@@ -33,8 +34,9 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               sex: String = "F",
                               entitlement: BigDecimal = 0,
                               startingAmount: BigDecimal = 0,
-                              calculatedStartingAmount: BigDecimal = 0) =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount)
+                              calculatedStartingAmount: BigDecimal = 0,
+                              liabilities: List[NpsLiability] = List()) =
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities)
 
 
   "getExclusions" when {
@@ -135,6 +137,22 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "the isle of man criteria is met" when {
+      "there is no liabilities" should  {
+        "return no exclusions" in {
+          exclusionServiceBuilder(liabilities = List()).getExclusions shouldBe Nil
+        }
+      }
+      "there is some liabilities" should {
+        "return List(IsleOfMan) if the list includes liability type 15" in {
+          exclusionServiceBuilder(liabilities = List(NpsLiability(15), NpsLiability(16))).getExclusions shouldBe List(Exclusion.IsleOfMan)
+        }
+        "return no exclusions if the list does not include liability type 15" in {
+          exclusionServiceBuilder(liabilities = List(NpsLiability(17), NpsLiability(16))).getExclusions shouldBe Nil
+        }
+      }
+    }
+
     "all the exclusion criteria are met" should {
       "return a sorted list of Dead, PostSPA, MWRRE" in {
         exclusionServiceBuilder(
@@ -146,8 +164,16 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           sex = "M",
           entitlement = 100,
           startingAmount = 100,
-          calculatedStartingAmount = 101
-        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.AmountDissonance, Exclusion.MarriedWomenReducedRateElection, Exclusion.Abroad)
+          calculatedStartingAmount = 101,
+          liabilities = List(NpsLiability(15), NpsLiability(15), NpsLiability(1))
+        ).getExclusions shouldBe List(
+          Exclusion.Dead,
+          Exclusion.PostStatePensionAge,
+          Exclusion.AmountDissonance,
+          Exclusion.IsleOfMan,
+          Exclusion.MarriedWomenReducedRateElection,
+          Exclusion.Abroad
+        )
       }
     }
   }

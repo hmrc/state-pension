@@ -53,7 +53,13 @@ trait NpsConnection extends StatePensionService {
 
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
-    nps.getSummary map { summary =>
+    val summaryF = nps.getSummary
+    val liablitiesF = nps.getLiabilities
+
+    for(
+      summary <- summaryF;
+      liablities <- liablitiesF
+    ) yield {
 
       val exclusions: List[Exclusion] = new ExclusionService(
         dateOfDeath = summary.dateOfDeath,
@@ -64,7 +70,8 @@ trait NpsConnection extends StatePensionService {
         sex = summary.sex,
         summary.amounts.pensionEntitlement,
         summary.amounts.startingAmount2016,
-        ForecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent)
+        ForecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
+        liablities
       ).getExclusions
 
       if (exclusions.nonEmpty) {
@@ -91,10 +98,7 @@ trait NpsConnection extends StatePensionService {
           currentFullWeeklyPensionAmount = FULL_RATE
         ))
       }
-
     }
-
-
   }
 }
 

@@ -22,6 +22,7 @@ import org.joda.time.LocalDate
 import play.Logger
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.NpsLiability
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
 class ExclusionService(dateOfDeath: Option[LocalDate],
@@ -32,7 +33,8 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
                        sex: String,
                        entitlement: BigDecimal,
                        startingAmount: BigDecimal,
-                       calculatedStartingAmount: BigDecimal) {
+                       calculatedStartingAmount: BigDecimal,
+                       liabilities: List[NpsLiability]) {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
@@ -54,6 +56,12 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
       exclusionList
     }
 
+  final val ISLE_OF_MAN_LIABILITY = 15
+
+  private val checkIsleOfMan = (exclusionList: List[Exclusion]) =>
+    if (liabilities.exists(_.liabilityType == ISLE_OF_MAN_LIABILITY)) Exclusion.IsleOfMan :: exclusionList
+    else exclusionList
+
   private val checkMarriedWomensReducedRateElection = (exclusionList: List[Exclusion]) =>
     if (reducedRateElection) Exclusion.MarriedWomenReducedRateElection :: exclusionList else exclusionList
 
@@ -69,6 +77,6 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
   }
 
   private val exclusions = FunctionHelper.composeAll(List(
-    checkDead, checkPostStatePensionAge, checkAmountDissonance, checkMarriedWomensReducedRateElection, checkOverseasMaleAutoCredits
+    checkDead, checkPostStatePensionAge, checkAmountDissonance, checkIsleOfMan, checkMarriedWomensReducedRateElection, checkOverseasMaleAutoCredits
   ))
 }
