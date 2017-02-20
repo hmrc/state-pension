@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.statepension.services
 
+import java.util.function.BiFunction
+
 import org.joda.time.LocalDate
+import play.Logger
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.{LiabilityType, NpsLiability}
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
 class ExclusionService(dateOfDeath: Option[LocalDate],
@@ -26,12 +30,21 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
                        now: LocalDate,
                        reducedRateElection: Boolean,
                        isAbroad: Boolean,
-                       sex: String) {
+                       sex: String,
+                       entitlement: BigDecimal,
+                       startingAmount: BigDecimal,
+                       calculatedStartingAmount: BigDecimal,
+                       liabilities: List[NpsLiability],
+                       manualCorrespondenceOnly: Boolean) {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
   private val checkDead = (exclusionList: List[Exclusion]) =>
     dateOfDeath.fold(exclusionList)(_ => Exclusion.Dead :: exclusionList)
+
+  private val checkManualCorrespondence = (exclusionList: List[Exclusion]) =>
+    if (manualCorrespondenceOnly) Exclusion.ManualCorrespondenceIndicator :: exclusionList
+    else exclusionList
 
   private val checkPostStatePensionAge = (exclusionList: List[Exclusion]) =>
     if (!now.isBefore(pensionDate.minusDays(1))) {
@@ -39,6 +52,18 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
     } else {
       exclusionList
     }
+
+  private val checkAmountDissonance = (exclusionList: List[Exclusion]) =>
+    if (entitlement != calculatedStartingAmount) {
+      Logger.warn(s"Dissonance Found!: Entitlement - $entitlement Starting - $startingAmount Components - $calculatedStartingAmount")
+      Exclusion.AmountDissonance :: exclusionList
+    } else {
+      exclusionList
+    }
+
+  private val checkIsleOfMan = (exclusionList: List[Exclusion]) =>
+    if (liabilities.exists(_.liabilityType == LiabilityType.ISLE_OF_MAN)) Exclusion.IsleOfMan :: exclusionList
+    else exclusionList
 
   private val checkMarriedWomensReducedRateElection = (exclusionList: List[Exclusion]) =>
     if (reducedRateElection) Exclusion.MarriedWomenReducedRateElection :: exclusionList else exclusionList
@@ -55,6 +80,12 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
   }
 
   private val exclusions = FunctionHelper.composeAll(List(
-    checkDead, checkPostStatePensionAge, checkMarriedWomensReducedRateElection, checkOverseasMaleAutoCredits
+    checkDead,
+    checkManualCorrespondence,
+    checkPostStatePensionAge,
+    checkAmountDissonance,
+    checkIsleOfMan,
+    checkMarriedWomensReducedRateElection,
+    checkOverseasMaleAutoCredits
   ))
 }

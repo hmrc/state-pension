@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.connectors
+package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.statepension.domain.nps.{NpsLiability, NpsSummary}
-
-import scala.concurrent.Future
-
-trait NpsConnector {
-    def getSummary: Future[NpsSummary]
-    def getLiabilities: Future[List[NpsLiability]]
+object LiabilityType {
+  final val ISLE_OF_MAN = 15
 }

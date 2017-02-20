@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.NpsLiability
 
 class ExclusionServiceSpec extends StatePensionUnitSpec {
 
@@ -30,8 +31,13 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               now: LocalDate = exampleNow,
                               reducedRateElection: Boolean = false,
                               isAbroad: Boolean = false,
-                              sex: String = "F") =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex)
+                              sex: String = "F",
+                              entitlement: BigDecimal = 0,
+                              startingAmount: BigDecimal = 0,
+                              calculatedStartingAmount: BigDecimal = 0,
+                              liabilities: List[NpsLiability] = List(),
+                              manualCorrespondenceOnly: Boolean = false) =
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
 
   "getExclusions" when {
@@ -119,6 +125,47 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "the amount dissonance criteria is met" when  {
+      "the entitlement and calculatedStartingAmount are the same" should {
+        "return no exclusions" in {
+          exclusionServiceBuilder(entitlement = 155.65, startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
+        }
+      }
+      "the entitlement and calculatedStartingAmount are different" should {
+        "return List(AmountDissonance)" in {
+          exclusionServiceBuilder(entitlement = 155.65, startingAmount = 155.65, calculatedStartingAmount = 101).getExclusions shouldBe List(Exclusion.AmountDissonance)
+        }
+      }
+    }
+
+    "the isle of man criteria is met" when {
+      "there is no liabilities" should  {
+        "return no exclusions" in {
+          exclusionServiceBuilder(liabilities = List()).getExclusions shouldBe Nil
+        }
+      }
+      "there is some liabilities" should {
+        "return List(IsleOfMan) if the list includes liability type 15" in {
+          exclusionServiceBuilder(liabilities = List(NpsLiability(15), NpsLiability(16))).getExclusions shouldBe List(Exclusion.IsleOfMan)
+        }
+        "return no exclusions if the list does not include liability type 15" in {
+          exclusionServiceBuilder(liabilities = List(NpsLiability(17), NpsLiability(16))).getExclusions shouldBe Nil
+        }
+      }
+    }
+
+    "there is manual correspondence only" should {
+      "return List(ManualCorrespondenceIndicator)" in {
+        exclusionServiceBuilder(manualCorrespondenceOnly = true).getExclusions shouldBe List(Exclusion.ManualCorrespondenceIndicator)
+      }
+    }
+
+    "there is not manual correspondence only" should {
+      "return no exclusions" in {
+        exclusionServiceBuilder(manualCorrespondenceOnly = false).getExclusions shouldBe Nil
+      }
+    }
+
     "all the exclusion criteria are met" should {
       "return a sorted list of Dead, PostSPA, MWRRE" in {
         exclusionServiceBuilder(
@@ -127,8 +174,21 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           now = new LocalDate(2000, 1, 1),
           reducedRateElection = true,
           isAbroad = true,
-          sex = "M"
-        ).getExclusions shouldBe List(Exclusion.Dead, Exclusion.PostStatePensionAge, Exclusion.MarriedWomenReducedRateElection, Exclusion.Abroad)
+          sex = "M",
+          entitlement = 100,
+          startingAmount = 100,
+          calculatedStartingAmount = 101,
+          liabilities = List(NpsLiability(15), NpsLiability(15), NpsLiability(1)),
+          manualCorrespondenceOnly = true
+        ).getExclusions shouldBe List(
+          Exclusion.Dead,
+          Exclusion.ManualCorrespondenceIndicator,
+          Exclusion.PostStatePensionAge,
+          Exclusion.AmountDissonance,
+          Exclusion.IsleOfMan,
+          Exclusion.MarriedWomenReducedRateElection,
+          Exclusion.Abroad
+        )
       }
     }
   }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.connectors
+package uk.gov.hmrc.statepension.services
 
-import uk.gov.hmrc.statepension.domain.nps.{NpsLiability, NpsSummary}
+object ForecastingService {
 
-import scala.concurrent.Future
+  def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
+    amountA2016.max(amountB2016)
+  }
 
-trait NpsConnector {
-    def getSummary: Future[NpsSummary]
-    def getLiabilities: Future[List[NpsLiability]]
 }

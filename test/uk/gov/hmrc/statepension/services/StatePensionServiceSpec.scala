@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.domain.nps.{NpsAmountA2016, NpsAmountB2016, NpsStatePensionAmounts, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 
 import scala.concurrent.Future
@@ -110,11 +110,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
   "StatePensionService with a HOD Connection" when {
 
+    val mockCitizenDetails = mock[CitizenDetailsService]
+    when(mockCitizenDetails.checkManualCorrespondenceIndicator).thenReturn(Future.successful(false))
+
     "there is a regular statement" should {
 
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
       }
 
       val regularStatement = NpsSummary(
@@ -150,6 +154,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       when(service.nps.getSummary).thenReturn(Future.successful(
         regularStatement
+      ))
+
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -282,7 +290,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "when there is an entitlement of 0 it" should {
         when(service.nps.getSummary).thenReturn(Future.successful(
-          regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 0))
+          regularStatement.copy(amounts = NpsStatePensionAmounts())
         ))
 
         val statement = service.getStatement(generateNino()).right.get
@@ -307,6 +315,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
       }
 
       val summary = NpsSummary(
@@ -326,6 +335,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       when(service.nps.getSummary).thenReturn(Future.successful(
         summary
+      ))
+
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -353,6 +366,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
       }
 
       val summary = NpsSummary(
@@ -374,6 +388,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
       "return post state pension age exclusion" in {
@@ -388,7 +406,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2016-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
         }
@@ -399,6 +417,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
       }
 
       val summary = NpsSummary(
@@ -420,6 +439,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+
+
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
       "return post state pension age exclusion" in {
@@ -434,7 +458,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2018-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
@@ -445,6 +469,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
       }
 
       val summary = NpsSummary(
@@ -465,6 +490,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       when(service.nps.getSummary).thenReturn(Future.successful(
         summary
       ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
@@ -480,7 +508,152 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "have a pension date of 2050-7-7" in {
+      "have a pension date of 2018-1-1" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        }
+      }
+    }
+
+    "the customer has amount dissonance" should  {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "M",
+        qualifyingYears = 35,
+        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1956, 7, 7),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 155.65,
+          startingAmount2016 = 155.65,
+          amountB2016 = NpsAmountB2016(
+            mainComponent = 155.64
+          )
+        )
+      )
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        summary
+      ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+
+
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+
+      "return amount dissonance" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
+        }
+      }
+
+      "have a pension age of 61" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
+        }
+      }
+
+      "have a pension date of 2018-1-1" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        }
+      }
+    }
+
+    "the customer has contributed national insurance in the isle of man" should  {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "M",
+        qualifyingYears = 35,
+        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1956, 7, 7)
+      )
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        summary
+      ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List(NpsLiability(15))
+      ))
+
+
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+
+      "return isle of man exclusion" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.IsleOfMan)
+        }
+      }
+
+      "have a pension age of 61" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
+        }
+      }
+
+      "have a pension date of 2018-1-1" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        }
+      }
+    }
+
+    "the customer has a manual correspondence indicator" should  {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "M",
+        qualifyingYears = 35,
+        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1956, 7, 7)
+      )
+
+      when(service.nps.getSummary).thenReturn(Future.successful(
+        summary
+      ))
+      when(service.nps.getLiabilities).thenReturn(Future.successful(
+        List()
+      ))
+      when(service.citizenDetailsService.checkManualCorrespondenceIndicator).thenReturn(Future.successful(true))
+
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+
+      "return isle of man exclusion" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
+        }
+      }
+
+      "have a pension age of 61" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
+        }
+      }
+
+      "have a pension date of 2018-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
