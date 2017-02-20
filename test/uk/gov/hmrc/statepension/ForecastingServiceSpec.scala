@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.statepension
 
+import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.services.ForecastingService
 
 class ForecastingServiceSpec extends StatePensionUnitSpec {
@@ -39,6 +40,101 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+  }
+
+  "calculateForecastAmount" when {
+
+    def forecastCalculation(earningsIncludedUpTo: LocalDate = new LocalDate(2016, 4, 5),
+                            finalRelevantStartYear: Int = 2020,
+                            currentAmount: BigDecimal = 125,
+                            qualifyingYears: Int = 30) = ForecastingService.calculateForecastAmount(
+      earningsIncludedUpTo,
+      finalRelevantStartYear,
+      currentAmount,
+      qualifyingYears
+    )
+
+    "The earningsIncludedUpTo end tax year is less than 2016" should {
+      "throw a RunTime Exception" in {
+        val exception = intercept[IllegalArgumentException] {
+          forecastCalculation(earningsIncludedUpTo = new LocalDate(2015, 4, 5))
+        }
+        exception.getMessage shouldBe "requirement failed: 2015-16 tax year has not been posted"
+      }
+    }
+
+    "The currentAmount is already the maximum or higher" should {
+      "return the maximum" in {
+        forecastCalculation(currentAmount = 155.65) shouldBe 155.65
+      }
+      "return the value which is higher than the maximum" in {
+        forecastCalculation(currentAmount = 155.66) shouldBe 155.66
+      }
+    }
+
+    "The user cannot achieve more than 10 qualifying years" should {
+      "return 0 for QYs = 1, Future Years = 2" in {
+        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2017) shouldBe 0
+      }
+      "return 0 for QYs = 1, Future Years = 8" in {
+        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2023) shouldBe 0
+      }
+      "return a forecast for QYs = 1, Future Years = 9" in {
+        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2024) > 0 shouldBe true
+      }
+    }
+
+    "There is no more years to contribute" should {
+      "return an un-modified current amount" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123, 30) shouldBe 123
+      }
+    }
+
+    "There is one year to contribute" should {
+      "return a forecast with a difference of (max / amount) rounded (half-up)" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123, 30) shouldBe 127.45
+      }
+    }
+
+    "There is two years to contribute" should {
+      "return a forecast with a difference of (max / amount) * 2 rounded (half-up)" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123, 30) shouldBe 131.89
+      }
+    }
+
+    "There is more years to contribute than required" should  {
+      "cap the amount at the maximum" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30) shouldBe 155.65
+      }
+    }
+  }
+
+  "yearsToContribute" when {
+    "The earningsIncludedUpTo taxYear is the same as the FRY" should {
+      "return 0" in {
+        ForecastingService.yearsLeftToContribute(new LocalDate(2017, 4, 5), 2016) shouldBe 0
+      }
+    }
+
+    "The earningsIncludedUpTo taxYear is the after as the FRY" should {
+      "return 0" in {
+        ForecastingService.yearsLeftToContribute(new LocalDate(2017, 4, 6), 2016) shouldBe 0
+      }
+    }
+
+    "The earningsIncludedUpTo taxYear is the before the FRY" should {
+      "return 1 for one year before" in {
+        ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2016) shouldBe 1
+      }
+
+      "return 2 for two year before" in {
+        ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2017) shouldBe 2
+      }
+
+      "return 10 for two year before" in {
+        ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2025) shouldBe 10
+      }
+    }
   }
 
 }

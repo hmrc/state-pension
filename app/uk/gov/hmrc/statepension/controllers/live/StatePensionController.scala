@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.controllers.live
 
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
 import uk.gov.hmrc.statepension.controllers.StatePensionController

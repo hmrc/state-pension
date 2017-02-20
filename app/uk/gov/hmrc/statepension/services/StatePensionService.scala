@@ -85,12 +85,21 @@ trait NpsConnection extends StatePensionService {
           pensionDate = summary.statePensionAgeDate
         ))
       } else {
+
+
+        val forecast = ForecastingService.calculateForecastAmount(
+          summary.earningsIncludedUpTo,
+          summary.finalRelevantStartYear,
+          summary.amounts.pensionEntitlement,
+          summary.qualifyingYears
+        )
+
         Right(StatePension(
           earningsIncludedUpTo = summary.earningsIncludedUpTo,
           amounts = StatePensionAmounts(
             summary.amounts.protectedPayment2016 > 0,
             StatePensionAmount(None, None, summary.amounts.pensionEntitlement),
-            StatePensionAmount(None, None, 0),
+            StatePensionAmount(None, None, forecast),
             StatePensionAmount(Some(0), None, 0),
             StatePensionAmount(Some(0), Some(0), summary.amounts.amountB2016.rebateDerivedAmount)
           ),
