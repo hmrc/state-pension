@@ -267,12 +267,27 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       }
 
-
       "when there is an entitlement of 161.18 it" should {
         when(service.nps.getSummary).thenReturn(Future.successful(
           regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
         ))
 
+        val statement = service.getStatement(generateNino()).right.get
+
+        "return a weekly current amount of 161.18" in {
+          statement.amounts.current.weeklyAmount shouldBe 161.18
+        }
+
+        "return a monthly current amount of 161.18" in {
+          statement.amounts.current.monthlyAmount shouldBe 700.85
+        }
+
+        "return an annual current amount of 161.18" in {
+          service.getStatement(generateNino()).right.get.amounts.current.annualAmount shouldBe 8410.14
+        }
+      }
+
+      "a forecast of the regular statement" should  {
         val statement = service.getStatement(generateNino()).right.get
 
         "return a weekly current amount of 161.18" in {
@@ -306,6 +321,51 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         "return an annual current amount of 0" in {
           statement.amounts.current.annualAmount shouldBe 0
         }
+      }
+
+      "return a forecast amount" when {
+        "there is an improvement" should {
+          val amounts = NpsStatePensionAmounts(
+            pensionEntitlement = 121.41,
+            startingAmount2016 = 121.41,
+            protectedPayment2016 = 5.53,
+            additionalPensionAccruedLastTaxYear = 2.36,
+            NpsAmountA2016(
+              basicPension = 79.53,
+              pre97AP = 17.79,
+              post97AP = 6.03,
+              post02AP = 15.4,
+              pre88GMP = 0,
+              post88GMP = 0,
+              pre88COD = 0,
+              post88COD = 0,
+              grb = 2.66
+            ),
+            NpsAmountB2016(
+              mainComponent = 88.94,
+              rebateDerivedAmount = 0
+            )
+          )
+
+          when(service.nps.getSummary).thenReturn(Future.successful(
+            regularStatement.copy(amounts = amounts).copy(qualifyingYears = 20)
+          ))
+
+          val statement = service.getStatement(generateNino()).right.get
+
+          "return a weekly forecast amount of 134.75" in {
+            statement.amounts.forecast.weeklyAmount shouldBe 134.75
+          }
+
+          "return a monthly forecast amount of 585.92" in {
+            statement.amounts.forecast.monthlyAmount shouldBe 585.92
+          }
+
+          "return an annual forecast amount of 7031.06" in {
+            statement.amounts.forecast.annualAmount shouldBe 7031.06
+          }
+        }
+
       }
 
     }
