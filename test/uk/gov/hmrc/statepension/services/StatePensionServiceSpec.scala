@@ -291,15 +291,19 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         val statement = service.getStatement(generateNino()).right.get
 
         "return a weekly current amount of 161.18" in {
-          statement.amounts.current.weeklyAmount shouldBe 161.18
+          statement.amounts.forecast.weeklyAmount shouldBe 161.18
         }
 
         "return a monthly current amount of 161.18" in {
-          statement.amounts.current.monthlyAmount shouldBe 700.85
+          statement.amounts.forecast.monthlyAmount shouldBe 700.85
         }
 
         "return an annual current amount of 161.18" in {
-          service.getStatement(generateNino()).right.get.amounts.current.annualAmount shouldBe 8410.14
+          statement.amounts.forecast.annualAmount shouldBe 8410.14
+        }
+
+        "return years to work 0 as they have reached" in {
+          statement.amounts.forecast.yearsToWork.get shouldBe 0
         }
       }
 
@@ -363,6 +367,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
           "return an annual forecast amount of 7031.06" in {
             statement.amounts.forecast.annualAmount shouldBe 7031.06
+          }
+
+          "return years to work of 3 and that is how long is left" in {
+            statement.amounts.forecast.yearsToWork.get shouldBe 3
           }
         }
 

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.statepension
 
 import org.joda.time.LocalDate
+import uk.gov.hmrc.statepension.domain.Forecast
 import uk.gov.hmrc.statepension.services.ForecastingService
 
 class ForecastingServiceSpec extends StatePensionUnitSpec {
@@ -63,48 +64,74 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
       }
     }
 
-    "The currentAmount is already the maximum or higher" should {
+    "The currentAmount is already the maximum" should {
       "return the maximum" in {
-        forecastCalculation(currentAmount = 155.65) shouldBe 155.65
+        forecastCalculation(currentAmount = 155.65).amount shouldBe 155.65
       }
+
+      "return no years to work" in {
+        forecastCalculation(currentAmount = 155.65).yearsToWork shouldBe 0
+      }
+
+    }
+
+    "The currentAmount is higher than the maximum" should {
       "return the value which is higher than the maximum" in {
-        forecastCalculation(currentAmount = 155.66) shouldBe 155.66
+        forecastCalculation(currentAmount = 155.66).amount shouldBe 155.66
+      }
+
+      "return no years to work" in {
+        forecastCalculation(currentAmount = 155.66).yearsToWork shouldBe 0
       }
     }
 
     "The user cannot achieve more than 10 qualifying years" should {
-      "return 0 for QYs = 1, Future Years = 2" in {
-        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2017) shouldBe 0
+      "return (0,0) for QYs = 1, Future Years = 2" in {
+        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2017) shouldBe Forecast(0, 0)
       }
-      "return 0 for QYs = 1, Future Years = 8" in {
-        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2023) shouldBe 0
+      "return (0,0) for QYs = 1, Future Years = 8" in {
+        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2023) shouldBe Forecast(0, 0)
       }
-      "return a forecast for QYs = 1, Future Years = 9" in {
-        forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2024) > 0 shouldBe true
+      "return a forecast and years to work for QYs = 1, Future Years = 9" in {
+        val forecast = forecastCalculation(qualifyingYears = 1, earningsIncludedUpTo = new LocalDate(2016, 4, 5), finalRelevantStartYear = 2024)
+        forecast.amount > 0 shouldBe true
+        forecast.yearsToWork > 0 shouldBe true
       }
     }
 
     "There is no more years to contribute" should {
       "return an un-modified current amount" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123, 30) shouldBe 123
+        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123, 30).amount shouldBe 123
+      }
+      "return no years to work" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123, 30).yearsToWork shouldBe 0
       }
     }
 
     "There is one year to contribute" should {
       "return a forecast with a difference of (max / amount) rounded (half-up)" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123, 30) shouldBe 127.45
+        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123, 30).amount shouldBe 127.45
+      }
+      "return one year to work" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123, 30).yearsToWork shouldBe 1
       }
     }
 
     "There is two years to contribute" should {
       "return a forecast with a difference of (max / amount) * 2 rounded (half-up)" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123, 30) shouldBe 131.89
+        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123, 30).amount shouldBe 131.89
+      }
+      "return two years to work" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123, 30).yearsToWork shouldBe 2
       }
     }
 
     "There is more years to contribute than required" should  {
       "cap the amount at the maximum" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30) shouldBe 155.65
+        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).amount shouldBe 155.65
+      }
+      "years to work should be the number of years required and no more 155.65 - 123 / (155.65/35) = 7.34 rounded up to int = 8" in {
+        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).yearsToWork shouldBe 8
       }
     }
   }
