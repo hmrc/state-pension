@@ -17,6 +17,7 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import uk.gov.hmrc.statepension.domain.Forecast
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.math.BigDecimal.RoundingMode
@@ -29,14 +30,23 @@ object ForecastingService {
     amountA2016.max(amountB2016)
   }
 
-  def calculateForecastAmount(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, currentAmount: BigDecimal, qualifyingYears: Int): BigDecimal = {
+  def calculateForecastAmount(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, currentAmount: BigDecimal, qualifyingYears: Int): Forecast = {
     require(earningsIncludedUpTo.getYear >= 2016, "2015-16 tax year has not been posted")
 
     val yearsLeft = yearsLeftToContribute(earningsIncludedUpTo, finalRelevantStartYear)
 
-    if(currentAmount >= RateService.MAX_AMOUNT) currentAmount
-    else if ((yearsLeft + qualifyingYears) < MINIMUM_QUALIFYING_YEARS) 0
-    else (currentAmount + RateService.spAmountPerYear * yearsLeft).setScale(2, RoundingMode.HALF_UP).min(RateService.MAX_AMOUNT)
+    if(currentAmount >= RateService.MAX_AMOUNT) {
+      Forecast(currentAmount, yearsToWork = 0)
+    }
+    else if ((yearsLeft + qualifyingYears) < MINIMUM_QUALIFYING_YEARS) {
+      Forecast(amount = 0, yearsToWork = 0)
+    }
+    else {
+      val forecastAmount = (currentAmount + RateService.spAmountPerYear * yearsLeft).setScale(2, RoundingMode.HALF_UP).min(RateService.MAX_AMOUNT)
+      val difference = forecastAmount - currentAmount
+      val yearsNeeded: Int = (difference / RateService.spAmountPerYear).setScale(0, RoundingMode.CEILING).toInt
+      Forecast(forecastAmount, yearsNeeded.min(yearsLeft))
+    }
   }
 
   def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int  = {
