@@ -23,5 +23,5 @@ import scala.concurrent.Future
 trait NpsConnector {
     def getSummary: Future[NpsSummary]
     def getLiabilities: Future[List[NpsLiability]]
-    def getNIRecord: Future[List[NpsNIRecord]]
+    def getNIRecord: Future[NpsNIRecord]
 }

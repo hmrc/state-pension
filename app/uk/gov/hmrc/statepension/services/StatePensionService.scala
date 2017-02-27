@@ -57,10 +57,12 @@ trait NpsConnection extends StatePensionService {
     val summaryF = nps.getSummary
     val liablitiesF = nps.getLiabilities
     val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator
+    val niRecordF = nps.getNIRecord
 
     for(
       summary <- summaryF;
       liablities <- liablitiesF;
+      niRecord <- niRecordF;
       manualCorrespondence <- manualCorrespondenceF
     ) yield {
 
@@ -98,7 +100,7 @@ trait NpsConnection extends StatePensionService {
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
           summary.qualifyingYears,
-          payableGaps = 0,
+          payableGaps = niRecord.payableGaps,
           additionalPension = summary.amounts.amountA2016.totalAP,
           rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
         )

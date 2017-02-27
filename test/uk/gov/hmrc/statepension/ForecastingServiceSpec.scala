@@ -175,15 +175,43 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     }
 
     "there is one payable gap and zero years to contribute" when {
-      "when there is less than 30 qualifying years" should {
+      "there is less than 30 qualifying years" should {
         "return amount + 1 year of basic pension (119.3 /30)" in {
           maximumCalculation(new LocalDate(2016, 4, 5), 2015, 29, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.30
         }
       }
-
-      "when there is 30 qualifying years" should {
+      "there is 30 qualifying years" should {
         "return the current amount" in {
           maximumCalculation(new LocalDate(2016, 4, 5), 2015, 30, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.30
+        }
+      }
+      "there is 28 qualifying years" should {
+        "return the amount + 1 year of basic pension (119.3 /30) " in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2015, 28, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 115.32
+        }
+      }
+    }
+
+    "there is one payable gap and one year to contribute " when {
+      "there is 29 qualifying years" should {
+        "return amount + 1 year of basic pension (119.3 /30) + 1 one year of state pension (155.65/35)" in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 29, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 123.75
+        }
+      }
+      "there is 30 qualifying years" should {
+        "return the current amount + 1 one year of state pension (155.65/35)" in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 30, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 123.75
+        }
+      }
+      "there is 28 qualifying years" should {
+        "return the amount + 1 year of basic pension (119.3 /30) + 1 one year of state pension (155.65/35) " in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 28, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.77
+        }
+      }
+
+      "there is 30 qualifying years and no RDA" should {
+        "return 32 qualifying years of new state pension" in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 30, payableGaps = 1) shouldBe 142.31
         }
       }
     }
