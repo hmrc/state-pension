@@ -94,14 +94,23 @@ trait NpsConnection extends StatePensionService {
           summary.qualifyingYears
         )
 
+        val personalMaximum = ForecastingService.calculatePersonalMaximum(
+          summary.earningsIncludedUpTo,
+          summary.finalRelevantStartYear,
+          summary.qualifyingYears,
+          payableGaps = 0,
+          additionalPension = summary.amounts.amountA2016.totalAP,
+          rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
+        )
+
         Right(StatePension(
           earningsIncludedUpTo = summary.earningsIncludedUpTo,
           amounts = StatePensionAmounts(
             summary.amounts.protectedPayment2016 > 0,
             StatePensionAmount(None, None, summary.amounts.pensionEntitlement),
             StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
-            StatePensionAmount(Some(0), None, 0),
-            StatePensionAmount(Some(0), Some(0), summary.amounts.amountB2016.rebateDerivedAmount)
+            StatePensionAmount(Some(0), None, personalMaximum),
+            StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount)
           ),
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,

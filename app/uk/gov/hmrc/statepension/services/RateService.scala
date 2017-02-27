@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.statepension.services
 
+import scala.math.BigDecimal.RoundingMode
+
 object RateService {
 
   final val MAX_AMOUNT: BigDecimal = 155.65
@@ -28,6 +30,19 @@ object RateService {
       MAX_AMOUNT
     } else {
       spAmountPerYear * totalQualifyingYears
+    }
+  }
+
+  final val MAX_BASIC_AMOUNT: BigDecimal = 119.30
+  final val MAX_BASIC_YEARS: Int = 30
+
+  val basicSPAmountPerYear: BigDecimal = MAX_BASIC_AMOUNT / MAX_BASIC_YEARS
+
+  def getBasicSPAmount(qualifyingYears: Int): BigDecimal = {
+    if (qualifyingYears > MAX_BASIC_YEARS) {
+      MAX_BASIC_AMOUNT
+    } else {
+      (basicSPAmountPerYear * qualifyingYears).setScale(2, RoundingMode.HALF_UP)
     }
   }
 

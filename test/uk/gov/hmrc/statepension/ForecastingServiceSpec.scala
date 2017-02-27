@@ -126,12 +126,65 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
       }
     }
 
-    "There is more years to contribute than required" should  {
+    "There is more years to contribute than required" should {
       "cap the amount at the maximum" in {
         forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).amount shouldBe 155.65
       }
       "years to work should be the number of years required and no more 155.65 - 123 / (155.65/35) = 7.34 rounded up to int = 8" in {
         forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).yearsToWork shouldBe 8
+      }
+    }
+  }
+
+  "calculatePersonalMaxuimum" when {
+    def maximumCalculation(earningsIncludedUpTo: LocalDate = new LocalDate(2016, 4, 5),
+                           finalRelevantStartYear: Int = 2020,
+                           qualifyingYears: Int = 30,
+                           payableGaps: Int = 0,
+                           additionalPension: BigDecimal = 0,
+                           rebateDerivedAmount: BigDecimal = 0
+                          ) = ForecastingService.calculatePersonalMaximum(
+      earningsIncludedUpTo,
+      finalRelevantStartYear,
+      qualifyingYears,
+      payableGaps,
+      additionalPension,
+      rebateDerivedAmount
+    )
+
+    "when there is no gaps it" should {
+      "perform the same as the forecast calculation" should {
+        "There is no more years to contribute" should {
+          "return the current amount" in {
+            maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100) shouldBe 123
+          }
+        }
+
+        "There is two years to contribute" should {
+          "return a forecast with a difference of (max / amount) * 2 rounded (half-up)" in {
+            maximumCalculation(new LocalDate(2016, 4, 5), 2017,  qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100) shouldBe 131.89
+          }
+        }
+
+        "There is more years to contribute than required" should {
+          "cap the amount at the maximum" in {
+            maximumCalculation(new LocalDate(2016, 4, 5), 2050,  qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100) shouldBe 155.65
+          }
+        }
+      }
+    }
+
+    "there is one payable gap and zero years to contribute" when {
+      "when there is less than 30 qualifying years" should {
+        "return amount + 1 year of basic pension (119.3 /30)" in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2015, 29, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.30
+        }
+      }
+
+      "when there is 30 qualifying years" should {
+        "return the current amount" in {
+          maximumCalculation(new LocalDate(2016, 4, 5), 2015, 30, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.30
+        }
       }
     }
   }
@@ -160,6 +213,53 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
 
       "return 10 for two year before" in {
         ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2025) shouldBe 10
+      }
+    }
+  }
+
+  "amountA" when {
+    "ap is 0" should {
+      "return 3.98 for 1 qualifying year" in {
+        ForecastingService.amountA(1, 0) shouldBe 3.98
+      }
+      "return 7.95 for 2 qualifying years" in {
+        ForecastingService.amountA(2, 0) shouldBe 7.95
+      }
+      "return 39.77 for 10 qualifying years" in {
+        ForecastingService.amountA(10, 0) shouldBe 39.77
+      }
+      "return 119.30 for 30 qualifying years" in {
+        ForecastingService.amountA(30, 0) shouldBe 119.30
+      }
+      "return 119.30 for 31 qualifying years" in {
+        ForecastingService.amountA(31, 0) shouldBe 119.30
+      }
+    }
+
+    "ap has a value" should {
+      "return 140 for 30 qualifyingYears and £20.70 AP" in {
+        ForecastingService.amountA(30, 20.70) shouldBe 140
+      }
+      "return 4 for 1 qualifyingYears and £0.02 AP" in {
+        ForecastingService.amountA(1, 0.02) shouldBe 4
+      }
+    }
+  }
+
+  "amountB" when {
+    "rda is 0" should {
+      "return 155.65 for 35 years" in {
+        ForecastingService.amountB(35, 0) shouldBe 155.65
+      }
+
+      "return 155.65 for 36 years" in {
+        ForecastingService.amountB(36, 0) shouldBe 155.65
+      }
+    }
+
+    "rda has a value" should {
+      "return 105.65 for QY= 35, RDA = 50" in {
+        ForecastingService.amountB(35, 50) shouldBe 105.65
       }
     }
   }
