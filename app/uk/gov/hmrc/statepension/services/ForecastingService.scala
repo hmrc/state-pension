@@ -49,8 +49,24 @@ object ForecastingService {
     }
   }
 
+  def calculatePersonalMaximum(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int,
+                               qualifyingYears: Int, payableGaps: Int,
+                               additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal): BigDecimal = {
+    val potentialYears = qualifyingYears + payableGaps
+    val startingAmount = calculateStartingAmount(amountA(potentialYears, additionalPension), amountB(potentialYears, rebateDerivedAmount))
+    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = startingAmount, qualifyingYears).amount
+  }
+
   def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int  = {
     (finalRelevantStartYear - TaxYearResolver.taxYearFor(earningsIncludedUpTo)).max(0)
+  }
+
+  def amountA(qualifyingYearsPre2016: Int, additionalPension: BigDecimal): BigDecimal = {
+    RateService.getBasicSPAmount(qualifyingYearsPre2016) + additionalPension
+  }
+
+  def amountB(qualfyingYears: Int, rebateDerivedAmount: BigDecimal): BigDecimal = {
+    RateService.getSPAmount(qualfyingYears) - rebateDerivedAmount
   }
 
 }

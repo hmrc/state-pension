@@ -42,11 +42,41 @@ class RateServiceSpec extends StatePensionUnitSpec {
     }
 
     "22 Qualifying years should return £97.84" in {
-      RateService.getSPAmount(22).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65/35)*22).setScale(10, RoundingMode.FLOOR)
+      RateService.getSPAmount(22).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 22).setScale(10, RoundingMode.FLOOR)
     }
 
     "17 Qualifying years should return £75.60" in {
-      RateService.getSPAmount(17).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65/35)*17).setScale(10, RoundingMode.FLOOR)
+      RateService.getSPAmount(17).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 17).setScale(10, RoundingMode.FLOOR)
+    }
+  }
+
+  "getBasicSPAmount called" should {
+    "return none for no years" in {
+      RateService.getBasicSPAmount(0) shouldBe 0
+    }
+
+    "return 119.30 for 30 years" in {
+      RateService.getBasicSPAmount(30) shouldBe 119.30
+    }
+
+    "return 119.30 for 31 years" in {
+      RateService.getBasicSPAmount(31) shouldBe 119.30
+    }
+
+    "return 99.42 for 25 years" in {
+      RateService.getBasicSPAmount(25) shouldBe 99.42
+    }
+
+    "return 87.49 for 22 years" in {
+      RateService.getBasicSPAmount(22) shouldBe 87.49
+    }
+
+    "return 39.77 for 10 years" in {
+      RateService.getBasicSPAmount(10) shouldBe 39.77
+    }
+
+    "return 3.98 for 1 year" in {
+      RateService.getBasicSPAmount(1) shouldBe 3.98
     }
   }
 

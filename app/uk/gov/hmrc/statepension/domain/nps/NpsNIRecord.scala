@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.connectors
+package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.statepension.domain.nps.{NpsLiability, NpsNIRecord, NpsSummary}
+import play.api.libs.json.{Reads, __}
 
-import scala.concurrent.Future
+case class NpsNIRecord(payableGaps: Int)
 
-trait NpsConnector {
-    def getSummary: Future[NpsSummary]
-    def getLiabilities: Future[List[NpsLiability]]
-    def getNIRecord: Future[NpsNIRecord]
+object NpsNIRecord {
+  implicit val reads: Reads[NpsNIRecord] = (__ \ "non_qualifying_years_payable").read[Int].map(NpsNIRecord.apply)
 }
