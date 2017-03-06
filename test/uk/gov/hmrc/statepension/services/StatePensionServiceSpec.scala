@@ -472,6 +472,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         "return an annual forecast amount of 7446.40" in {
           statement.amounts.maximum.annualAmount shouldBe 7446.40
         }
+
+        "return 2 gaps to fill" in {
+          statement.amounts.maximum.gapsToFill shouldBe Some(2)
+        }
+
+        "return 3 years to work" in {
+          statement.amounts.maximum.yearsToWork shouldBe Some(3)
+        }
       }
     }
 

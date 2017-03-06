@@ -36,7 +36,7 @@ object ForecastingService {
 
     val yearsLeft = yearsLeftToContribute(earningsIncludedUpTo, finalRelevantStartYear)
 
-    if(currentAmount >= RateService.MAX_AMOUNT) {
+    if (currentAmount >= RateService.MAX_AMOUNT) {
       Forecast(currentAmount, yearsToWork = 0)
     }
     else if ((yearsLeft + qualifyingYears) < MINIMUM_QUALIFYING_YEARS) {
@@ -57,7 +57,7 @@ object ForecastingService {
       earningsIncludedUpTo, finalRelevantStartYear, qualifyingYears, payableGaps, additionalPension, rebateDerivedAmount
     )
     val totalMaximum = personalMaxCalculation(payableGaps)
-    if(payableGaps > 0) {
+    if (payableGaps > 0) {
       personalMaxGenerator(totalMaximum.amount, payableGaps, personalMaxCalculation)
     }
     else {
@@ -66,7 +66,7 @@ object ForecastingService {
   }
 
   private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYears: Int, payableGaps: Int,
-                          additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFill: Int) => {
+                              additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFill: Int) => {
     val startingAmount = calculateStartingAmount(
       amountA(qualifyingYears + gapsToFill, additionalPension),
       amountB(qualifyingYears + gapsToFill, rebateDerivedAmount)
@@ -78,7 +78,7 @@ object ForecastingService {
     require(payableGaps > 0)
 
     @tailrec def go(years: Int): Int = {
-      if(calculation(years).amount < maximum) years + 1
+      if (calculation(years).amount < maximum) years + 1
       else go(years - 1)
     }
 
@@ -87,7 +87,7 @@ object ForecastingService {
     PersonalMaximum(maximum, minYearsToContributeForecast.yearsToWork, minimumGaps)
   }
 
-  def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int  = {
+  def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int = {
     (finalRelevantStartYear - TaxYearResolver.taxYearFor(earningsIncludedUpTo)).max(0)
   }
 

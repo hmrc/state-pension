@@ -286,6 +286,33 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         }
       }
     }
+
+    "there are multiple gaps and many years to contribute " when {
+      "there is 23 QYs, 10 gaps, 5 years to contribute, 42 AP (only filling gaps matters because Amount A)" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGaps = 10, additionalPension = 42)
+        "return a maximum of 219.30" in {
+          max.amount shouldBe 161.3
+        }
+        "return 0 years to work" in {
+          max.yearsToWork shouldBe 0
+        }
+        "return 7 gaps to fill" in {
+          max.gapsToFill shouldBe 7
+        }
+      }
+      "there is 23 QYs, 6 gaps, 5 years to contribute, 40 AP (working is more cost effective than paying)" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGaps = 6, additionalPension = 40)
+        "return a maximum of 219.30" in {
+          max.amount shouldBe 155.65
+        }
+        "return 5 years to work" in {
+          max.yearsToWork shouldBe 5
+        }
+        "return 1 gaps to fill" in {
+          max.gapsToFill shouldBe 1
+        }
+      }
+    }
   }
 
   "yearsToContribute" when {
