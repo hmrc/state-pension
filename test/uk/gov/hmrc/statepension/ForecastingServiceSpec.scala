@@ -136,7 +136,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     }
   }
 
-  "calculatePersonalMaxuimum" when {
+  "calculatePersonalMaximum" when {
     def maximumCalculation(earningsIncludedUpTo: LocalDate = new LocalDate(2016, 4, 5),
                            finalRelevantStartYear: Int = 2020,
                            qualifyingYears: Int = 30,
@@ -155,20 +155,42 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     "when there is no gaps it" should {
       "perform the same as the forecast calculation" should {
         "There is no more years to contribute" should {
+          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100)
           "return the current amount" in {
-            maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100) shouldBe 123
+            max.amount shouldBe 123
+          }
+          "return 0 years to work" in {
+            max.yearsToWork shouldBe 0
+          }
+
+          "return 0 gaps to fill" in {
+            max.yearsToWork shouldBe 0
           }
         }
 
         "There is two years to contribute" should {
+          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2017, qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100)
           "return a forecast with a difference of (max / amount) * 2 rounded (half-up)" in {
-            maximumCalculation(new LocalDate(2016, 4, 5), 2017,  qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100) shouldBe 131.89
+            max.amount shouldBe 131.89
+          }
+          "return 2 years to work" in {
+            max.yearsToWork shouldBe 2
+          }
+          "return 0 gaps to fill" in {
+            max.gapsToFill shouldBe 0
           }
         }
 
         "There is more years to contribute than required" should {
+          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2050, qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100)
           "cap the amount at the maximum" in {
-            maximumCalculation(new LocalDate(2016, 4, 5), 2050,  qualifyingYears = 30, payableGaps = 0, additionalPension = 3.7, rebateDerivedAmount = 100) shouldBe 155.65
+            max.amount shouldBe 155.65
+          }
+          "years to work should be the number of years required and no more 155.65 - 123 / (155.65/35) = 7.34 rounded up to int = 8" in {
+            max.yearsToWork shouldBe 8
+          }
+          "return 0 gaps to fill" in {
+            max.gapsToFill shouldBe 0
           }
         }
       }
@@ -176,42 +198,118 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
 
     "there is one payable gap and zero years to contribute" when {
       "there is less than 30 qualifying years" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, 29, payableGaps = 1, rebateDerivedAmount = 100)
         "return amount + 1 year of basic pension (119.3 /30)" in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2015, 29, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.30
+          max.amount shouldBe 119.30
+        }
+        "return zero years to work as there is none" in {
+          max.yearsToWork shouldBe 0
+        }
+        "return one gap to fill" in {
+          max.gapsToFill shouldBe 1
         }
       }
       "there is 30 qualifying years" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, 30, payableGaps = 1, rebateDerivedAmount = 100)
         "return the current amount" in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2015, 30, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.30
+          max.amount shouldBe 119.30
+        }
+        "return zero years to work as there is none" in {
+          max.yearsToWork shouldBe 0
+        }
+        "return zero gap to fill as none are required" in {
+          max.gapsToFill shouldBe 0
         }
       }
       "there is 28 qualifying years" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, 28, payableGaps = 1, rebateDerivedAmount = 100)
         "return the amount + 1 year of basic pension (119.3 /30) " in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2015, 28, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 115.32
+          max.amount shouldBe 115.32
+        }
+        "return zero years to work as there is none" in {
+          max.yearsToWork shouldBe 0
+        }
+        "return one gap to fill" in {
+          max.gapsToFill shouldBe 1
         }
       }
     }
 
     "there is one payable gap and one year to contribute " when {
       "there is 29 qualifying years" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, 29, payableGaps = 1, rebateDerivedAmount = 100)
         "return amount + 1 year of basic pension (119.3 /30) + 1 one year of state pension (155.65/35)" in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 29, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 123.75
+          max.amount shouldBe 123.75
+        }
+        "return one year to work" in {
+          max.yearsToWork shouldBe 1
+        }
+        "return one gap to fill" in {
+          max.gapsToFill shouldBe 1
         }
       }
       "there is 30 qualifying years" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, 30, payableGaps = 1, rebateDerivedAmount = 100)
         "return the current amount + 1 one year of state pension (155.65/35)" in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 30, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 123.75
+          max.amount shouldBe 123.75
+        }
+        "return one year to work" in {
+          max.yearsToWork shouldBe 1
+        }
+        "return zero gaps to fill as they will not matter" in {
+          max.gapsToFill shouldBe 0
         }
       }
       "there is 28 qualifying years" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, 28, payableGaps = 1, rebateDerivedAmount = 100)
         "return the amount + 1 year of basic pension (119.3 /30) + 1 one year of state pension (155.65/35) " in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 28, payableGaps = 1, rebateDerivedAmount = 100) shouldBe 119.77
+          max.amount shouldBe 119.77
+        }
+        "return 1 year to work" in {
+          max.yearsToWork shouldBe 1
+        }
+        "return one gap to fill" in {
+          max.gapsToFill shouldBe 1
         }
       }
 
       "there is 30 qualifying years and no RDA" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, 30, payableGaps = 1)
         "return 32 qualifying years of new state pension" in {
-          maximumCalculation(new LocalDate(2016, 4, 5), 2016, 30, payableGaps = 1) shouldBe 142.31
+          max.amount shouldBe 142.31
+        }
+        "return 1 year to work" in {
+          max.yearsToWork shouldBe 1
+        }
+        "return 1 gap to fill" in {
+          max.gapsToFill shouldBe 1
+        }
+      }
+    }
+
+    "there are multiple gaps and many years to contribute " when {
+      "there is 23 QYs, 10 gaps, 5 years to contribute, 42 AP (only filling gaps matters because Amount A)" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGaps = 10, additionalPension = 42)
+        "return a maximum of 219.30" in {
+          max.amount shouldBe 161.3
+        }
+        "return 0 years to work" in {
+          max.yearsToWork shouldBe 0
+        }
+        "return 7 gaps to fill" in {
+          max.gapsToFill shouldBe 7
+        }
+      }
+      "there is 23 QYs, 6 gaps, 5 years to contribute, 40 AP (working is more cost effective than paying)" should {
+        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGaps = 6, additionalPension = 40)
+        "return a maximum of 219.30" in {
+          max.amount shouldBe 155.65
+        }
+        "return 5 years to work" in {
+          max.yearsToWork shouldBe 5
+        }
+        "return 1 gaps to fill" in {
+          max.gapsToFill shouldBe 1
         }
       }
     }

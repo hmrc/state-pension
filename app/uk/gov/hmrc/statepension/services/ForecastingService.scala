@@ -17,9 +17,10 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.domain.Forecast
+import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
 import uk.gov.hmrc.time.TaxYearResolver
 
+import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
 object ForecastingService {
@@ -35,7 +36,7 @@ object ForecastingService {
 
     val yearsLeft = yearsLeftToContribute(earningsIncludedUpTo, finalRelevantStartYear)
 
-    if(currentAmount >= RateService.MAX_AMOUNT) {
+    if (currentAmount >= RateService.MAX_AMOUNT) {
       Forecast(currentAmount, yearsToWork = 0)
     }
     else if ((yearsLeft + qualifyingYears) < MINIMUM_QUALIFYING_YEARS) {
@@ -51,13 +52,42 @@ object ForecastingService {
 
   def calculatePersonalMaximum(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int,
                                qualifyingYears: Int, payableGaps: Int,
-                               additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal): BigDecimal = {
-    val potentialYears = qualifyingYears + payableGaps
-    val startingAmount = calculateStartingAmount(amountA(potentialYears, additionalPension), amountB(potentialYears, rebateDerivedAmount))
-    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = startingAmount, qualifyingYears).amount
+                               additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal): PersonalMaximum = {
+    val personalMaxCalculation = personalMaxCalc(
+      earningsIncludedUpTo, finalRelevantStartYear, qualifyingYears, payableGaps, additionalPension, rebateDerivedAmount
+    )
+    val totalMaximum = personalMaxCalculation(payableGaps)
+    if (payableGaps > 0) {
+      personalMaxGenerator(totalMaximum.amount, payableGaps, personalMaxCalculation)
+    }
+    else {
+      PersonalMaximum(totalMaximum.amount, totalMaximum.yearsToWork, gapsToFill = 0)
+    }
   }
 
-  def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int  = {
+  private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYears: Int, payableGaps: Int,
+                              additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFill: Int) => {
+    val startingAmount = calculateStartingAmount(
+      amountA(qualifyingYears + gapsToFill, additionalPension),
+      amountB(qualifyingYears + gapsToFill, rebateDerivedAmount)
+    )
+    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = startingAmount, qualifyingYears + gapsToFill)
+  }
+
+  private def personalMaxGenerator(maximum: BigDecimal, payableGaps: Int, calculation: (Int) => (Forecast)): PersonalMaximum = {
+    require(payableGaps > 0)
+
+    @tailrec def go(years: Int): Int = {
+      if (calculation(years).amount < maximum) years + 1
+      else go(years - 1)
+    }
+
+    val minimumGaps = go(payableGaps)
+    val minYearsToContributeForecast = calculation(minimumGaps)
+    PersonalMaximum(maximum, minYearsToContributeForecast.yearsToWork, minimumGaps)
+  }
+
+  def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int = {
     (finalRelevantStartYear - TaxYearResolver.taxYearFor(earningsIncludedUpTo)).max(0)
   }
 
