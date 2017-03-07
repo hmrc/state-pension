@@ -78,7 +78,8 @@ object ForecastingService {
     require(payableGaps > 0)
 
     @tailrec def go(years: Int): Int = {
-      if (calculation(years).amount < maximum) years + 1
+      if (years < 0) 0
+      else if (calculation(years).amount < maximum) years + 1
       else go(years - 1)
     }
 

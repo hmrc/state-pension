@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension
+package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.Forecast
-import uk.gov.hmrc.statepension.services.ForecastingService
 
 class ForecastingServiceSpec extends StatePensionUnitSpec {
 
@@ -164,7 +164,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           }
 
           "return 0 gaps to fill" in {
-            max.yearsToWork shouldBe 0
+            max.gapsToFill shouldBe 0
           }
         }
 
@@ -311,6 +311,19 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         "return 1 gaps to fill" in {
           max.gapsToFill shouldBe 1
         }
+      }
+    }
+
+    "there is only 34 years and and 1 fillable gaps" should {
+      val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 34, 1, 0, 0)
+      "return the full rate of 155.65" in {
+        max.amount shouldBe 155.65
+      }
+      "return 1 year to work" in {
+        max.yearsToWork shouldBe 2 //TODO It should be 1 though, discuss with business about rounding
+      }
+      "return no gaps to fill" in {
+        max.gapsToFill shouldBe 0
       }
     }
   }
