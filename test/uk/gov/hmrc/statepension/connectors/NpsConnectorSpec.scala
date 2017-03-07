@@ -25,26 +25,25 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.domain.nps.{NpsAmountA2016, NpsAmountB2016, NpsStatePensionAmounts, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps._
 
 class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
-
-  val connector = new NpsConnector {
-    override def getLiabilities = ???
-
-    override def getNIRecord = ???
-
-    override val http = mock[HttpGet]
-
-    override def npsBaseUrl: String = "test-url"
-
-    override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-  }
 
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(7)
 
   "getSummary" should {
+    val connector = new NpsConnector {
+
+      override def getNIRecord = ???
+
+      override val http = mock[HttpGet]
+
+      override def npsBaseUrl: String = "test-url"
+
+      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+    }
+
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       """
         |{
@@ -211,6 +210,159 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       ScalaFutures.whenReady(connector.getSummary(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
         ex.getMessage shouldBe "/earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring"
+      }
+    }
+  }
+
+  "getLiabilities" should {
+    val connector = new NpsConnector {
+
+      override def getNIRecord = ???
+
+      override val http = mock[HttpGet]
+
+      override def npsBaseUrl: String = "test-url"
+
+      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+    }
+
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      s"""
+         |{
+         |  "npsErrlist": {
+         |    "count": 0,
+         |    "mgt_check": 0,
+         |    "commit_status": 2,
+         |    "npsErritem": [],
+         |    "bfm_return_code": 0,
+         |    "data_not_found": 0
+         |  },
+         |  "npsLcdo004d": [
+         |    {
+         |      "liability_type_end_date": "1992-11-21",
+         |      "liability_occurrence_no": 1,
+         |      "liability_type_start_date": "1983-11-06",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    },
+         |    {
+         |      "liability_type_end_date": "2006-07-08",
+         |      "liability_occurrence_no": 2,
+         |      "liability_type_start_date": "1995-09-24",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    },
+         |    {
+         |      "liability_type_end_date": "2006-07-15",
+         |      "liability_occurrence_no": 3,
+         |      "liability_type_start_date": "2006-07-09",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    },
+         |    {
+         |      "liability_type_end_date": "2012-01-21",
+         |      "liability_occurrence_no": 4,
+         |      "liability_type_start_date": "2006-09-24",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    }
+         |  ]
+         |}
+      """.stripMargin))))
+
+    connector.getLiabilities(nino)
+
+    "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/sp_summary" in {
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/liabilities"))(Matchers.any(), Matchers.any())
+    }
+
+    "add the originator id to the header" in {
+      val header = headerCarrier
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
+    }
+
+    "parse the json and return a Future[List[NpsLiability]" in {
+      val summary = await(connector.getLiabilities(nino))
+      summary shouldBe List(
+        NpsLiability(13),
+        NpsLiability(13),
+        NpsLiability(13),
+        NpsLiability(13)
+      )
+    }
+
+    "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
+      val connector = new NpsConnector {
+
+        override def getNIRecord = ???
+
+        override val http = mock[HttpGet]
+
+        override def npsBaseUrl: String = "test-url"
+
+        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      }
+
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+           |{
+           |  "npsErrlist": {
+           |    "count": 0,
+           |    "mgt_check": 0,
+           |    "commit_status": 2,
+           |    "npsErritem": [],
+           |    "bfm_return_code": 0,
+           |    "data_not_found": 0
+           |  },
+           |  "npsLcdo004d": [
+           |    {
+           |      "liability_type_end_date": "1992-11-21",
+           |      "liability_occurrence_no": 1,
+           |      "liability_type_start_date": "1983-11-06",
+           |      "liability_type_end_date_reason": "END DATE HELD",
+           |      "liability_type": false,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    },
+           |    {
+           |      "liability_type_end_date": "2006-07-08",
+           |      "liability_occurrence_no": 2,
+           |      "liability_type_start_date": "1995-09-24",
+           |      "liability_type_end_date_reason": "END DATE HELD",
+           |      "liability_type": 13,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    },
+           |    {
+           |      "liability_type_end_date": "2006-07-15",
+           |      "liability_occurrence_no": 3,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    },
+           |    {
+           |      "liability_type_end_date": "2012-01-21",
+           |      "liability_occurrence_no": 4,
+           |      "liability_type_start_date": "2006-09-24",
+           |      "liability_type_end_date_reason": "END DATE HELD",
+           |      "liability_type": 13,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    }
+           |  ]
+           |}
+      """.stripMargin))))
+
+      ScalaFutures.whenReady(connector.getLiabilities(nino).failed) { ex =>
+        ex shouldBe a[connector.JsonValidationException]
+        ex.getMessage shouldBe "/npsLcdo004d(0)/liability_type - error.expected.jsnumber | /npsLcdo004d(2)/liability_type - error.path.missing"
       }
     }
   }

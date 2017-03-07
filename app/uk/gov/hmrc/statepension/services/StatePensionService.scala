@@ -58,7 +58,7 @@ trait NpsConnection extends StatePensionService {
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
     val summaryF = nps.getSummary(nino)
-    val liablitiesF = nps.getLiabilities
+    val liablitiesF = nps.getLiabilities(nino)
     val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator
     val niRecordF = nps.getNIRecord
 

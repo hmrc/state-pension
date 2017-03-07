@@ -17,11 +17,11 @@
 package uk.gov.hmrc.statepension.connectors
 
 import play.api.data.validation.ValidationError
-import play.api.libs.json.JsPath
+import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
-import uk.gov.hmrc.statepension.domain.nps.{NpsLiability, NpsNIRecord, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps.{NpsLiabilities, NpsLiability, NpsNIRecord, NpsSummary}
 
 import scala.concurrent.Future
 
@@ -31,16 +31,24 @@ trait NpsConnector {
   def serviceOriginatorId: (String, String)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NpsSummary] = {
-    val responseF = http.GET[HttpResponse](s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/sp_summary")(HttpReads.readRaw, headerCarrier.withExtraHeaders(serviceOriginatorId))
-    responseF.flatMap[NpsSummary] { httpResponse =>
-      httpResponse.json.validate[NpsSummary].fold(
+    val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/sp_summary"
+    connectToNPS[NpsSummary](urlToRead)
+  }
+  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[NpsLiability]] = {
+    val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/liabilities"
+    connectToNPS[NpsLiabilities](urlToRead).map(_.liabilities)
+  }
+  def getNIRecord: Future[NpsNIRecord]
+
+  private def connectToNPS[A](url: String)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
+    val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, headerCarrier.withExtraHeaders(serviceOriginatorId))
+    responseF.flatMap[A] { httpResponse =>
+      httpResponse.json.validate[A].fold(
         invalid => Future.failed(new JsonValidationException(formatJsonErrors(invalid))),
         valid => Future.successful(valid)
       )
     }
   }
-  def getLiabilities: Future[List[NpsLiability]]
-  def getNIRecord: Future[NpsNIRecord]
 
   private final val ninoLengthWithoutSuffix = 7
   private def ninoWithoutSuffix(nino: Nino): String = nino.toString().take(ninoLengthWithoutSuffix)
