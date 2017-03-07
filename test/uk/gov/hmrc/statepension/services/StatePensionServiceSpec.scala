@@ -153,7 +153,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           )
         )
 
-        when(service.nps.getSummary).thenReturn(Future.successful(
+        when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
@@ -192,14 +192,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a pensionSharingOrder return true" in {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = true)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
         }
 
         "when there is no pensionSharingOrder return false" in {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = false)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
@@ -218,21 +218,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a protected payment of some value return true" in {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
         }
 
         "when there is a protected payment of 0 return false" in {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
         }
 
         "when there is a rebate derived amount of 12.34 it" should {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
           ))
 
@@ -252,7 +252,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a rebate derived amount of 0 it" should {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
           ))
 
@@ -273,7 +273,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 161.18 it" should {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
           ))
 
@@ -311,7 +311,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 0 it" should {
-          when(service.nps.getSummary).thenReturn(Future.successful(
+         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = NpsStatePensionAmounts())
           ))
 
@@ -372,7 +372,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
@@ -445,7 +445,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
@@ -509,7 +509,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(payableGaps = 2)
       ))
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
@@ -560,7 +560,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       )
 
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
@@ -614,7 +614,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsStatePensionAmounts()
       )
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
@@ -669,7 +669,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       )
 
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities).thenReturn(Future.successful(
@@ -724,7 +724,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities).thenReturn(Future.successful(
@@ -772,7 +772,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities).thenReturn(Future.successful(
@@ -821,7 +821,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-      when(service.nps.getSummary).thenReturn(Future.successful(
+     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities).thenReturn(Future.successful(
