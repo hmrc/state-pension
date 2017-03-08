@@ -20,6 +20,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpResponse, Upstream4xxResponse}
 import play.api.http.Status.LOCKED
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.statepension.domain.nps.APIType
+import uk.gov.hmrc.statepension.services.Metrics
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -27,13 +29,19 @@ import scala.util.{Failure, Success, Try}
 trait CitizenDetailsConnector {
   def http: HttpGet
   def serviceUrl: String
+  def metrics: Metrics
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
   def connectToGetPersonDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] = {
-    http.GET[HttpResponse](url(nino)) map (response => Success(response.status)) recover {
-      case ex: Upstream4xxResponse if ex.upstreamResponseCode == LOCKED => Success(ex.upstreamResponseCode)
-      case ex: Throwable => Failure(ex)
+    val timerContext = metrics.startTimer(APIType.CitizenDetails)
+    http.GET[HttpResponse](url(nino)) map {
+      personResponse =>
+        timerContext.stop()
+        Success(personResponse.status)
+    } recover {
+      case ex: Upstream4xxResponse if ex.upstreamResponseCode == LOCKED => timerContext.stop(); Success(ex.upstreamResponseCode)
+      case ex: Throwable => timerContext.stop(); Failure(ex)
     } flatMap (handleResult(url(nino), _))
   }
 

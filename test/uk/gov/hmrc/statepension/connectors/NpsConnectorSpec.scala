@@ -26,6 +26,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.helpers.StubMetrics
+import uk.gov.hmrc.statepension.services.Metrics
 
 class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
@@ -34,12 +36,10 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
   "getSummary" should {
     val connector = new NpsConnector {
-
       override val http = mock[HttpGet]
-
       override def npsBaseUrl: String = "test-url"
-
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      override val metrics: Metrics = StubMetrics
     }
 
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -214,12 +214,10 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
   "getLiabilities" should {
     val connector = new NpsConnector {
-
       override val http = mock[HttpGet]
-
       override def npsBaseUrl: String = "test-url"
-
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      override val metrics: Metrics = StubMetrics
     }
 
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -297,12 +295,10 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
     "return a failed future with a json validation exception when it cannot parse to an NpsLiabilities" in {
       val connector = new NpsConnector {
-
         override val http = mock[HttpGet]
-
         override def npsBaseUrl: String = "test-url"
-
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+        override val metrics: Metrics = StubMetrics
       }
 
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -363,12 +359,10 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
   "getNIRecord" should {
     val connector = new NpsConnector {
-
       override val http = mock[HttpGet]
-
       override def npsBaseUrl: String = "test-url"
-
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      override val metrics: Metrics = StubMetrics
     }
 
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -512,6 +506,8 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override def npsBaseUrl: String = "test-url"
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+
+        override def metrics: Metrics = StubMetrics
       }
 
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(

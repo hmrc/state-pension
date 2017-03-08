@@ -21,48 +21,65 @@ import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
-import uk.gov.hmrc.statepension.domain.nps.{NpsLiabilities, NpsLiability, NpsNIRecord, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.services.Metrics
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 trait NpsConnector {
   def http: HttpGet
   def npsBaseUrl: String
   def serviceOriginatorId: (String, String)
+  def metrics: Metrics
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NpsSummary] = {
     val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/sp_summary"
-    connectToNPS[NpsSummary](urlToRead)
+    connectToNPS[NpsSummary](urlToRead, APIType.Summary)
   }
 
   def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[NpsLiability]] = {
     val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/liabilities"
-    connectToNPS[NpsLiabilities](urlToRead).map(_.liabilities)
+    connectToNPS[NpsLiabilities](urlToRead, APIType.Liabilities).map(_.liabilities)
   }
 
   def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NpsNIRecord] = {
     val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/ni_record"
-    connectToNPS[NpsNIRecord](urlToRead)
+    connectToNPS[NpsNIRecord](urlToRead, APIType.NIRecord)
   }
 
-  private def connectToNPS[A](url: String)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
+  private def connectToNPS[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
+    val timerContext = metrics.startTimer(api)
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, headerCarrier.withExtraHeaders(serviceOriginatorId))
-    responseF.flatMap[A] { httpResponse =>
-      httpResponse.json.validate[A].fold(
-        invalid => Future.failed(new JsonValidationException(formatJsonErrors(invalid))),
-        valid => Future.successful(valid)
+
+    responseF.map { httpResponse =>
+      timerContext.stop()
+      Try(httpResponse.json.validate[A]).flatMap( jsResult =>
+        jsResult.fold(errs => Failure(new JsonValidationException(formatJsonErrors(errs))), valid => Success(valid))
       )
-    }
+    } recover {
+      // http-verbs throws exceptions, convert to Try
+      case ex => Failure(ex)
+    } flatMap (handleResult(api, url, _))
   }
 
   private final val ninoLengthWithoutSuffix = 7
 
   private def ninoWithoutSuffix(nino: Nino): String = nino.toString().take(ninoLengthWithoutSuffix)
 
+  private def handleResult[A](api: APIType, url: String, tryResult: Try[A]): Future[A] = {
+    tryResult match {
+      case Failure(ex) =>
+        metrics.incrementFailedCounter(api)
+        Future.failed(ex)
+      case Success(value) =>
+        Future.successful(value)
+    }
+  }
+
   private def formatJsonErrors(errors: Seq[(JsPath, Seq[ValidationError])]): String = {
     errors.map(p => p._1 + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
   }
 
   class JsonValidationException(message: String) extends Exception(message)
-
 }
