@@ -34,11 +34,16 @@ trait NpsConnector {
     val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/sp_summary"
     connectToNPS[NpsSummary](urlToRead)
   }
+
   def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[NpsLiability]] = {
     val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/liabilities"
     connectToNPS[NpsLiabilities](urlToRead).map(_.liabilities)
   }
-  def getNIRecord: Future[NpsNIRecord]
+
+  def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NpsNIRecord] = {
+    val urlToRead = s"$npsBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/ni_record"
+    connectToNPS[NpsNIRecord](urlToRead)
+  }
 
   private def connectToNPS[A](url: String)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, headerCarrier.withExtraHeaders(serviceOriginatorId))
@@ -51,6 +56,7 @@ trait NpsConnector {
   }
 
   private final val ninoLengthWithoutSuffix = 7
+
   private def ninoWithoutSuffix(nino: Nino): String = nino.toString().take(ninoLengthWithoutSuffix)
 
   private def formatJsonErrors(errors: Seq[(JsPath, Seq[ValidationError])]): String = {
@@ -58,4 +64,5 @@ trait NpsConnector {
   }
 
   class JsonValidationException(message: String) extends Exception(message)
+
 }
