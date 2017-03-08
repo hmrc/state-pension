@@ -59,7 +59,7 @@ trait NpsConnection extends StatePensionService {
 
     val summaryF = nps.getSummary(nino)
     val liablitiesF = nps.getLiabilities(nino)
-    val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator
+    val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)
     val niRecordF = nps.getNIRecord(nino)
 
     for (

@@ -16,8 +16,17 @@
 
 package uk.gov.hmrc.statepension.services
 
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 import scala.concurrent.Future
 
 trait CitizenDetailsService {
-  def checkManualCorrespondenceIndicator: Future[Boolean]
+  val citizenDetailsConnector: CitizenDetailsConnector
+
+  def checkManualCorrespondenceIndicator(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    citizenDetailsConnector.connectToGetPersonDetails(nino).map(status => status == play.api.http.Status.LOCKED)
+  }
 }

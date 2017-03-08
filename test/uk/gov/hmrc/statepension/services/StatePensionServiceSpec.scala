@@ -111,7 +111,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
   "StatePensionService with a HOD Connection" when {
 
     val mockCitizenDetails = mock[CitizenDetailsService]
-    when(mockCitizenDetails.checkManualCorrespondenceIndicator).thenReturn(Future.successful(false))
+    when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
 
     "there are no exclusions" when {
       "there is a regular statement (Reached)" should {
@@ -827,7 +827,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.citizenDetailsService.checkManualCorrespondenceIndicator).thenReturn(Future.successful(true))
+      when(service.citizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
