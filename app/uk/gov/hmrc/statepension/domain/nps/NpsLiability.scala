@@ -23,3 +23,11 @@ case class NpsLiability(liabilityType: Int)
 object NpsLiability {
   implicit val reads: Reads[NpsLiability] = (__ \ "liability_type").read[Int].map(NpsLiability.apply)
 }
+
+case class NpsLiabilities(liabilities: List[NpsLiability])
+
+object NpsLiabilities {
+  implicit val reads: Reads[NpsLiabilities] = {
+    (__ \ "npsLcdo004d").read[List[NpsLiability]].map(NpsLiabilities.apply)
+  }
+}

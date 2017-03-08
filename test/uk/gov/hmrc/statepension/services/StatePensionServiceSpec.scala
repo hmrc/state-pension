@@ -157,11 +157,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           regularStatement
         ))
 
-        when(service.nps.getLiabilities).thenReturn(Future.successful(
+        when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           List()
         ))
 
-        when(service.nps.getNIRecord).thenReturn(Future.successful(
+        when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           NpsNIRecord(payableGaps = 0)
         ))
 
@@ -376,11 +376,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         regularStatement
       ))
 
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 0)
       ))
 
@@ -449,11 +449,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         regularStatement
       ))
 
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -505,7 +505,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsStatePensionAmounts()
       )
 
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -513,7 +513,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
@@ -564,11 +564,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -618,11 +618,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
 
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -672,10 +672,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -727,10 +727,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -775,10 +775,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List(NpsLiability(15))
       ))
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 
@@ -824,11 +824,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities).thenReturn(Future.successful(
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
       when(service.citizenDetailsService.checkManualCorrespondenceIndicator).thenReturn(Future.successful(true))
-      when(service.nps.getNIRecord).thenReturn(Future.successful(
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
       ))
 

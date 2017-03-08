@@ -25,26 +25,23 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.domain.nps.{NpsAmountA2016, NpsAmountB2016, NpsStatePensionAmounts, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps._
 
 class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
-
-  val connector = new NpsConnector {
-    override def getLiabilities = ???
-
-    override def getNIRecord = ???
-
-    override val http = mock[HttpGet]
-
-    override def npsBaseUrl: String = "test-url"
-
-    override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-  }
 
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(7)
 
   "getSummary" should {
+    val connector = new NpsConnector {
+
+      override val http = mock[HttpGet]
+
+      override def npsBaseUrl: String = "test-url"
+
+      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+    }
+
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       """
         |{
@@ -211,6 +208,337 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       ScalaFutures.whenReady(connector.getSummary(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
         ex.getMessage shouldBe "/earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring"
+      }
+    }
+  }
+
+  "getLiabilities" should {
+    val connector = new NpsConnector {
+
+      override val http = mock[HttpGet]
+
+      override def npsBaseUrl: String = "test-url"
+
+      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+    }
+
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      s"""
+         |{
+         |  "npsErrlist": {
+         |    "count": 0,
+         |    "mgt_check": 0,
+         |    "commit_status": 2,
+         |    "npsErritem": [],
+         |    "bfm_return_code": 0,
+         |    "data_not_found": 0
+         |  },
+         |  "npsLcdo004d": [
+         |    {
+         |      "liability_type_end_date": "1992-11-21",
+         |      "liability_occurrence_no": 1,
+         |      "liability_type_start_date": "1983-11-06",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    },
+         |    {
+         |      "liability_type_end_date": "2006-07-08",
+         |      "liability_occurrence_no": 2,
+         |      "liability_type_start_date": "1995-09-24",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    },
+         |    {
+         |      "liability_type_end_date": "2006-07-15",
+         |      "liability_occurrence_no": 3,
+         |      "liability_type_start_date": "2006-07-09",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    },
+         |    {
+         |      "liability_type_end_date": "2012-01-21",
+         |      "liability_occurrence_no": 4,
+         |      "liability_type_start_date": "2006-09-24",
+         |      "liability_type_end_date_reason": "END DATE HELD",
+         |      "liability_type": 13,
+         |      "nino": "$nino",
+         |      "award_amount": null
+         |    }
+         |  ]
+         |}
+      """.stripMargin))))
+
+    connector.getLiabilities(nino)
+
+    "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/liabilities" in {
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/liabilities"))(Matchers.any(), Matchers.any())
+    }
+
+    "add the originator id to the header" in {
+      val header = headerCarrier
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
+    }
+
+    "parse the json and return a Future[List[NpsLiability]" in {
+      val summary = await(connector.getLiabilities(nino))
+      summary shouldBe List(
+        NpsLiability(13),
+        NpsLiability(13),
+        NpsLiability(13),
+        NpsLiability(13)
+      )
+    }
+
+    "return a failed future with a json validation exception when it cannot parse to an NpsLiabilities" in {
+      val connector = new NpsConnector {
+
+        override val http = mock[HttpGet]
+
+        override def npsBaseUrl: String = "test-url"
+
+        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      }
+
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+           |{
+           |  "npsErrlist": {
+           |    "count": 0,
+           |    "mgt_check": 0,
+           |    "commit_status": 2,
+           |    "npsErritem": [],
+           |    "bfm_return_code": 0,
+           |    "data_not_found": 0
+           |  },
+           |  "npsLcdo004d": [
+           |    {
+           |      "liability_type_end_date": "1992-11-21",
+           |      "liability_occurrence_no": 1,
+           |      "liability_type_start_date": "1983-11-06",
+           |      "liability_type_end_date_reason": "END DATE HELD",
+           |      "liability_type": false,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    },
+           |    {
+           |      "liability_type_end_date": "2006-07-08",
+           |      "liability_occurrence_no": 2,
+           |      "liability_type_start_date": "1995-09-24",
+           |      "liability_type_end_date_reason": "END DATE HELD",
+           |      "liability_type": 13,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    },
+           |    {
+           |      "liability_type_end_date": "2006-07-15",
+           |      "liability_occurrence_no": 3,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    },
+           |    {
+           |      "liability_type_end_date": "2012-01-21",
+           |      "liability_occurrence_no": 4,
+           |      "liability_type_start_date": "2006-09-24",
+           |      "liability_type_end_date_reason": "END DATE HELD",
+           |      "liability_type": 13,
+           |      "nino": "$nino",
+           |      "award_amount": null
+           |    }
+           |  ]
+           |}
+      """.stripMargin))))
+
+      ScalaFutures.whenReady(connector.getLiabilities(nino).failed) { ex =>
+        ex shouldBe a[connector.JsonValidationException]
+        ex.getMessage shouldBe "/npsLcdo004d(0)/liability_type - error.expected.jsnumber | /npsLcdo004d(2)/liability_type - error.path.missing"
+      }
+    }
+  }
+
+  "getNIRecord" should {
+    val connector = new NpsConnector {
+
+      override val http = mock[HttpGet]
+
+      override def npsBaseUrl: String = "test-url"
+
+      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+    }
+
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      s"""
+        |{
+        |  "years_to_fry": 3,
+        |  "non_qualifying_years": 10,
+        |  "date_of_entry": "1969-08-01",
+        |  "npsLniemply": [],
+        |  "pre_75_cc_count": 250,
+        |  "number_of_qualifying_years": 36,
+        |  "npsErrlist": {
+        |    "count": 0,
+        |    "mgt_check": 0,
+        |    "commit_status": 2,
+        |    "npsErritem": [],
+        |    "bfm_return_code": 0,
+        |    "data_not_found": 0
+        |  },
+        |  "non_qualifying_years_payable": 5,
+        |  "npsLnitaxyr": [
+        |    {
+        |      "class_three_payable_by_penalty": null,
+        |      "class_two_outstanding_weeks": null,
+        |      "class_two_payable": null,
+        |      "qualifying": 1,
+        |      "under_investigation_flag": 0,
+        |      "class_two_payable_by": null,
+        |      "co_class_one_paid": null,
+        |      "class_two_payable_by_penalty": null,
+        |      "co_primary_paid_earnings": null,
+        |      "payable": 0,
+        |      "rattd_tax_year": 1975,
+        |      "ni_earnings": null,
+        |      "amount_needed": null,
+        |      "primary_paid_earnings": "1285.4500",
+        |      "class_three_payable": null,
+        |      "ni_earnings_employed": "70.6700",
+        |      "npsLothcred": [
+        |        {
+        |          "credit_source_type": 0,
+        |          "cc_type": 23,
+        |          "no_of_credits_and_conts": 20
+        |        },
+        |        {
+        |          "credit_source_type": 24,
+        |          "cc_type": 23,
+        |          "no_of_credits_and_conts": 6
+        |        }
+        |      ],
+        |      "ni_earnings_self_employed": null,
+        |      "class_three_payable_by": null,
+        |      "ni_earnings_voluntary": null
+        |    },
+        |    {
+        |      "class_three_payable_by_penalty": null,
+        |      "class_two_outstanding_weeks": null,
+        |      "class_two_payable": null,
+        |      "qualifying": 1,
+        |      "under_investigation_flag": 0,
+        |      "class_two_payable_by": null,
+        |      "co_class_one_paid": null,
+        |      "class_two_payable_by_penalty": null,
+        |      "co_primary_paid_earnings": null,
+        |      "payable": 0,
+        |      "rattd_tax_year": 1976,
+        |      "ni_earnings": null,
+        |      "amount_needed": null,
+        |      "primary_paid_earnings": "932.1700",
+        |      "class_three_payable": null,
+        |      "ni_earnings_employed": "53.5000",
+        |      "npsLothcred": [
+        |        {
+        |          "credit_source_type": 0,
+        |          "cc_type": 23,
+        |          "no_of_credits_and_conts": 4
+        |        },
+        |        {
+        |          "credit_source_type": 24,
+        |          "cc_type": 23,
+        |          "no_of_credits_and_conts": 30
+        |        }
+        |      ],
+        |      "ni_earnings_self_employed": null,
+        |      "class_three_payable_by": null,
+        |      "ni_earnings_voluntary": null
+        |    },
+        |    {
+        |      "class_three_payable_by_penalty": null,
+        |      "class_two_outstanding_weeks": null,
+        |      "class_two_payable": null,
+        |      "qualifying": 1,
+        |      "under_investigation_flag": 0,
+        |      "class_two_payable_by": null,
+        |      "co_class_one_paid": null,
+        |      "class_two_payable_by_penalty": null,
+        |      "co_primary_paid_earnings": null,
+        |      "payable": 0,
+        |      "rattd_tax_year": 1977,
+        |      "ni_earnings": null,
+        |      "amount_needed": null,
+        |      "primary_paid_earnings": "1433.0400",
+        |      "class_three_payable": null,
+        |      "ni_earnings_employed": "82.1300",
+        |      "npsLothcred": [
+        |        {
+        |          "credit_source_type": 24,
+        |          "cc_type": 23,
+        |          "no_of_credits_and_conts": 28
+        |        }
+        |      ],
+        |      "ni_earnings_self_employed": null,
+        |      "class_three_payable_by": null,
+        |      "ni_earnings_voluntary": null
+        |    }
+        |  ],
+        |  "nino": "$nino"
+        |}""".stripMargin))))
+
+    connector.getNIRecord(nino)
+
+    "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/ni_record" in {
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/ni_record"))(Matchers.any(), Matchers.any())
+    }
+
+    "add the originator id to the header" in {
+      val header = headerCarrier
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
+    }
+
+    "parse the json and return a Future[List[NpsLiability]" in {
+      val summary = await(connector.getNIRecord(nino))
+      summary shouldBe NpsNIRecord(5)
+    }
+
+    "return a failed future with a json validation exception when it cannot parse to an NpsNIRecord" in {
+      val connector = new NpsConnector {
+
+        override val http = mock[HttpGet]
+
+        override def npsBaseUrl: String = "test-url"
+
+        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      }
+
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+           |{
+           |  "years_to_fry": 3,
+           |  "non_qualifying_years": 10,
+           |  "date_of_entry": "1969-08-01",
+           |  "npsLniemply": [],
+           |  "pre_75_cc_count": 250,
+           |  "number_of_qualifying_years": 36,
+           |  "npsErrlist": {
+           |    "count": 0,
+           |    "mgt_check": 0,
+           |    "commit_status": 2,
+           |    "npsErritem": [],
+           |    "bfm_return_code": 0,
+           |    "data_not_found": 0
+           |  },
+           |  "non_qualifying_years_payable": "5",
+           |  "nino": "$nino"
+           |}
+      """.stripMargin))))
+
+      ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
+        ex shouldBe a[connector.JsonValidationException]
+        ex.getMessage shouldBe "/non_qualifying_years_payable - error.expected.jsnumber"
       }
     }
   }
