@@ -23,12 +23,13 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.statepension.connectors.{NispConnector, NpsConnector}
+import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NispConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.Country
+import uk.gov.hmrc.statepension.domain.nps.{Country, NpsSummary}
+import uk.gov.hmrc.statepension.events.Forecasting
 import uk.gov.hmrc.statepension.util.EitherReads._
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -54,6 +55,8 @@ trait NpsConnection extends StatePensionService {
   def now: LocalDate
 
   def metrics: Metrics
+
+  def customAuditConnector: CustomAuditConnector
 
   final val FULL_RATE = 155.65
 
@@ -96,6 +99,8 @@ trait NpsConnection extends StatePensionService {
         ))
       } else {
 
+        auditNPSSummary(nino, summary)
+
         val forecast = ForecastingService.calculateForecastAmount(
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
@@ -129,15 +134,10 @@ trait NpsConnection extends StatePensionService {
           currentFullWeeklyPensionAmount = FULL_RATE
         )
 
-        metrics.summary(
-          statePension.amounts.forecast.weeklyAmount,
-          statePension.amounts.current.weeklyAmount,
-          statePension.contractedOut,
-          statePension.forecastScenario,
-          statePension.amounts.maximum.weeklyAmount,
-          statePension.amounts.forecast.yearsToWork.getOrElse(0),
-          statePension.mqpScenario
-        )
+        metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount, statePension.contractedOut,
+          statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount, statePension.amounts.forecast.yearsToWork.getOrElse(0),
+          statePension.mqpScenario)
+
         Right(statePension)
       }
     }
@@ -162,6 +162,18 @@ trait NpsConnection extends StatePensionService {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }
   }
+
+  private[services] def auditNPSSummary(nino: Nino, summary: NpsSummary)(implicit hc: HeaderCarrier): Unit = {
+    //Audit NPS Data used in calculation
+    customAuditConnector.sendEvent(Forecasting(
+      nino,
+      summary.earningsIncludedUpTo,
+      summary.qualifyingYears,
+      summary.amounts.amountA2016,
+      summary.amounts.amountB2016,
+      summary.finalRelevantStartYear
+    ))
+  }
 }
 
 object StatePensionServiceViaNisp extends StatePensionService with NispConnection
@@ -170,8 +182,10 @@ object StatePensionService extends StatePensionService with NpsConnection {
   override lazy val nps: NpsConnector = ???
   override lazy val citizenDetailsService: CitizenDetailsService = ???
   override lazy val metrics: Metrics = Metrics
-
+  override val customAuditConnector: CustomAuditConnector = CustomAuditConnector
   override def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
+
+
 }
 
 object SandboxStatePensionService extends StatePensionService {

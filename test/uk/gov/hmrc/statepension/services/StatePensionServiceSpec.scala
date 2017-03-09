@@ -24,10 +24,11 @@ import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.connectors.NpsConnector
+import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
+import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
 
@@ -121,6 +122,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
           override lazy val metrics: Metrics = mock[Metrics]
+          override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         }
 
         val regularStatement = NpsSummary(
@@ -356,6 +358,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val regularStatement = NpsSummary(
@@ -445,6 +448,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val regularStatement = NpsSummary(
@@ -539,6 +543,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
@@ -605,6 +610,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
@@ -672,6 +678,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
@@ -738,6 +745,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
@@ -803,6 +811,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
@@ -869,6 +878,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
@@ -929,6 +939,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
         override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
       }
 
       val summary = NpsSummary(
