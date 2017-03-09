@@ -135,7 +135,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             pensionEntitlement = 161.18,
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
-            additionalPensionAccruedLastTaxYear = 2.36,
             NpsAmountA2016(
               basicPension = 119.3,
               pre97AP = 17.79,
@@ -371,7 +370,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          additionalPensionAccruedLastTaxYear = 2.36,
           NpsAmountA2016(
             basicPension = 79.53,
             pre97AP = 17.79,
@@ -461,7 +459,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          additionalPensionAccruedLastTaxYear = 2.36,
           NpsAmountA2016(
             basicPension = 79.53,
             pre97AP = 17.79,

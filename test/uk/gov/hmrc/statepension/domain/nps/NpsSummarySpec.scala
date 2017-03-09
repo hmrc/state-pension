@@ -264,7 +264,6 @@ class NpsSummarySpec extends UnitSpec {
         pensionEntitlement = 161.18,
         startingAmount2016 = 161.18,
         protectedPayment2016 = 5.53,
-        additionalPensionAccruedLastTaxYear = 2.36,
         NpsAmountA2016(
           basicPension = 119.3,
           pre97AP = 17.79,
@@ -358,16 +357,6 @@ class NpsSummarySpec extends UnitSpec {
 
         "it is null" in {
           nullAmountJson.as[NpsStatePensionAmounts].protectedPayment2016 shouldBe 0
-        }
-      }
-
-      "parse ap amount correctly" when {
-        "it exists as 11.11" in {
-          amountJson.as[NpsStatePensionAmounts].additionalPensionAccruedLastTaxYear shouldBe 11.11
-        }
-
-        "it is null" in {
-          nullAmountJson.as[NpsStatePensionAmounts].additionalPensionAccruedLastTaxYear shouldBe 0
         }
       }
 
