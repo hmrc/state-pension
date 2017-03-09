@@ -28,6 +28,7 @@ import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.APIType.CitizenDetails
 import uk.gov.hmrc.statepension.domain.nps.{Country, NpsSummary}
 import uk.gov.hmrc.statepension.events.Forecasting
 import uk.gov.hmrc.statepension.util.EitherReads._
@@ -179,13 +180,11 @@ trait NpsConnection extends StatePensionService {
 object StatePensionServiceViaNisp extends StatePensionService with NispConnection
 
 object StatePensionService extends StatePensionService with NpsConnection {
-  override lazy val nps: NpsConnector = ???
-  override lazy val citizenDetailsService: CitizenDetailsService = ???
+  override lazy val nps: NpsConnector = NpsConnector
+  override lazy val citizenDetailsService: CitizenDetailsService = CitizenDetailsService
   override lazy val metrics: Metrics = Metrics
   override val customAuditConnector: CustomAuditConnector = CustomAuditConnector
   override def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
-
-
 }
 
 object SandboxStatePensionService extends StatePensionService {

@@ -32,7 +32,7 @@ import uk.gov.hmrc.statepension.services.Metrics
 class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
   val nino: Nino = generateNino()
-  val ninoWithSuffix: String = nino.toString().take(7)
+  val ninoWithSuffix: String = nino.toString().take(8)
 
   "getSummary" should {
     val connector = new NpsConnector {

@@ -30,3 +30,7 @@ trait CitizenDetailsService {
     citizenDetailsConnector.connectToGetPersonDetails(nino).map(status => status == play.api.http.Status.LOCKED)
   }
 }
+
+object CitizenDetailsService extends CitizenDetailsService {
+  override val citizenDetailsConnector: CitizenDetailsConnector = CitizenDetailsConnector
+}

@@ -19,7 +19,9 @@ package uk.gov.hmrc.statepension.connectors
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpResponse, Upstream4xxResponse}
 import play.api.http.Status.LOCKED
+import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.Metrics
 
@@ -53,4 +55,10 @@ trait CitizenDetailsConnector {
         Future.successful(value)
     }
   }
+}
+
+object CitizenDetailsConnector extends CitizenDetailsConnector with ServicesConfig {
+  override val http: HttpGet = WSHttp
+  override val serviceUrl: String = baseUrl("citizen-details")
+  override val metrics: Metrics = Metrics
 }
