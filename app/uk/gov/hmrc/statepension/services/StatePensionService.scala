@@ -132,7 +132,7 @@ trait NpsConnection extends StatePensionService {
         metrics.summary(
           statePension.amounts.forecast.weeklyAmount,
           statePension.amounts.current.weeklyAmount,
-          statePension.amounts.cope.weeklyAmount > 0,
+          statePension.contractedOut,
           statePension.forecastScenario,
           statePension.amounts.maximum.weeklyAmount,
           statePension.amounts.forecast.yearsToWork.getOrElse(0),
