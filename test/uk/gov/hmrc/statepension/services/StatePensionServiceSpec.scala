@@ -786,7 +786,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log an exclusion metric" in {
-        verify(service.metrics, never()).exclusion(
+        verify(service.metrics, times(1)).exclusion(
           Matchers.eq(Exclusion.Abroad)
         )
       }
