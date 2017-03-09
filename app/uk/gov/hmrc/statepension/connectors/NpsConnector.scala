@@ -19,8 +19,10 @@ package uk.gov.hmrc.statepension.connectors
 import play.api.data.validation.ValidationError
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
+import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.Metrics
 
@@ -63,7 +65,7 @@ trait NpsConnector {
     } flatMap (handleResult(api, url, _))
   }
 
-  private final val ninoLengthWithoutSuffix = 7
+  private final val ninoLengthWithoutSuffix = 8
 
   private def ninoWithoutSuffix(nino: Nino): String = nino.toString().take(ninoLengthWithoutSuffix)
 
@@ -82,4 +84,11 @@ trait NpsConnector {
   }
 
   class JsonValidationException(message: String) extends Exception(message)
+}
+
+object NpsConnector extends NpsConnector with ServicesConfig {
+  override val http: HttpGet = WSHttp
+  override val npsBaseUrl: String = baseUrl("nps-hod")
+  override val serviceOriginatorId: (String, String) = (getConfString("nps-hod.originatoridkey", ""), getConfString("nps-hod.originatoridvalue", ""))
+  override val metrics: Metrics = Metrics
 }

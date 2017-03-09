@@ -29,6 +29,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.AuditEvent
 import uk.gov.hmrc.play.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
+import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -40,18 +41,12 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  val mockAuditConnector = new CustomAuditConnector {
-    override lazy val auditConnector: AuditConnector = ???
-    override def sendEvent(event: AuditEvent)(implicit hc: HeaderCarrier): Unit = {}
-  }
-
-
   def testStatePensionController(spService: StatePensionService): StatePensionController = new StatePensionController {
     override val statePensionService: StatePensionService = spService
 
     override val app: String = "Test State Pension"
     override val context: String = "test"
-    override val customAuditConnector: CustomAuditConnector = mockAuditConnector
+    override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
   }
 
   val testStatePension = StatePension(
