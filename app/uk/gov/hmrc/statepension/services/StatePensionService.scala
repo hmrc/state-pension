@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.services
 
 import java.util.TimeZone
 
-import org.joda.time.{DateTimeZone, LocalDate}
+import org.joda.time.{DateTimeZone, LocalDate, Period, PeriodType}
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
@@ -53,6 +53,8 @@ trait NpsConnection extends StatePensionService {
 
   def now: LocalDate
 
+  def metrics: Metrics
+
   final val FULL_RATE = 155.65
 
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
@@ -84,13 +86,15 @@ trait NpsConnection extends StatePensionService {
       ).getExclusions
 
       if (exclusions.nonEmpty) {
+
+        metrics.exclusion(filterExclusions(exclusions))
+
         Left(StatePensionExclusion(
           exclusionReasons = exclusions,
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate
         ))
       } else {
-
 
         val forecast = ForecastingService.calculateForecastAmount(
           summary.earningsIncludedUpTo,
@@ -108,7 +112,7 @@ trait NpsConnection extends StatePensionService {
           rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
         )
 
-        Right(StatePension(
+        val statePension = StatePension(
           earningsIncludedUpTo = summary.earningsIncludedUpTo,
           amounts = StatePensionAmounts(
             summary.amounts.protectedPayment2016 > 0,
@@ -123,8 +127,39 @@ trait NpsConnection extends StatePensionService {
           numberOfQualifyingYears = 36,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = FULL_RATE
-        ))
+        )
+
+        metrics.summary(
+          statePension.amounts.forecast.weeklyAmount,
+          statePension.amounts.current.weeklyAmount,
+          statePension.contractedOut,
+          statePension.forecastScenario,
+          statePension.amounts.maximum.weeklyAmount,
+          statePension.amounts.forecast.yearsToWork.getOrElse(0),
+          statePension.mqpScenario
+        )
+        Right(statePension)
       }
+    }
+  }
+
+  private[services] def filterExclusions(exclusions: List[Exclusion]): Exclusion = {
+    if (exclusions.contains(Exclusion.Dead)) {
+      Exclusion.Dead
+    } else if (exclusions.contains(Exclusion.ManualCorrespondenceIndicator)) {
+      Exclusion.ManualCorrespondenceIndicator
+    } else if (exclusions.contains(Exclusion.PostStatePensionAge)) {
+      Exclusion.PostStatePensionAge
+    } else if (exclusions.contains(Exclusion.AmountDissonance)) {
+      Exclusion.AmountDissonance
+    } else if (exclusions.contains(Exclusion.IsleOfMan)) {
+      Exclusion.IsleOfMan
+    } else if (exclusions.contains(Exclusion.MarriedWomenReducedRateElection)) {
+      Exclusion.MarriedWomenReducedRateElection
+    } else if (exclusions.contains(Exclusion.Abroad)) {
+      Exclusion.Abroad
+    } else {
+      throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }
   }
 }
@@ -134,6 +169,7 @@ object StatePensionServiceViaNisp extends StatePensionService with NispConnectio
 object StatePensionService extends StatePensionService with NpsConnection {
   override lazy val nps: NpsConnector = ???
   override lazy val citizenDetailsService: CitizenDetailsService = ???
+  override lazy val metrics: Metrics = Metrics
 
   override def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
 }

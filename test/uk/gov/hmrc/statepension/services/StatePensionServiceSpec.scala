@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
+import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
@@ -120,6 +120,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           override lazy val nps: NpsConnector = mock[NpsConnector]
           override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+          override lazy val metrics: Metrics = mock[Metrics]
         }
 
         val regularStatement = NpsSummary(
@@ -134,7 +135,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             pensionEntitlement = 161.18,
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
-            additionalPensionAccruedLastTaxYear = 2.36,
             NpsAmountA2016(
               basicPension = 119.3,
               pre97AP = 17.79,
@@ -166,6 +166,22 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         ))
 
          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+        "log a summary metric" in {
+          verify(service.metrics, Mockito.atLeastOnce()).summary(
+            Matchers.eq[BigDecimal](161.18),
+            Matchers.eq[BigDecimal](161.18),
+            Matchers.eq(false),
+            Matchers.eq(Scenario.Reached),
+            Matchers.eq[BigDecimal](161.18),
+            Matchers.eq(0),
+            Matchers.eq(None)
+          )
+        }
+
+        "not log an exclusion metric" in {
+          verify(service.metrics, never).exclusion(Matchers.any())
+        }
 
         "return earningsIncludedUpTo of 2016-4-5" in {
           whenReady(statement) { sp =>
@@ -339,12 +355,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val regularStatement = NpsSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
-        qualifyingYears = 36,
+        qualifyingYears = 20,
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
@@ -353,7 +370,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          additionalPensionAccruedLastTaxYear = 2.36,
           NpsAmountA2016(
             basicPension = 79.53,
             pre97AP = 17.79,
@@ -384,7 +400,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(payableGaps = 0)
       ))
 
-      lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+      val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "the forecast amount" should {
 
@@ -405,6 +421,22 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
       }
+
+      "log a summary metric" in {
+        verify(service.metrics, times(1)).summary(
+          Matchers.eq[BigDecimal](134.75),
+          Matchers.eq[BigDecimal](121.41),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.ContinueWorkingNonMax),
+          Matchers.eq[BigDecimal](134.75),
+          Matchers.eq(3),
+          Matchers.eq(None)
+        )
+      }
+
+      "not log an exclusion metric" in {
+        verify(service.metrics, never).exclusion(Matchers.any())
+      }
     }
 
     "there is a regular statement (Fill Gaps)" should {
@@ -412,6 +444,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val regularStatement = NpsSummary(
@@ -426,7 +459,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          additionalPensionAccruedLastTaxYear = 2.36,
           NpsAmountA2016(
             basicPension = 79.53,
             pre97AP = 17.79,
@@ -461,15 +493,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "the personal maximum amount" should {
 
-        "return a weekly forecast amount of 142.71" in {
+        "return a weekly personal max amount of 142.71" in {
           statement.amounts.maximum.weeklyAmount shouldBe 142.71
         }
 
-        "return a monthly forecast amount of 620.53" in {
+        "return a monthly personal max amount of 620.53" in {
           statement.amounts.maximum.monthlyAmount shouldBe 620.53
         }
 
-        "return an annual forecast amount of 7446.40" in {
+        "return an annual personal max amount of 7446.40" in {
           statement.amounts.maximum.annualAmount shouldBe 7446.40
         }
 
@@ -481,6 +513,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           statement.amounts.maximum.yearsToWork shouldBe Some(3)
         }
       }
+
+      "log a summary metric" in {
+        verify(service.metrics, times(1)).summary(
+          Matchers.eq[BigDecimal](134.75),
+          Matchers.eq[BigDecimal](121.41),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.FillGaps),
+          Matchers.eq[BigDecimal](142.71),
+          Matchers.eq(3),
+          Matchers.eq(None)
+        )
+      }
+
+      "not log an exclusion metric" in {
+        verify(service.metrics, never).exclusion(Matchers.any())
+      }
+
     }
 
     "the customer is dead" should {
@@ -489,6 +538,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -536,6 +586,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           exclusion.pensionDate shouldBe new LocalDate(2050, 7, 7)
         }
       }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.Dead)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+      }
+
     }
 
     "the customer is over state pension age" should {
@@ -543,6 +604,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -591,6 +653,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
         }
       }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.PostStatePensionAge)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+      }
+
     }
 
     "the customer has married women's reduced rate election" should {
@@ -598,6 +671,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -628,7 +702,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
-      "return post state pension age exclusion" in {
+      "return married women exclusion" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.MarriedWomenReducedRateElection)
         }
@@ -645,6 +719,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.MarriedWomenReducedRateElection)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+      }
+
     }
 
     "the customer has male overseas auto credits (abroad exclusion)" should {
@@ -652,6 +737,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -698,6 +784,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.Abroad)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+      }
+
     }
 
     "the customer has amount dissonance" should {
@@ -705,6 +802,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -753,6 +851,16 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.AmountDissonance)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+      }
     }
 
     "the customer has contributed national insurance in the isle of man" should {
@@ -760,6 +868,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -802,6 +911,16 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.IsleOfMan)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+      }
     }
 
     "the customer has a manual correspondence indicator" should {
@@ -809,6 +928,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
+        override lazy val metrics: Metrics = mock[Metrics]
       }
 
       val summary = NpsSummary(
@@ -834,7 +954,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
-      "return isle of man exclusion" in {
+      "return mci exclusion" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
         }
@@ -850,6 +970,16 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
+      }
+
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.ManualCorrespondenceIndicator)
+        )
+      }
+
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
   }

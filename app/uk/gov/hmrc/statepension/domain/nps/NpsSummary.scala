@@ -63,7 +63,6 @@ case class NpsStatePensionAmounts(
                                    pensionEntitlement: BigDecimal = 0,
                                    startingAmount2016: BigDecimal = 0,
                                    protectedPayment2016: BigDecimal = 0,
-                                   additionalPensionAccruedLastTaxYear: BigDecimal = 0,
                                    amountA2016: NpsAmountA2016 = NpsAmountA2016(),
                                    amountB2016: NpsAmountB2016 = NpsAmountB2016()
                                  )
@@ -77,7 +76,6 @@ object NpsStatePensionAmounts {
     readBigDecimal(JsPath \ "nsp_entitlement") and
       readBigDecimal(JsPath \ "starting_amount") and
       readBigDecimal(JsPath \ "protected_payment_2016") and
-      readBigDecimal(JsPath \ "ap_amount") and
       (JsPath \ "npsAmnapr16").read[NpsAmountA2016] and
       (JsPath \ "npsAmnbpr16").read[NpsAmountB2016]
     ) (NpsStatePensionAmounts.apply _)

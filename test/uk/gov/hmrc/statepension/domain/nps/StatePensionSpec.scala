@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
+import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.domain.StatePensionAmount
+import uk.gov.hmrc.statepension.domain._
 
 class StatePensionSpec extends StatePensionUnitSpec {
 
@@ -46,6 +47,95 @@ class StatePensionSpec extends StatePensionUnitSpec {
         StatePensionAmount(Some(2), Some(2), 95.07).monthlyAmount shouldBe 413.38
         StatePensionAmount(Some(2), Some(2), 95.07).annualAmount shouldBe 4960.62
       }
+    }
+  }
+
+
+  private def createStatePension(cope: BigDecimal = 0,
+                         finalRelevantYear: String = "2018-19",
+                         earningsIncludedUpTo: Int = 2015,
+                         currentAmount: BigDecimal = 0,
+                         forecastAmount: BigDecimal = 0,
+                         maximumAmount: BigDecimal = 0,
+                         fullStatePensionAmount: BigDecimal = 155.65,
+                         qualifyingYears: Int = 30
+                        ) = {
+    StatePension(
+      new LocalDate(earningsIncludedUpTo + 1, 4, 5),
+      amounts = StatePensionAmounts(
+        false,
+        StatePensionAmount(None, None, currentAmount),
+        StatePensionAmount(None, None, forecastAmount),
+        StatePensionAmount(None, None, maximumAmount),
+        cope = StatePensionAmount(None, None, cope)
+      ),
+      65,
+      new LocalDate(2019, 5, 1),
+      finalRelevantYear,
+      qualifyingYears,
+      false,
+      fullStatePensionAmount
+    )
+  }
+
+  "contractedOut" should {
+    "return true when the user has a COPE amount more than 0" in {
+      createStatePension(cope = 0.87).contractedOut shouldBe true
+    }
+    "return false when the user has a COPE amount of 0" in {
+      createStatePension(cope = 0).contractedOut shouldBe false
+    }
+  }
+  "mqpScenario" should {
+
+    "should be an MQP Scenario if they have less than 10 years" in {
+      createStatePension(qualifyingYears = 4, currentAmount = 50, forecastAmount = 0, maximumAmount = 0).mqpScenario.isDefined shouldBe true
+    }
+
+    "be None if they have a Current Amount of more than 0" in {
+      createStatePension(currentAmount = 122.34).mqpScenario shouldBe None
+    }
+    "be ContinueWorking if they have a Current Amount of 0, ForecastAmount more than 0" in {
+      createStatePension(currentAmount = 0, forecastAmount = 89.34).mqpScenario shouldBe Some(MQPScenario.ContinueWorking)
+    }
+    "be CanGetWithGaps if they have a Current Amount of 0, Forecast Amount of 0 and a Maximum more than 0" in {
+      createStatePension(currentAmount = 0, forecastAmount = 0, maximumAmount = 250.99).mqpScenario shouldBe Some(MQPScenario.CanGetWithGaps)
+    }
+    "be CantGet if all the amounts are 0" in {
+      createStatePension(currentAmount = 0, forecastAmount = 0, maximumAmount = 0).mqpScenario shouldBe Some(MQPScenario.CantGet)
+    }
+  }
+
+  "forecastScenario" should {
+    "be ForecastOnly when Forecast Amount is less than the Current Amount" in {
+      createStatePension(currentAmount = 20, forecastAmount = 10, maximumAmount = 10).forecastScenario shouldBe Scenario.ForecastOnly
+    }
+    "be Reached when current, forecast and maximum are all the same" in {
+      createStatePension(currentAmount = 10, forecastAmount = 10, maximumAmount = 10).forecastScenario shouldBe Scenario.Reached
+    }
+    "be FillGaps when current and forecast are the same and maximum is greater" in {
+      createStatePension(currentAmount = 10, forecastAmount = 10, maximumAmount = 20).forecastScenario shouldBe Scenario.FillGaps
+    }
+    "be FillGaps when current and forecast are different and maximum is greater" in {
+      createStatePension(currentAmount = 10, forecastAmount = 20, maximumAmount = 30).forecastScenario shouldBe Scenario.FillGaps
+      createStatePension(currentAmount = 20, forecastAmount = 10, maximumAmount = 30).forecastScenario shouldBe Scenario.FillGaps
+    }
+
+    "be ContinueWorkingMax when forecast and maximum are the same and the value is the full amount" in {
+      createStatePension(currentAmount = 100, forecastAmount = 155.65, maximumAmount = 155.65, fullStatePensionAmount = 155.65).forecastScenario shouldBe Scenario.ContinueWorkingMax
+      createStatePension(currentAmount = 10, forecastAmount = 20, maximumAmount = 20, fullStatePensionAmount = 20).forecastScenario shouldBe Scenario.ContinueWorkingMax
+    }
+    "be ContinueWorkingMax when forecast and maximum are the same and the value is more than full amount" in {
+      createStatePension(currentAmount = 100, forecastAmount = 170.00, maximumAmount = 170.00, fullStatePensionAmount = 155.65).forecastScenario shouldBe Scenario.ContinueWorkingMax
+      createStatePension(currentAmount = 100, forecastAmount = 155.66, maximumAmount = 155.66, fullStatePensionAmount = 155.65).forecastScenario shouldBe Scenario.ContinueWorkingMax
+      createStatePension(currentAmount = 10, forecastAmount = 20.01, maximumAmount = 20.01, fullStatePensionAmount = 20).forecastScenario shouldBe Scenario.ContinueWorkingMax
+    }
+    "be ContinueWorkingNonMax when forecast and maximum are the same and the value is less than full amount" in {
+      createStatePension(currentAmount = 100, forecastAmount = 155.64, maximumAmount = 155.64, fullStatePensionAmount = 155.65).forecastScenario shouldBe Scenario.ContinueWorkingNonMax
+      createStatePension(currentAmount = 10, forecastAmount = 20.01, maximumAmount = 20.01, fullStatePensionAmount = 21).forecastScenario shouldBe Scenario.ContinueWorkingNonMax
+    }
+    "be CantGetPension when maximum is 0" in {
+      createStatePension(maximumAmount = 0).forecastScenario shouldBe Scenario.CantGetPension
     }
   }
 }

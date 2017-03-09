@@ -16,12 +16,16 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import com.codahale.metrics.Timer
 import org.mockito.Matchers
 import org.mockito.Mockito.when
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import play.api.test.FakeRequest
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.domain.nps.APIType
+import uk.gov.hmrc.statepension.services.Metrics
 
 import scala.concurrent.Future
 
@@ -33,9 +37,15 @@ class CitizenDetailsConnectorSpec extends StatePensionUnitSpec with MockitoSugar
   val citizenDetailsConnector = new CitizenDetailsConnector {
     override val serviceUrl: String = "/"
     override val http: HttpGet = mock[HttpGet]
+    override val metrics: Metrics = mock[Metrics]
   }
 
+  val context = mock[Timer.Context]
+  when(context.stop()).thenReturn(0)
+  when(citizenDetailsConnector.metrics.startTimer(Matchers.any())).thenReturn{ context }
+
   "CitizenDetailsConnector" should {
+
     "return OK status when successful" in {
       when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(HttpResponse(200))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)

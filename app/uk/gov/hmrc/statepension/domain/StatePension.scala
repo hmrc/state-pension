@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.domain
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, JsPath, Json, Writes}
 import play.api.libs.functional.syntax._
+import uk.gov.hmrc.statepension.services.ForecastingService
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -60,7 +61,45 @@ case class StatePension(earningsIncludedUpTo: LocalDate,
                         finalRelevantYear: String,
                         numberOfQualifyingYears: Int,
                         pensionSharingOrder: Boolean,
-                        currentFullWeeklyPensionAmount: BigDecimal)
+                        currentFullWeeklyPensionAmount: BigDecimal) {
+  lazy val contractedOut: Boolean = amounts.cope.weeklyAmount > 0
+
+  lazy val forecastScenario: Scenario = {
+    if (amounts.maximum.weeklyAmount == 0) {
+      Scenario.CantGetPension
+    } else if(amounts.maximum.weeklyAmount > amounts.forecast.weeklyAmount) {
+      Scenario.FillGaps
+    } else {
+      if(amounts.forecast.weeklyAmount > amounts.current.weeklyAmount) {
+
+        if (amounts.forecast.weeklyAmount >= currentFullWeeklyPensionAmount)
+          Scenario.ContinueWorkingMax
+        else Scenario.ContinueWorkingNonMax
+
+      } else if(amounts.forecast.weeklyAmount == amounts.current.weeklyAmount) {
+        Scenario.Reached
+      } else {
+        Scenario.ForecastOnly
+      }
+    }
+  }
+
+  lazy val mqpScenario: Option[MQPScenario] = {
+    if (amounts.current.weeklyAmount > 0 && numberOfQualifyingYears >= ForecastingService.MINIMUM_QUALIFYING_YEARS) {
+      None
+    } else {
+      if (amounts.forecast.weeklyAmount > 0) {
+        Some(MQPScenario.ContinueWorking)
+      } else {
+        if (amounts.maximum.weeklyAmount > 0) {
+          Some(MQPScenario.CanGetWithGaps)
+        } else {
+          Some(MQPScenario.CantGet)
+        }
+      }
+    }
+  }
+}
 
 object StatePension {
   implicit val formats = Json.format[StatePension]
