@@ -130,7 +130,7 @@ trait NpsConnection extends StatePensionService {
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
           finalRelevantYear = summary.finalRelevantYear,
-          numberOfQualifyingYears = 36,
+          numberOfQualifyingYears = summary.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = FULL_RATE
         )
