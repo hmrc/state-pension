@@ -16,78 +16,69 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import play.api.Configuration
-import play.api.libs.json
-import play.api.libs.json.{JsArray, JsString, JsUndefined}
+import org.scalatestplus.play.OneAppPerSuite
+import play.api.{Application, Configuration}
+import play.api.http.LazyHttpErrorHandler
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import play.test.WithApplication
+import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
 
-class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
+class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
 
   "respond to GET /api/definition" in {
-    val result = route(FakeRequest(GET, "/api/definition"))
-    status(result.get) shouldNot be(NOT_FOUND)
-  }
-
-  "respond to GET /api/conf/1.0/application.raml" in {
-    val result = route(FakeRequest(GET, "/api/conf/1.0/application.raml"))
-    status(result.get) shouldNot be(NOT_FOUND)
+    val result = route(app, FakeRequest(GET, "/api/definition"))
+    status(result.get) should be(OK)
   }
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
-    new DocumentationController {
-      override val appContext: AppContext = new AppContext {
-        override def appName: String = ""
+    val appContext = new AppContext {
+      override def appName: String = ""
+      override def apiGatewayContext: String = ""
+      override def appUrl: String = ""
+      override def access: Option[Configuration] = apiConfig
+      override def status: Option[String] = apiStatus
+      override def connectToHOD: Boolean = false
+    }
 
-        override def apiGatewayContext: String = ""
-
-        override def appUrl: String = ""
-
-        override def access: Option[Configuration] = apiConfig
-
-        override def status: Option[String] = apiStatus
-
-        override def connectToHOD: Boolean = false
-      }
-    }.definition()(FakeRequest())
+    new DocumentationController(LazyHttpErrorHandler, appContext).definition()(FakeRequest())
 
   }
 
   "/definition access" should {
 
-
-
     "return PRIVATE and no Whitelist IDs if there is no application config" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsString("PRIVATE")
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray()
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
     }
 
     "return PRIVATE if the application config says PRIVATE" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsString("PRIVATE")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
     }
 
     "return PUBLIC if the application config says PUBLIC" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsString("PUBLIC")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PUBLIC"))
     }
 
     "return No Whitelist IDs if the application config has an entry for whiteListIds but no Ids" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq()))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray()
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
 
     }
 
@@ -95,7 +86,7 @@ class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq("A", "B", "C")))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsArray(Seq(JsString("A"), JsString("B"), JsString("C")))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray(Seq(JsString("A"), JsString("B"), JsString("C"))))
 
     }
 
@@ -116,21 +107,21 @@ class DocumentationControllerSpec extends UnitSpec with WithFakeApplication {
 
       val result = getDefinitionResultFromConfig(apiStatus = None)
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsString("PROTOTYPED")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("PROTOTYPED"))
     }
 
     "return PROTOTYPED if the application config says PROTOTYPED" in {
 
       val result = getDefinitionResultFromConfig(apiStatus = Some("PROTOTYPED"))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsString("PROTOTYPED")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("PROTOTYPED"))
     }
 
     "return PUBLISHED if the application config says PUBLISHED" in {
 
       val result = getDefinitionResultFromConfig(apiStatus = Some("PUBLISHED"))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsString("PUBLISHED")
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("PUBLISHED"))
 
     }
 

@@ -32,30 +32,30 @@ import uk.gov.hmrc.api.config.{ServiceLocatorConfig, ServiceLocatorRegistration}
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.api.connector.ServiceLocatorConnector
 import uk.gov.hmrc.api.controllers.ErrorGenericBadRequest
+import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 import uk.gov.hmrc.statepension.controllers.ErrorResponses
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.ErrorNinoInvalid
 
 import scala.concurrent.Future
 
-
 object ControllerConfiguration extends ControllerConfig {
-  lazy val controllerConfigs = Play.current.configuration.underlying.as[Config]("controllers")
+  lazy val controllerConfigs: Config = Play.current.configuration.underlying.as[Config]("controllers")
 }
 
 object AuthParamsControllerConfiguration extends AuthParamsControllerConfig {
-  lazy val controllerConfigs = ControllerConfiguration.controllerConfigs
+  lazy val controllerConfigs: Config = ControllerConfiguration.controllerConfigs
 }
 
-object MicroserviceAuditFilter extends AuditFilter with AppName {
+object MicroserviceAuditFilter extends AuditFilter with AppName with MicroserviceFilterSupport {
   override val auditConnector = MicroserviceAuditConnector
   override def controllerNeedsAuditing(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuditing
 }
 
-object MicroserviceLoggingFilter extends LoggingFilter {
+object MicroserviceLoggingFilter extends LoggingFilter with MicroserviceFilterSupport {
   override def controllerNeedsLogging(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsLogging
 }
 
-object MicroserviceAuthFilter extends AuthorisationFilter {
+object MicroserviceAuthFilter extends AuthorisationFilter with MicroserviceFilterSupport {
   override lazy val authParamsConfig = AuthParamsControllerConfiguration
   override lazy val authConnector = MicroserviceAuthConnector
   override def controllerNeedsAuth(controllerName: String): Boolean = ControllerConfiguration.paramsForController(controllerName).needsAuth

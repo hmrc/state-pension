@@ -1,3 +1,2 @@
 GET   /api/definition               uk.gov.hmrc.statepension.controllers.DocumentationController.definition()
-
-GET   /api/conf/*version/:file      uk.gov.hmrc.statepension.controllers.DocumentationController.documentation(version: String, file: String)
+GET   /api/conf/*version/:file      uk.gov.hmrc.statepension.controllers.DocumentationController.conf(version, file)

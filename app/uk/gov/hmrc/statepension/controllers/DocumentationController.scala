@@ -20,17 +20,13 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppContext}
 import uk.gov.hmrc.statepension.domain.APIAccess
 import uk.gov.hmrc.statepension.views._
+import play.api.http.{HttpErrorHandler, LazyHttpErrorHandler}
 
-trait DocumentationController extends uk.gov.hmrc.api.controllers.DocumentationController {
-
-  val appContext: AppContext
+class DocumentationController (errorHandler: HttpErrorHandler, appContext: AppContext)
+  extends uk.gov.hmrc.api.controllers.DocumentationController(errorHandler = errorHandler) {
 
   override def definition(): Action[AnyContent] = Action {
-    Ok(txt.definition(buildAccess(), buildStatus())).withHeaders("Content-Type" -> "application/json")
-  }
-
-  override def documentation(version: String, file: String): Action[AnyContent] = {
-    super.at(s"/public/api/conf/$version", file)
+    Ok(txt.definition(buildAccess(), buildStatus())).as("application/json")
   }
 
   private def buildAccess(): APIAccess = {
@@ -41,6 +37,4 @@ trait DocumentationController extends uk.gov.hmrc.api.controllers.DocumentationC
   private def buildStatus(): String = appContext.status.getOrElse("PROTOTYPED")
 }
 
-object DocumentationController extends DocumentationController {
-  override val appContext: AppContext = AppContext
-}
+object DocumentationController extends DocumentationController(LazyHttpErrorHandler, AppContext)
