@@ -122,7 +122,7 @@ trait NpsConnection extends StatePensionService {
           earningsIncludedUpTo = summary.earningsIncludedUpTo,
           amounts = StatePensionAmounts(
             summary.amounts.protectedPayment2016 > 0,
-            StatePensionAmount(None, None, summary.amounts.pensionEntitlement),
+            StatePensionAmount(None, None, ForecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlement, summary.qualifyingYears)),
             StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
             StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
             StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount)
