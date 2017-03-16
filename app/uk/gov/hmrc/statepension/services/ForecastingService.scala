@@ -100,4 +100,6 @@ object ForecastingService {
     RateService.getSPAmount(qualfyingYears) - rebateDerivedAmount
   }
 
+  def sanitiseCurrentAmount(current: BigDecimal, qualifyingYears: Int): BigDecimal = if (qualifyingYears < MINIMUM_QUALIFYING_YEARS) 0 else current
+
 }

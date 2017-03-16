@@ -403,4 +403,22 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     }
   }
 
+  "sanitiseCurrentAmount" when {
+    "there is < 10 years" should {
+      "return 0" in {
+        ForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 9) shouldBe 0
+      }
+    }
+    "there is 10 years" should {
+      "return the current amount" in {
+        ForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 10) shouldBe 123
+      }
+    }
+    "there is 20 years" should {
+      "return the current amount" in {
+        ForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 20) shouldBe 123
+      }
+    }
+  }
+
 }

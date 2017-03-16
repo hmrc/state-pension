@@ -536,6 +536,63 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     }
 
+    "there is an mqp user" should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+      }
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        qualifyingYears = 9,
+        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1954, 3, 9),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 40.53,
+          startingAmount2016 = 40.53,
+          protectedPayment2016 = 0,
+          NpsAmountA2016(
+            basicPension = 35.79,
+            pre97AP = 0,
+            post97AP = 0,
+            post02AP = 4.74,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            grb = 0
+          ),
+          NpsAmountB2016(
+            mainComponent = 40.02,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(payableGaps = 0)
+      ))
+
+      "return 0 for the current amount" in {
+        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        statement.amounts.current.weeklyAmount shouldBe 0
+      }
+    }
+
     "the customer is dead" should {
 
       val service = new NpsConnection {
