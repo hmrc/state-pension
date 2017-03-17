@@ -952,7 +952,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         summary
       ))
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        List(NpsLiability(15))
+        List(NpsLiability(5))
       ))
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NpsNIRecord(payableGaps = 2)
