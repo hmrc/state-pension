@@ -17,5 +17,5 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 object LiabilityType {
-  final val ISLE_OF_MAN = 15
+  final val ISLE_OF_MAN = 5
 }

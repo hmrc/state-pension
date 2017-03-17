@@ -20,8 +20,8 @@ import uk.gov.hmrc.statepension.StatePensionUnitSpec
 
 class LiabilityTypeSpec extends StatePensionUnitSpec {
     "ISLE_OF_MAN" should {
-      "be 15" in {
-        LiabilityType.ISLE_OF_MAN shouldBe 15
+      "be 5" in {
+        LiabilityType.ISLE_OF_MAN shouldBe 5
       }
     }
 }

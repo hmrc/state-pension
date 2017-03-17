@@ -146,10 +146,10 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
       "there is some liabilities" should {
         "return List(IsleOfMan) if the list includes liability type 15" in {
-          exclusionServiceBuilder(liabilities = List(NpsLiability(15), NpsLiability(16))).getExclusions shouldBe List(Exclusion.IsleOfMan)
+          exclusionServiceBuilder(liabilities = List(NpsLiability(5), NpsLiability(16))).getExclusions shouldBe List(Exclusion.IsleOfMan)
         }
         "return no exclusions if the list does not include liability type 15" in {
-          exclusionServiceBuilder(liabilities = List(NpsLiability(17), NpsLiability(16))).getExclusions shouldBe Nil
+          exclusionServiceBuilder(liabilities = List(NpsLiability(15), NpsLiability(16))).getExclusions shouldBe Nil
         }
       }
     }
@@ -178,7 +178,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           entitlement = 100,
           startingAmount = 100,
           calculatedStartingAmount = 101,
-          liabilities = List(NpsLiability(15), NpsLiability(15), NpsLiability(1)),
+          liabilities = List(NpsLiability(5), NpsLiability(5), NpsLiability(1)),
           manualCorrespondenceOnly = true
         ).getExclusions shouldBe List(
           Exclusion.Dead,
