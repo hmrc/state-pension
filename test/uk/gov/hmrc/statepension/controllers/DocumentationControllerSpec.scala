@@ -44,6 +44,7 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
       override def access: Option[Configuration] = apiConfig
       override def status: Option[String] = apiStatus
       override def connectToHOD: Boolean = false
+      override def rates: Configuration = Configuration()
     }
 
     new DocumentationController(LazyHttpErrorHandler, appContext).definition()(FakeRequest())

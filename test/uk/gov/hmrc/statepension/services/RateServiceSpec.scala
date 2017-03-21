@@ -16,69 +16,138 @@
 
 package uk.gov.hmrc.statepension.services
 
+import org.scalatestplus.play.OneAppPerSuite
+import play.api.Configuration
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 
 import scala.math.BigDecimal.RoundingMode
 
 class RateServiceSpec extends StatePensionUnitSpec {
 
+  val testRateService: RateService = RateServiceBuilder.default
+
+  "ratesTable" should {
+    "parse the config correctly" in {
+      testRateService.ratesTable shouldBe Map(
+        0 -> 0,
+        1 -> 4.45,
+        2 -> 8.89,
+        3 -> 13.34,
+        4 -> 17.79,
+        5 -> 22.24,
+        6 -> 26.68,
+        7 -> 31.13,
+        8 -> 35.58,
+        9 -> 40.02,
+        10 -> 44.47,
+        11 -> 48.92,
+        12 -> 53.37,
+        13 -> 57.81,
+        14 -> 62.26,
+        15 -> 66.71,
+        16 -> 71.15,
+        17 -> 75.6,
+        18 -> 80.05,
+        19 -> 84.5,
+        20 -> 88.94,
+        21 -> 93.39,
+        22 -> 97.84,
+        23 -> 102.28,
+        24 -> 106.73,
+        25 -> 111.18,
+        26 -> 115.63,
+        27 -> 120.07,
+        28 -> 124.52,
+        29 -> 128.97,
+        30 -> 133.41,
+        31 -> 137.86,
+        32 -> 142.31,
+        33 -> 146.76,
+        34 -> 151.2,
+        35 -> 155.65
+      )
+    }
+  }
+
+  "max years" should {
+    "be the highest key in the ratesTable even when it's not at the end of the map" in {
+      val service = RateServiceBuilder(Map(
+        1 -> 10,
+        2 -> 20,
+        5 -> 50,
+        3 -> 30
+      ))
+      service.MAX_YEARS shouldBe 5
+    }
+  }
+
+  "max amount" should {
+    val service = RateServiceBuilder(Map(
+      1 -> 10,
+      2 -> 20,
+      5 -> 50,
+      3 -> 30
+    ))
+    service.MAX_AMOUNT shouldBe 50
+  }
+
   "spAmountPerYear" should {
     "return 4.32 (Maximum Amount - 155.65 divided by Maximum Years - 35" in {
-      RateService.spAmountPerYear.setScale(8, RoundingMode.HALF_UP) shouldBe BigDecimal(4.44714286)
+      testRateService.spAmountPerYear.setScale(8, RoundingMode.HALF_UP) shouldBe BigDecimal(4.44714286)
     }
   }
 
   "getSPAmount called" should {
     "return None for no years" in {
-      RateService.getSPAmount(0) shouldBe 0
+      testRateService.getSPAmount(0) shouldBe 0
     }
 
     "return the maximum amount for a high number" in {
-      RateService.getSPAmount(100) shouldBe 155.65
+      testRateService.getSPAmount(100) shouldBe 155.65
     }
 
     "return the maximum amount for 35" in {
-      RateService.getSPAmount(35) shouldBe 155.65
+      testRateService.getSPAmount(35) shouldBe 155.65
     }
 
     "22 Qualifying years should return £97.84" in {
-      RateService.getSPAmount(22).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 22).setScale(10, RoundingMode.FLOOR)
+      testRateService.getSPAmount(22).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 22).setScale(10, RoundingMode.FLOOR)
     }
 
     "17 Qualifying years should return £75.60" in {
-      RateService.getSPAmount(17).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 17).setScale(10, RoundingMode.FLOOR)
+      testRateService.getSPAmount(17).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 17).setScale(10, RoundingMode.FLOOR)
     }
   }
 
   "getBasicSPAmount called" should {
     "return none for no years" in {
-      RateService.getBasicSPAmount(0) shouldBe 0
+      testRateService.getBasicSPAmount(0) shouldBe 0
     }
 
     "return 119.30 for 30 years" in {
-      RateService.getBasicSPAmount(30) shouldBe 119.30
+      testRateService.getBasicSPAmount(30) shouldBe 119.30
     }
 
     "return 119.30 for 31 years" in {
-      RateService.getBasicSPAmount(31) shouldBe 119.30
+      testRateService.getBasicSPAmount(31) shouldBe 119.30
     }
 
     "return 99.42 for 25 years" in {
-      RateService.getBasicSPAmount(25) shouldBe 99.42
+      testRateService.getBasicSPAmount(25) shouldBe 99.42
     }
 
     "return 87.49 for 22 years" in {
-      RateService.getBasicSPAmount(22) shouldBe 87.49
+      testRateService.getBasicSPAmount(22) shouldBe 87.49
     }
 
     "return 39.77 for 10 years" in {
-      RateService.getBasicSPAmount(10) shouldBe 39.77
+      testRateService.getBasicSPAmount(10) shouldBe 39.77
     }
 
     "return 3.98 for 1 year" in {
-      RateService.getBasicSPAmount(1) shouldBe 3.98
+      testRateService.getBasicSPAmount(1) shouldBe 3.98
     }
   }
-
 
 }

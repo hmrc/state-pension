@@ -17,27 +17,33 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import play.api.Configuration
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.domain.Forecast
 
 class ForecastingServiceSpec extends StatePensionUnitSpec {
 
+  val testForecastingService = new ForecastingService {
+    override lazy val rateService: RateService = RateServiceBuilder.default
+  }
+
   "calculateStartingAmount" when {
     "Amount A is higher than Amount B" should {
       "return Amount A" in {
-        ForecastingService.calculateStartingAmount(100.00, 99.99) shouldBe 100
+        testForecastingService.calculateStartingAmount(100.00, 99.99) shouldBe 100
       }
     }
 
     "Amount B is higher than Amount A" should {
       "return Amount B" in {
-        ForecastingService.calculateStartingAmount(99.99, 100.00) shouldBe 100
+        testForecastingService.calculateStartingAmount(99.99, 100.00) shouldBe 100
       }
     }
 
     "Amount B are equal Amount A" should {
       "return the value" in {
-        ForecastingService.calculateStartingAmount(99, 99) shouldBe 99
+        testForecastingService.calculateStartingAmount(99, 99) shouldBe 99
       }
     }
 
@@ -48,7 +54,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     def forecastCalculation(earningsIncludedUpTo: LocalDate = new LocalDate(2016, 4, 5),
                             finalRelevantStartYear: Int = 2020,
                             currentAmount: BigDecimal = 125,
-                            qualifyingYears: Int = 30) = ForecastingService.calculateForecastAmount(
+                            qualifyingYears: Int = 30) = testForecastingService.calculateForecastAmount(
       earningsIncludedUpTo,
       finalRelevantStartYear,
       currentAmount,
@@ -143,7 +149,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
                            payableGaps: Int = 0,
                            additionalPension: BigDecimal = 0,
                            rebateDerivedAmount: BigDecimal = 0
-                          ) = ForecastingService.calculatePersonalMaximum(
+                          ) = testForecastingService.calculatePersonalMaximum(
       earningsIncludedUpTo,
       finalRelevantStartYear,
       qualifyingYears,
@@ -331,27 +337,27 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
   "yearsToContribute" when {
     "The earningsIncludedUpTo taxYear is the same as the FRY" should {
       "return 0" in {
-        ForecastingService.yearsLeftToContribute(new LocalDate(2017, 4, 5), 2016) shouldBe 0
+        testForecastingService.yearsLeftToContribute(new LocalDate(2017, 4, 5), 2016) shouldBe 0
       }
     }
 
     "The earningsIncludedUpTo taxYear is the after as the FRY" should {
       "return 0" in {
-        ForecastingService.yearsLeftToContribute(new LocalDate(2017, 4, 6), 2016) shouldBe 0
+        testForecastingService.yearsLeftToContribute(new LocalDate(2017, 4, 6), 2016) shouldBe 0
       }
     }
 
     "The earningsIncludedUpTo taxYear is the before the FRY" should {
       "return 1 for one year before" in {
-        ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2016) shouldBe 1
+        testForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2016) shouldBe 1
       }
 
       "return 2 for two year before" in {
-        ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2017) shouldBe 2
+        testForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2017) shouldBe 2
       }
 
       "return 10 for two year before" in {
-        ForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2025) shouldBe 10
+        testForecastingService.yearsLeftToContribute(new LocalDate(2016, 4, 5), 2025) shouldBe 10
       }
     }
   }
@@ -359,28 +365,28 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
   "amountA" when {
     "ap is 0" should {
       "return 3.98 for 1 qualifying year" in {
-        ForecastingService.amountA(1, 0) shouldBe 3.98
+        testForecastingService.amountA(1, 0) shouldBe 3.98
       }
       "return 7.95 for 2 qualifying years" in {
-        ForecastingService.amountA(2, 0) shouldBe 7.95
+        testForecastingService.amountA(2, 0) shouldBe 7.95
       }
       "return 39.77 for 10 qualifying years" in {
-        ForecastingService.amountA(10, 0) shouldBe 39.77
+        testForecastingService.amountA(10, 0) shouldBe 39.77
       }
       "return 119.30 for 30 qualifying years" in {
-        ForecastingService.amountA(30, 0) shouldBe 119.30
+        testForecastingService.amountA(30, 0) shouldBe 119.30
       }
       "return 119.30 for 31 qualifying years" in {
-        ForecastingService.amountA(31, 0) shouldBe 119.30
+        testForecastingService.amountA(31, 0) shouldBe 119.30
       }
     }
 
     "ap has a value" should {
       "return 140 for 30 qualifyingYears and £20.70 AP" in {
-        ForecastingService.amountA(30, 20.70) shouldBe 140
+        testForecastingService.amountA(30, 20.70) shouldBe 140
       }
       "return 4 for 1 qualifyingYears and £0.02 AP" in {
-        ForecastingService.amountA(1, 0.02) shouldBe 4
+        testForecastingService.amountA(1, 0.02) shouldBe 4
       }
     }
   }
@@ -388,17 +394,17 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
   "amountB" when {
     "rda is 0" should {
       "return 155.65 for 35 years" in {
-        ForecastingService.amountB(35, 0) shouldBe 155.65
+        testForecastingService.amountB(35, 0) shouldBe 155.65
       }
 
       "return 155.65 for 36 years" in {
-        ForecastingService.amountB(36, 0) shouldBe 155.65
+        testForecastingService.amountB(36, 0) shouldBe 155.65
       }
     }
 
     "rda has a value" should {
       "return 105.65 for QY= 35, RDA = 50" in {
-        ForecastingService.amountB(35, 50) shouldBe 105.65
+        testForecastingService.amountB(35, 50) shouldBe 105.65
       }
     }
   }
@@ -406,17 +412,17 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
   "sanitiseCurrentAmount" when {
     "there is < 10 years" should {
       "return 0" in {
-        ForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 9) shouldBe 0
+        testForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 9) shouldBe 0
       }
     }
     "there is 10 years" should {
       "return the current amount" in {
-        ForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 10) shouldBe 123
+        testForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 10) shouldBe 123
       }
     }
     "there is 20 years" should {
       "return the current amount" in {
-        ForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 20) shouldBe 123
+        testForecastingService.sanitiseCurrentAmount(current = 123, qualifyingYears = 20) shouldBe 123
       }
     }
   }

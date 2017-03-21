@@ -16,12 +16,26 @@
 
 package uk.gov.hmrc.statepension.services
 
+import javax.inject.Inject
+
+import play.api.Configuration
+import uk.gov.hmrc.statepension.config.AppContext
+
 import scala.math.BigDecimal.RoundingMode
 
-object RateService {
+object RateService extends RateService {
+  override lazy val ratesConfig: Configuration = AppContext.rates
+}
 
-  final val MAX_AMOUNT: BigDecimal = 155.65
-  final val MAX_YEARS: BigDecimal = 35
+trait RateService {
+  def ratesConfig: Configuration
+
+  lazy val ratesTable: Map[Int, BigDecimal] = {
+      ratesConfig.keys.map(k => k.toInt -> ratesConfig.getString(k).fold[BigDecimal](0)(BigDecimal(_))).toMap
+  }
+
+  val MAX_YEARS: Int = ratesTable.keys.max
+  val MAX_AMOUNT: BigDecimal = ratesTable(MAX_YEARS)
 
   val spAmountPerYear: BigDecimal = MAX_AMOUNT / MAX_YEARS
 
@@ -45,5 +59,4 @@ object RateService {
       (basicSPAmountPerYear * qualifyingYears).setScale(2, RoundingMode.HALF_UP)
     }
   }
-
 }

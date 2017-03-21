@@ -23,8 +23,10 @@ import uk.gov.hmrc.time.TaxYearResolver
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
-object ForecastingService {
-
+trait ForecastingService {
+  
+  def rateService: RateService
+  
   final val MINIMUM_QUALIFYING_YEARS = 10
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
@@ -36,16 +38,16 @@ object ForecastingService {
 
     val yearsLeft = yearsLeftToContribute(earningsIncludedUpTo, finalRelevantStartYear)
 
-    if (currentAmount >= RateService.MAX_AMOUNT) {
+    if (currentAmount >= rateService.MAX_AMOUNT) {
       Forecast(currentAmount, yearsToWork = 0)
     }
     else if ((yearsLeft + qualifyingYears) < MINIMUM_QUALIFYING_YEARS) {
       Forecast(amount = 0, yearsToWork = 0)
     }
     else {
-      val forecastAmount = (currentAmount + RateService.spAmountPerYear * yearsLeft).setScale(2, RoundingMode.HALF_UP).min(RateService.MAX_AMOUNT)
+      val forecastAmount = (currentAmount + rateService.spAmountPerYear * yearsLeft).setScale(2, RoundingMode.HALF_UP).min(rateService.MAX_AMOUNT)
       val difference = forecastAmount - currentAmount
-      val yearsNeeded: Int = (difference / RateService.spAmountPerYear).setScale(0, RoundingMode.CEILING).toInt
+      val yearsNeeded: Int = (difference / rateService.spAmountPerYear).setScale(0, RoundingMode.CEILING).toInt
       Forecast(forecastAmount, yearsNeeded.min(yearsLeft))
     }
   }
@@ -93,13 +95,17 @@ object ForecastingService {
   }
 
   def amountA(qualifyingYearsPre2016: Int, additionalPension: BigDecimal): BigDecimal = {
-    RateService.getBasicSPAmount(qualifyingYearsPre2016) + additionalPension
+    rateService.getBasicSPAmount(qualifyingYearsPre2016) + additionalPension
   }
 
   def amountB(qualfyingYears: Int, rebateDerivedAmount: BigDecimal): BigDecimal = {
-    RateService.getSPAmount(qualfyingYears) - rebateDerivedAmount
+    rateService.getSPAmount(qualfyingYears) - rebateDerivedAmount
   }
 
   def sanitiseCurrentAmount(current: BigDecimal, qualifyingYears: Int): BigDecimal = if (qualifyingYears < MINIMUM_QUALIFYING_YEARS) 0 else current
 
+}
+
+object ForecastingService extends ForecastingService {
+  override lazy val rateService: RateService = RateService
 }
