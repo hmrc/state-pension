@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.statepension.services
 
-import java.util.function.BiFunction
-
 import org.joda.time.LocalDate
 import play.Logger
 import uk.gov.hmrc.statepension.domain.Exclusion
@@ -54,7 +52,7 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
     }
 
   private val checkAmountDissonance = (exclusionList: List[Exclusion]) =>
-    if (entitlement != calculatedStartingAmount) {
+    if (startingAmount != calculatedStartingAmount) {
       Logger.warn(s"Dissonance Found!: Entitlement - $entitlement Starting - $startingAmount Components - $calculatedStartingAmount")
       Exclusion.AmountDissonance :: exclusionList
     } else {
@@ -68,7 +66,9 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
   private val checkMarriedWomensReducedRateElection = (exclusionList: List[Exclusion]) =>
     if (reducedRateElection) Exclusion.MarriedWomenReducedRateElection :: exclusionList else exclusionList
 
+  // scalastyle:off magic.number
   final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
+  // scalastyle:on magic.number
 
   private val checkOverseasMaleAutoCredits = (exclusionList: List[Exclusion]) => {
     if (sex.equalsIgnoreCase("M") && isAbroad && pensionDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE)) {

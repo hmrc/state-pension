@@ -126,14 +126,24 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
     }
 
     "the amount dissonance criteria is met" when  {
-      "the entitlement and calculatedStartingAmount are the same" should {
+      "the startingAmount and calculatedStartingAmount are the same" should {
         "return no exclusions" in {
-          exclusionServiceBuilder(entitlement = 155.65, startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
+          exclusionServiceBuilder(startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
         }
       }
-      "the entitlement and calculatedStartingAmount are different" should {
+      "the startingAmount and calculatedStartingAmount are the same but entitlement differs" should {
+        "return no exclusions" in {
+          exclusionServiceBuilder(entitlement = 155, startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
+        }
+      }
+      "the startingAmount and calculatedStartingAmount are different" should {
         "return List(AmountDissonance)" in {
-          exclusionServiceBuilder(entitlement = 155.65, startingAmount = 155.65, calculatedStartingAmount = 101).getExclusions shouldBe List(Exclusion.AmountDissonance)
+          exclusionServiceBuilder(startingAmount = 155.65, calculatedStartingAmount = 101).getExclusions shouldBe List(Exclusion.AmountDissonance)
+        }
+      }
+      "the startingAmount and calculatedStartingAmount are different but entitlement matches" should {
+        "return List(AmountDissonance)" in {
+          exclusionServiceBuilder(entitlement = 101, startingAmount = 155.65, calculatedStartingAmount = 101).getExclusions shouldBe List(Exclusion.AmountDissonance)
         }
       }
     }
