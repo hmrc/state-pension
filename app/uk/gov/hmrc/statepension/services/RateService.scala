@@ -30,21 +30,24 @@ object RateService extends RateService {
 trait RateService {
   def ratesConfig: Configuration
 
-  lazy val ratesTable: Map[Int, BigDecimal] = {
+  private[services] lazy val ratesTable: Map[Int, BigDecimal] = {
       ratesConfig.keys.map(k => k.toInt -> ratesConfig.getString(k).fold[BigDecimal](0)(BigDecimal(_))).toMap
   }
 
   val MAX_YEARS: Int = ratesTable.keys.max
   val MAX_AMOUNT: BigDecimal = ratesTable(MAX_YEARS)
 
-  val spAmountPerYear: BigDecimal = MAX_AMOUNT / MAX_YEARS
-
   def getSPAmount(totalQualifyingYears: Int): BigDecimal = {
     if (totalQualifyingYears > MAX_YEARS) {
       MAX_AMOUNT
     } else {
-      spAmountPerYear * totalQualifyingYears
+      ratesTable(totalQualifyingYears)
     }
+  }
+
+  def yearsNeededForAmount(amount: BigDecimal): Int = {
+    if(amount < 0) 0
+    else ratesTable.filter(_._2 >= amount).keys.min
   }
 
   final val MAX_BASIC_AMOUNT: BigDecimal = 119.30

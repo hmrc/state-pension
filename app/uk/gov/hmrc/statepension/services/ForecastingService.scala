@@ -24,9 +24,9 @@ import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
 trait ForecastingService {
-  
+
   def rateService: RateService
-  
+
   final val MINIMUM_QUALIFYING_YEARS = 10
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
@@ -45,9 +45,9 @@ trait ForecastingService {
       Forecast(amount = 0, yearsToWork = 0)
     }
     else {
-      val forecastAmount = (currentAmount + rateService.spAmountPerYear * yearsLeft).setScale(2, RoundingMode.HALF_UP).min(rateService.MAX_AMOUNT)
+      val forecastAmount = (currentAmount + rateService.getSPAmount(yearsLeft)).setScale(2, RoundingMode.HALF_UP).min(rateService.MAX_AMOUNT)
       val difference = forecastAmount - currentAmount
-      val yearsNeeded: Int = (difference / rateService.spAmountPerYear).setScale(0, RoundingMode.CEILING).toInt
+      val yearsNeeded: Int = rateService.yearsNeededForAmount(difference)
       Forecast(forecastAmount, yearsNeeded.min(yearsLeft))
     }
   }

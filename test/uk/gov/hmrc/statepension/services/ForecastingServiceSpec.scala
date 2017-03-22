@@ -326,7 +326,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         max.amount shouldBe 155.65
       }
       "return 1 year to work" in {
-        max.yearsToWork shouldBe 2 //TODO It should be 1 though, discuss with business about rounding
+        max.yearsToWork shouldBe 1
       }
       "return no gaps to fill" in {
         max.gapsToFill shouldBe 0

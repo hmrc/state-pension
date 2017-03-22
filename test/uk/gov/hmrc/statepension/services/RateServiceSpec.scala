@@ -92,12 +92,6 @@ class RateServiceSpec extends StatePensionUnitSpec {
     service.MAX_AMOUNT shouldBe 50
   }
 
-  "spAmountPerYear" should {
-    "return 4.32 (Maximum Amount - 155.65 divided by Maximum Years - 35" in {
-      testRateService.spAmountPerYear.setScale(8, RoundingMode.HALF_UP) shouldBe BigDecimal(4.44714286)
-    }
-  }
-
   "getSPAmount called" should {
     "return None for no years" in {
       testRateService.getSPAmount(0) shouldBe 0
@@ -112,11 +106,44 @@ class RateServiceSpec extends StatePensionUnitSpec {
     }
 
     "22 Qualifying years should return £97.84" in {
-      testRateService.getSPAmount(22).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 22).setScale(10, RoundingMode.FLOOR)
+      testRateService.getSPAmount(22) shouldBe 97.84
     }
 
     "17 Qualifying years should return £75.60" in {
-      testRateService.getSPAmount(17).setScale(10, RoundingMode.FLOOR) shouldBe BigDecimal((155.65 / 35) * 17).setScale(10, RoundingMode.FLOOR)
+      testRateService.getSPAmount(17) shouldBe 75.60
+    }
+  }
+
+  "yearsNeededForAmount" when {
+    "the amount needed is 0 or less" should {
+      "return 0" in {
+        testRateService.yearsNeededForAmount(0) shouldBe 0
+        testRateService.yearsNeededForAmount(-1) shouldBe 0
+      }
+    }
+
+    "the amount needed is 1p" should {
+      "return 1 year" in {
+        testRateService.yearsNeededForAmount(0.01) shouldBe 1
+      }
+    }
+
+    "the amount needed is 4.45 (the exact amount needed for one year)" should {
+      "return 1 year" in {
+        testRateService.yearsNeededForAmount(4.45) shouldBe 1
+      }
+    }
+
+    "the amount needed is 4.46 (1p over the the exact amount needed for one year)" should {
+      "return 2 year" in {
+        testRateService.yearsNeededForAmount(4.46) shouldBe 2
+      }
+    }
+
+    "the amount needed is 123" should {
+      "return 28 years" in {
+        testRateService.yearsNeededForAmount(123) shouldBe 28
+      }
     }
   }
 
