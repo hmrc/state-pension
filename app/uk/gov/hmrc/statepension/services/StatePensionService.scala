@@ -53,14 +53,13 @@ trait NpsConnection extends StatePensionService {
 
   def citizenDetailsService: CitizenDetailsService
   def forecastingService: ForecastingService
+  def rateService: RateService
 
   def now: LocalDate
 
   def metrics: Metrics
 
   def customAuditConnector: CustomAuditConnector
-
-  final val FULL_RATE = 155.65
 
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
@@ -133,7 +132,7 @@ trait NpsConnection extends StatePensionService {
           finalRelevantYear = summary.finalRelevantYear,
           numberOfQualifyingYears = summary.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
-          currentFullWeeklyPensionAmount = FULL_RATE
+          currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount, statePension.contractedOut,
@@ -184,6 +183,7 @@ object StatePensionService extends StatePensionService with NpsConnection {
   override lazy val nps: NpsConnector = NpsConnector
   override lazy val citizenDetailsService: CitizenDetailsService = CitizenDetailsService
   override lazy val forecastingService: ForecastingService = ForecastingService
+  override lazy val rateService: RateService = RateService
   override lazy val metrics: Metrics = Metrics
   override val customAuditConnector: CustomAuditConnector = CustomAuditConnector
   override def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))

@@ -129,6 +129,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           override lazy val metrics: Metrics = mock[Metrics]
           override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
           override lazy val forecastingService: ForecastingService = defaultForecasting
+          override lazy val rateService: RateService = RateServiceBuilder.default
         }
 
         val regularStatement = NpsSummary(
@@ -366,6 +367,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val regularStatement = NpsSummary(
@@ -457,6 +459,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val regularStatement = NpsSummary(
@@ -552,6 +555,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val regularStatement = NpsSummary(
@@ -611,6 +615,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -679,6 +684,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -748,6 +754,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -816,6 +823,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -883,6 +891,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -951,6 +960,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -1013,6 +1023,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
         override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(

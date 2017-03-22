@@ -31,6 +31,7 @@ trait ForecastingService {
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
     amountA2016.max(amountB2016)
+    //TODO Revaluation
   }
 
   def calculateForecastAmount(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, currentAmount: BigDecimal, qualifyingYears: Int): Forecast = {
