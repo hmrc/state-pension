@@ -23,8 +23,9 @@ object RateServiceBuilder {
 
   private def rateToConfig(pair: (Int, BigDecimal)): (String, Any) = pair._1.toString -> pair._2
 
-  def apply(rates: Map[Int, BigDecimal]): RateService = new RateService {
+  def apply(rates: Map[Int, BigDecimal], revaluationStartingAmount: BigDecimal = 0, revaluationProtectedPayment: BigDecimal = 0): RateService = new RateService {
     override lazy val ratesConfig: Configuration = Configuration.from(rates.map(rateToConfig))
+    override lazy val revaluationConfig: Option[Configuration] = Some(Configuration.from(Map("startingAmount" -> revaluationStartingAmount, "protectedPayment" -> revaluationProtectedPayment)))
   }
 
   val default: RateService = apply(Map(

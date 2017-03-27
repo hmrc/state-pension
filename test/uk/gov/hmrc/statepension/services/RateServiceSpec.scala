@@ -70,6 +70,14 @@ class RateServiceSpec extends StatePensionUnitSpec {
     }
   }
 
+  "revaluationRates" should {
+    "parse the config correctly" in {
+      val rates = RateServiceBuilder.apply(Map(0 -> 0), revaluationStartingAmount = 2.5, revaluationProtectedPayment = 1.01).revaluationRates
+      rates.startingAmount shouldBe 2.5
+      rates.protectedPayment shouldBe 1.01
+    }
+  }
+
   "max years" should {
     "be the highest key in the ratesTable even when it's not at the end of the map" in {
       val service = RateServiceBuilder(Map(
