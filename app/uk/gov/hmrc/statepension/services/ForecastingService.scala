@@ -100,7 +100,7 @@ trait ForecastingService {
   }
 
   def amountB(qualfyingYears: Int, rebateDerivedAmount: BigDecimal): BigDecimal = {
-    rateService.getSPAmount(qualfyingYears) - rebateDerivedAmount
+    rateService.getSPAmount2016(qualfyingYears) - rebateDerivedAmount
   }
 
   def sanitiseCurrentAmount(current: BigDecimal, qualifyingYears: Int): BigDecimal = if (qualifyingYears < MINIMUM_QUALIFYING_YEARS) 0 else current

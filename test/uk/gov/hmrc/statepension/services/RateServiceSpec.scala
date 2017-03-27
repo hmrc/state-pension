@@ -148,7 +148,7 @@ class RateServiceSpec extends StatePensionUnitSpec {
   }
 
   "getBasicSPAmount called" should {
-    "return none for no years" in {
+    "return 0 for 0 years" in {
       testRateService.getBasicSPAmount(0) shouldBe 0
     }
 
@@ -275,6 +275,157 @@ class RateServiceSpec extends StatePensionUnitSpec {
     "return 119.3 for 31 years" in {
       testRateService.getBasicSPAmount(31) shouldBe 119.30
     }
+  }
+
+  "getSPAmount2016" should {
+    "return 0 for 0 years" in {
+      testRateService.getSPAmount2016(0) shouldBe 0
+    }
+
+    "return 4.45 for 1 years" in {
+      testRateService.getSPAmount2016(1) shouldBe 4.45
+    }
+
+    "return 8.89 for 2 years" in {
+      testRateService.getSPAmount2016(2) shouldBe 8.89
+    }
+
+    "return 13.34 for 3 years" in {
+      testRateService.getSPAmount2016(3) shouldBe 13.34
+    }
+
+    "return 17.79 for 4 years" in {
+      testRateService.getSPAmount2016(4) shouldBe 17.79
+    }
+
+    "return 22.24 for 5 years" in {
+      testRateService.getSPAmount2016(5) shouldBe 22.24
+    }
+
+    "return 26.68 for 6 years" in {
+      testRateService.getSPAmount2016(6) shouldBe 26.68
+    }
+
+    "return 31.13 for 7 years" in {
+      testRateService.getSPAmount2016(7) shouldBe 31.13
+    }
+
+    "return 35.58 for 8 years" in {
+      testRateService.getSPAmount2016(8) shouldBe 35.58
+    }
+
+    "return 40.02 for 9 years" in {
+      testRateService.getSPAmount2016(9) shouldBe 40.02
+    }
+
+    "return 44.47 for 10 years" in {
+      testRateService.getSPAmount2016(10) shouldBe 44.47
+    }
+
+    "return 48.92 for 11 years" in {
+      testRateService.getSPAmount2016(11) shouldBe 48.92
+    }
+
+    "return 53.37 for 12 years" in {
+      testRateService.getSPAmount2016(12) shouldBe 53.37
+    }
+
+    "return 57.81 for 13 years" in {
+      testRateService.getSPAmount2016(13) shouldBe 57.81
+    }
+
+    "return 62.26 for 14 years" in {
+      testRateService.getSPAmount2016(14) shouldBe 62.26
+    }
+
+    "return 66.71 for 15 years" in {
+      testRateService.getSPAmount2016(15) shouldBe 66.71
+    }
+
+    "return 71.15 for 16 years" in {
+      testRateService.getSPAmount2016(16) shouldBe 71.15
+    }
+
+    "return 75.6 for 17 years" in {
+      testRateService.getSPAmount2016(17) shouldBe 75.6
+    }
+
+    "return 80.05 for 18 years" in {
+      testRateService.getSPAmount2016(18) shouldBe 80.05
+    }
+
+    "return 84.5 for 19 years" in {
+      testRateService.getSPAmount2016(19) shouldBe 84.5
+    }
+
+    "return 88.94 for 20 years" in {
+      testRateService.getSPAmount2016(20) shouldBe 88.94
+    }
+
+    "return 93.39 for 21 years" in {
+      testRateService.getSPAmount2016(21) shouldBe 93.39
+    }
+
+    "return 97.84 for 22 years" in {
+      testRateService.getSPAmount2016(22) shouldBe 97.84
+    }
+
+    "return 102.28 for 23 years" in {
+      testRateService.getSPAmount2016(23) shouldBe 102.28
+    }
+
+    "return 106.73 for 24 years" in {
+      testRateService.getSPAmount2016(24) shouldBe 106.73
+    }
+
+    "return 111.18 for 25 years" in {
+      testRateService.getSPAmount2016(25) shouldBe 111.18
+    }
+
+    "return 115.63 for 26 years" in {
+      testRateService.getSPAmount2016(26) shouldBe 115.63
+    }
+
+    "return 120.07 for 27 years" in {
+      testRateService.getSPAmount2016(27) shouldBe 120.07
+    }
+
+    "return 124.52 for 28 years" in {
+      testRateService.getSPAmount2016(28) shouldBe 124.52
+    }
+
+    "return 128.97 for 29 years" in {
+      testRateService.getSPAmount2016(29) shouldBe 128.97
+    }
+
+    "return 133.41 for 30 years" in {
+      testRateService.getSPAmount2016(30) shouldBe 133.41
+    }
+
+    "return 137.86 for 31 years" in {
+      testRateService.getSPAmount2016(31) shouldBe 137.86
+    }
+
+    "return 142.31 for 32 years" in {
+      testRateService.getSPAmount2016(32) shouldBe 142.31
+    }
+
+    "return 146.76 for 33 years" in {
+      testRateService.getSPAmount2016(33) shouldBe 146.76
+    }
+
+    "return 151.2 for 34 years" in {
+      testRateService.getSPAmount2016(34) shouldBe 151.2
+    }
+
+    "return 155.65 for 35 years" in {
+      testRateService.getSPAmount2016(35) shouldBe 155.65
+    }
+
+    "return 155.65 for 36 years" in {
+      testRateService.getSPAmount2016(36) shouldBe 155.65
+    }
+
   }
 
 }

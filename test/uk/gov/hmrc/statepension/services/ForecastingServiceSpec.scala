@@ -407,6 +407,15 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         testForecastingService.amountB(35, 50) shouldBe 105.65
       }
     }
+
+    "rates have revalued" should {
+      "still return the 2016 values" in {
+        val service = new ForecastingService {
+          override def rateService: RateService = RateServiceBuilder.apply(Map(0 -> 0, 1 -> 100, 2 -> 200))
+        }
+        service.amountB(35, 0) shouldBe 155.65
+      }
+    }
   }
 
   "sanitiseCurrentAmount" when {

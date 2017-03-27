@@ -62,4 +62,15 @@ trait RateService {
       (basicSPAmountPerYear * qualifyingYears).setScale(2, RoundingMode.HALF_UP)
     }
   }
+
+  final val MAX_AMOUNT_2016: BigDecimal = 155.65
+  final val MAX_YEARS_2016: BigDecimal = 35
+
+  def getSPAmount2016(totalQualifyingYears: Int): BigDecimal = {
+    if(totalQualifyingYears < 1) {
+      0
+    } else {
+      ((MAX_AMOUNT_2016 / MAX_YEARS_2016) * totalQualifyingYears).setScale(2, RoundingMode.HALF_UP).min(MAX_AMOUNT_2016)
+    }
+  }
 }
