@@ -152,28 +152,128 @@ class RateServiceSpec extends StatePensionUnitSpec {
       testRateService.getBasicSPAmount(0) shouldBe 0
     }
 
-    "return 119.30 for 30 years" in {
-      testRateService.getBasicSPAmount(30) shouldBe 119.30
+    "return 3.98 for 1 year" in {
+      testRateService.getBasicSPAmount(1) shouldBe 3.98
     }
 
-    "return 119.30 for 31 years" in {
-      testRateService.getBasicSPAmount(31) shouldBe 119.30
+    "return 7.95 for 2 years" in {
+      testRateService.getBasicSPAmount(2) shouldBe 7.95
     }
 
-    "return 99.42 for 25 years" in {
-      testRateService.getBasicSPAmount(25) shouldBe 99.42
+    "return 11.93 for 3 years" in {
+      testRateService.getBasicSPAmount(3) shouldBe 11.93
     }
 
-    "return 87.49 for 22 years" in {
-      testRateService.getBasicSPAmount(22) shouldBe 87.49
+    "return 15.91 for 4 years" in {
+      testRateService.getBasicSPAmount(4) shouldBe 15.91
+    }
+
+    "return 19.88 for 5 years" in {
+      testRateService.getBasicSPAmount(5) shouldBe 19.88
+    }
+
+    "return 23.86 for 6 years" in {
+      testRateService.getBasicSPAmount(6) shouldBe 23.86
+    }
+
+    "return 27.84 for 7 years" in {
+      testRateService.getBasicSPAmount(7) shouldBe 27.84
+    }
+
+    "return 31.81 for 8 years" in {
+      testRateService.getBasicSPAmount(8) shouldBe 31.81
+    }
+
+    "return 35.79 for 9 years" in {
+      testRateService.getBasicSPAmount(9) shouldBe 35.79
     }
 
     "return 39.77 for 10 years" in {
       testRateService.getBasicSPAmount(10) shouldBe 39.77
     }
 
-    "return 3.98 for 1 year" in {
-      testRateService.getBasicSPAmount(1) shouldBe 3.98
+    "return 43.74 for 11 years" in {
+      testRateService.getBasicSPAmount(11) shouldBe 43.74
+    }
+
+    "return 47.72 for 12 years" in {
+      testRateService.getBasicSPAmount(12) shouldBe 47.72
+    }
+
+    "return 51.7 for 13 years" in {
+      testRateService.getBasicSPAmount(13) shouldBe 51.7
+    }
+
+    "return 55.67 for 14 years" in {
+      testRateService.getBasicSPAmount(14) shouldBe 55.67
+    }
+
+    "return 59.65 for 15 years" in {
+      testRateService.getBasicSPAmount(15) shouldBe 59.65
+    }
+
+    "return 63.63 for 16 years" in {
+      testRateService.getBasicSPAmount(16) shouldBe 63.63
+    }
+
+    "return 67.6 for 17 years" in {
+      testRateService.getBasicSPAmount(17) shouldBe 67.6
+    }
+
+    "return 71.58 for 18 years" in {
+      testRateService.getBasicSPAmount(18) shouldBe 71.58
+    }
+
+    "return 75.56 for 19 years" in {
+      testRateService.getBasicSPAmount(19) shouldBe 75.56
+    }
+
+    "return 79.53 for 20 years" in {
+      testRateService.getBasicSPAmount(20) shouldBe 79.53
+    }
+
+    "return 83.51 for 21 years" in {
+      testRateService.getBasicSPAmount(21) shouldBe 83.51
+    }
+
+    "return 87.49 for 22 years" in {
+      testRateService.getBasicSPAmount(22) shouldBe 87.49
+    }
+
+    "return 91.46 for 23 years" in {
+      testRateService.getBasicSPAmount(23) shouldBe 91.46
+    }
+
+    "return 95.44 for 24 years" in {
+      testRateService.getBasicSPAmount(24) shouldBe 95.44
+    }
+
+    "return 99.42 for 25 years" in {
+      testRateService.getBasicSPAmount(25) shouldBe 99.42
+    }
+
+    "return 103.39 for 26 years" in {
+      testRateService.getBasicSPAmount(26) shouldBe 103.39
+    }
+
+    "return 107.37 for 27 years" in {
+      testRateService.getBasicSPAmount(27) shouldBe 107.37
+    }
+
+    "return 111.35 for 28 years" in {
+      testRateService.getBasicSPAmount(28) shouldBe 111.35
+    }
+
+    "return 115.32 for 29 years" in {
+      testRateService.getBasicSPAmount(29) shouldBe 115.32
+    }
+
+    "return 119.3 for 30 years" in {
+      testRateService.getBasicSPAmount(30) shouldBe 119.30
+    }
+
+    "return 119.3 for 31 years" in {
+      testRateService.getBasicSPAmount(31) shouldBe 119.30
     }
   }
 
