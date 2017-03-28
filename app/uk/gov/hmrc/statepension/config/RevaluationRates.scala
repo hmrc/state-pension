@@ -23,14 +23,14 @@ case class RevaluationRates(value: Option[Configuration]) {
   def startingAmount: BigDecimal = {
     value match {
       case Some(config) => config.getString("startingAmount").fold[BigDecimal](0)(BigDecimal(_))
-      case None => 0
+      case None => 1
     }
   }
 
   def protectedPayment: BigDecimal = {
     value match {
       case Some(config) => config.getString("protectedPayment").fold[BigDecimal](0)(BigDecimal(_))
-      case None => 0
+      case None => 1
     }
   }
 

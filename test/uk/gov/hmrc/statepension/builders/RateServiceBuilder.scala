@@ -23,7 +23,7 @@ object RateServiceBuilder {
 
   private def rateToConfig(pair: (Int, BigDecimal)): (String, Any) = pair._1.toString -> pair._2
 
-  def apply(rates: Map[Int, BigDecimal], revaluationStartingAmount: BigDecimal = 0, revaluationProtectedPayment: BigDecimal = 0): RateService = new RateService {
+  def apply(rates: Map[Int, BigDecimal], revaluationStartingAmount: BigDecimal = 1, revaluationProtectedPayment: BigDecimal = 1): RateService = new RateService {
     override lazy val ratesConfig: Configuration = Configuration.from(rates.map(rateToConfig))
     override lazy val revaluationConfig: Option[Configuration] = Some(Configuration.from(Map("startingAmount" -> revaluationStartingAmount, "protectedPayment" -> revaluationProtectedPayment)))
   }
@@ -66,4 +66,43 @@ object RateServiceBuilder {
     34 -> 151.2,
     35 -> 155.65
   ))
+
+  val twentySeventeenToTwentyEighteen: RateService = apply(Map(
+    0 -> 0,
+    1 -> 4.56,
+    2 -> 9.12,
+    3 -> 13.68,
+    4 -> 18.23,
+    5 -> 22.79,
+    6 -> 27.35,
+    7 -> 31.91,
+    8 -> 36.47,
+    9 -> 41.03,
+    10 -> 45.59,
+    11 -> 50.14,
+    12 -> 54.7,
+    13 -> 59.26,
+    14 -> 63.82,
+    15 -> 68.38,
+    16 -> 72.94,
+    17 -> 77.5,
+    18 -> 82.05,
+    19 -> 86.61,
+    20 -> 91.17,
+    21 -> 95.73,
+    22 -> 100.29,
+    23 -> 104.85,
+    24 -> 109.41,
+    25 -> 113.96,
+    26 -> 118.52,
+    27 -> 123.08,
+    28 -> 127.64,
+    29 -> 132.2,
+    30 -> 136.76,
+    31 -> 141.32,
+    32 -> 145.87,
+    33 -> 150.43,
+    34 -> 154.99,
+    35 -> 159.55
+  ), revaluationStartingAmount = 1.025056, revaluationProtectedPayment = 1.01)
 }

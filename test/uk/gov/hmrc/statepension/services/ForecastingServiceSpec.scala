@@ -140,6 +140,16 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).yearsToWork shouldBe 8
       }
     }
+
+    "the rates have changed 2017-18" should {
+      "use the rates from the configuration" in {
+        val service = new ForecastingService {
+          override def rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
+        }
+        service.calculateForecastAmount(new LocalDate(2017, 4, 5), 2020, 130, 28) shouldBe Forecast(148.23, 4)
+      }
+    }
+
   }
 
   "calculatePersonalMaximum" when {

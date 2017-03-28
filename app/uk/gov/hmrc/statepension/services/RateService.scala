@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.statepension.services
 
-import javax.inject.Inject
-
 import play.api.Configuration
 import uk.gov.hmrc.statepension.config.{AppContext, RevaluationRates}
 
