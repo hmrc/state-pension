@@ -17,7 +17,6 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 
 
@@ -1143,5 +1142,55 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
     "parse payable gaps correctly (count, not read the non_qualifying_years_payable field)" in {
       recordJson.payableGaps shouldBe 4
     }
+
+    "purge" should {
+      "return an nirecord with no tax years after 2014 when the FRY 2014" in {
+        val niRecord = NpsNIRecord(List(
+          NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2011, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2012, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2013, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2014, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2015, qualifying = false, underInvestigation = false, payableFlag = true),
+          NpsNITaxYear(2016, qualifying = false, underInvestigation = false, payableFlag = true)
+        ))
+
+        val purged = niRecord.purge(finalRelevantStartYear = 2014)
+
+        purged.payableGaps shouldBe 0
+        purged.taxYears shouldBe List(
+          NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2011, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2012, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2013, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2014, qualifying = true, underInvestigation = false, payableFlag = false)
+        )
+      }
+
+      "return an nirecord with no tax years after 2015 when the FRY 2015" in {
+        val niRecord = NpsNIRecord(List(
+          NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2011, qualifying = false, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2012, qualifying = false, underInvestigation = false, payableFlag = true),
+          NpsNITaxYear(2013, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2014, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2015, qualifying = false, underInvestigation = false, payableFlag = true),
+          NpsNITaxYear(2016, qualifying = false, underInvestigation = false, payableFlag = true)
+        ))
+
+        val purged = niRecord.purge(finalRelevantStartYear = 2015)
+
+        purged.payableGaps shouldBe 2
+        purged.taxYears shouldBe List(
+          NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2011, qualifying = false, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2012, qualifying = false, underInvestigation = false, payableFlag = true),
+          NpsNITaxYear(2013, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2014, qualifying = true, underInvestigation = false, payableFlag = false),
+          NpsNITaxYear(2015, qualifying = false, underInvestigation = false, payableFlag = true)
+        )
+      }
+    }
+
   }
 }

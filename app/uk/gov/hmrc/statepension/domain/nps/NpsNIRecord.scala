@@ -16,11 +16,22 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import org.joda.time.LocalDate
+import play.api.Logger
 import play.api.libs.json.{Reads, __}
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 case class NpsNIRecord(taxYears: List[NpsNITaxYear]) {
   val payableGaps: Int = taxYears.count(_.payable)
+
+  def purge(finalRelevantStartYear: Int): NpsNIRecord = {
+    val filteredYears = taxYears.filter(_.startTaxYear <= finalRelevantStartYear)
+    val purgedYears = taxYears.filter(_.startTaxYear > finalRelevantStartYear)
+    if(purgedYears.nonEmpty) Logger.info(s"Purged years (FRY $finalRelevantStartYear): ${purgedYears.map(_.startTaxYear).mkString(",")}")
+
+    this.copy(
+      taxYears = filteredYears
+    )
+  }
 }
 
 

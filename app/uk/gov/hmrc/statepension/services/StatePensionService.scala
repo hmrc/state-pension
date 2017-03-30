@@ -102,6 +102,8 @@ trait NpsConnection extends StatePensionService {
 
         auditNPSSummary(nino, summary)
 
+        val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
+
         val forecast = forecastingService.calculateForecastAmount(
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
@@ -113,7 +115,7 @@ trait NpsConnection extends StatePensionService {
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
           summary.qualifyingYears,
-          payableGaps = niRecord.payableGaps,
+          payableGaps = purgedRecord.payableGaps,
           additionalPension = summary.amounts.amountA2016.totalAP,
           rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
         )
