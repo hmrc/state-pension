@@ -1086,6 +1086,118 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
       |      "ni_earnings_self_employed": null,
       |      "class_three_payable_by": null,
       |      "ni_earnings_voluntary": null
+      |    },
+      |    {
+      |      "class_three_payable_by_penalty": null,
+      |      "class_two_outstanding_weeks": null,
+      |      "class_two_payable": null,
+      |      "qualifying": 1,
+      |      "under_investigation_flag": 0,
+      |      "class_two_payable_by": null,
+      |      "co_class_one_paid": null,
+      |      "class_two_payable_by_penalty": null,
+      |      "co_primary_paid_earnings": null,
+      |      "payable": 0,
+      |      "rattd_tax_year": 2015,
+      |      "ni_earnings": null,
+      |      "amount_needed": null,
+      |      "primary_paid_earnings": null,
+      |      "class_three_payable": null,
+      |      "ni_earnings_employed": null,
+      |      "npsLothcred": [
+      |        {
+      |          "credit_source_type": 25,
+      |          "cc_type": 24,
+      |          "no_of_credits_and_conts": 52
+      |        }
+      |      ],
+      |      "ni_earnings_self_employed": null,
+      |      "class_three_payable_by": null,
+      |      "ni_earnings_voluntary": null
+      |    },
+      |    {
+      |      "class_three_payable_by_penalty": "2023-04-05",
+      |      "class_two_outstanding_weeks": null,
+      |      "class_two_payable": null,
+      |      "qualifying": 0,
+      |      "under_investigation_flag": 0,
+      |      "class_two_payable_by": null,
+      |      "co_class_one_paid": null,
+      |      "class_two_payable_by_penalty": null,
+      |      "co_primary_paid_earnings": null,
+      |      "payable": 1,
+      |      "rattd_tax_year": 2016,
+      |      "ni_earnings": null,
+      |      "amount_needed": "530.0000",
+      |      "primary_paid_earnings": null,
+      |      "class_three_payable": 530.0,
+      |      "ni_earnings_employed": null,
+      |      "npsLothcred": [
+      |        {
+      |          "credit_source_type": 27,
+      |          "cc_type": 23,
+      |          "no_of_credits_and_conts": 12
+      |        }
+      |      ],
+      |      "ni_earnings_self_employed": null,
+      |      "class_three_payable_by": "2019-04-05",
+      |      "ni_earnings_voluntary": null
+      |    },
+      |    {
+      |      "class_three_payable_by_penalty": null,
+      |      "class_two_outstanding_weeks": null,
+      |      "class_two_payable": null,
+      |      "qualifying": 1,
+      |      "under_investigation_flag": 0,
+      |      "class_two_payable_by": null,
+      |      "co_class_one_paid": null,
+      |      "class_two_payable_by_penalty": null,
+      |      "co_primary_paid_earnings": null,
+      |      "payable": 0,
+      |      "rattd_tax_year": 2017,
+      |      "ni_earnings": null,
+      |      "amount_needed": null,
+      |      "primary_paid_earnings": null,
+      |      "class_three_payable": null,
+      |      "ni_earnings_employed": null,
+      |      "npsLothcred": [
+      |        {
+      |          "credit_source_type": 25,
+      |          "cc_type": 24,
+      |          "no_of_credits_and_conts": 52
+      |        }
+      |      ],
+      |      "ni_earnings_self_employed": null,
+      |      "class_three_payable_by": null,
+      |      "ni_earnings_voluntary": null
+      |    },
+      |    {
+      |      "class_three_payable_by_penalty": "2023-04-05",
+      |      "class_two_outstanding_weeks": null,
+      |      "class_two_payable": null,
+      |      "qualifying": 0,
+      |      "under_investigation_flag": 0,
+      |      "class_two_payable_by": null,
+      |      "co_class_one_paid": null,
+      |      "class_two_payable_by_penalty": null,
+      |      "co_primary_paid_earnings": null,
+      |      "payable": 1,
+      |      "rattd_tax_year": 2018,
+      |      "ni_earnings": null,
+      |      "amount_needed": "530.0000",
+      |      "primary_paid_earnings": null,
+      |      "class_three_payable": 530.0,
+      |      "ni_earnings_employed": null,
+      |      "npsLothcred": [
+      |        {
+      |          "credit_source_type": 27,
+      |          "cc_type": 23,
+      |          "no_of_credits_and_conts": 12
+      |        }
+      |      ],
+      |      "ni_earnings_self_employed": null,
+      |      "class_three_payable_by": "2019-04-05",
+      |      "ni_earnings_voluntary": null
       |    }
       |  ],
       |  "nino": "QQ123456A"
@@ -1135,12 +1247,17 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
         NpsNITaxYear(2011, qualifying = false, underInvestigation = false, payableFlag = true),
         NpsNITaxYear(2012, qualifying = false, underInvestigation = false, payableFlag = true),
         NpsNITaxYear(2013, qualifying = true, underInvestigation = false, payableFlag = false),
-        NpsNITaxYear(2014, qualifying = true, underInvestigation = false, payableFlag = false)
+        NpsNITaxYear(2014, qualifying = true, underInvestigation = false, payableFlag = false),
+        NpsNITaxYear(2015, qualifying = true, underInvestigation = false, payableFlag = false),
+        NpsNITaxYear(2016, qualifying = false, underInvestigation = false, payableFlag = true),
+        NpsNITaxYear(2017, qualifying = true, underInvestigation = false, payableFlag = false),
+        NpsNITaxYear(2018, qualifying = false, underInvestigation = false, payableFlag = true)
       )
     }
 
     "parse payable gaps correctly (count, not read the non_qualifying_years_payable field)" in {
-      recordJson.payableGaps shouldBe 4
+      recordJson.payableGapsPre2016 shouldBe 4
+      recordJson.payableGapsPost2016 shouldBe 2
     }
 
     "purge" should {
@@ -1157,7 +1274,7 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
 
         val purged = niRecord.purge(finalRelevantStartYear = 2014)
 
-        purged.payableGaps shouldBe 0
+        purged.payableGapsPre2016 shouldBe 0
         purged.taxYears shouldBe List(
           NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
           NpsNITaxYear(2011, qualifying = true, underInvestigation = false, payableFlag = false),
@@ -1180,7 +1297,7 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
 
         val purged = niRecord.purge(finalRelevantStartYear = 2015)
 
-        purged.payableGaps shouldBe 2
+        purged.payableGapsPre2016 shouldBe 2
         purged.taxYears shouldBe List(
           NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
           NpsNITaxYear(2011, qualifying = false, underInvestigation = false, payableFlag = false),

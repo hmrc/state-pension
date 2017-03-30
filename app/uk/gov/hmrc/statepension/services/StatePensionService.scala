@@ -115,7 +115,7 @@ trait NpsConnection extends StatePensionService {
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
           summary.qualifyingYears,
-          payableGaps = purgedRecord.payableGaps,
+          payableGaps = purgedRecord.payableGapsPre2016,
           additionalPension = summary.amounts.amountA2016.totalAP,
           rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
         )
