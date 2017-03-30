@@ -19,10 +19,12 @@ package uk.gov.hmrc.statepension.domain.nps
 import org.joda.time.LocalDate
 import play.api.libs.json.{Reads, __}
 
-case class NpsNIRecord(payableGaps: Int)
+case class NpsNIRecord(taxYears: List[NpsNITaxYear]) {
+  val payableGaps: Int = taxYears.count(_.payable)
+}
 
 
 
 object NpsNIRecord {
-  implicit val reads: Reads[NpsNIRecord] = (__ \ "non_qualifying_years_payable").read[Int].map(NpsNIRecord.apply)
+  implicit val reads: Reads[NpsNIRecord] = (__ \ "npsLnitaxyr").read[List[NpsNITaxYear]].map(NpsNIRecord.apply)
 }
