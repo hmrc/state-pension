@@ -47,6 +47,70 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "there is revalution rates" should {
+      "not take them into account" in {
+        val service = new ForecastingService {
+          override lazy val rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
+        }
+        service.calculateStartingAmount(99.99, 100.00) shouldBe 100
+      }
+    }
+  }
+
+  "calculateRevaluedStartingAmount" when {
+    "there is no rates" when {
+      "Amount A is higher than Amount B" should {
+        "return Amount A" in {
+          testForecastingService.calculateRevaluedStartingAmount(100.00, 99.99) shouldBe 100
+        }
+      }
+
+      "Amount B is higher than Amount A" should {
+        "return Amount B" in {
+          testForecastingService.calculateRevaluedStartingAmount(99.99, 100.00) shouldBe 100
+        }
+      }
+
+      "Amount B are equal Amount A" should {
+        "return the value" in {
+          testForecastingService.calculateRevaluedStartingAmount(99, 99) shouldBe 99
+        }
+      }
+    }
+
+    "the starting amount revaluation rate is 2.5056% and pp revaluation rate is 1%" should {
+      val service = new ForecastingService {
+        override lazy val rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
+      }
+
+      "protected payment" should {
+        "return 159.97 for 155.66" in {
+          service.calculateRevaluedStartingAmount(155.66, 155.65) shouldBe 159.57
+        }
+
+        "return 204.35 for 200 (ceiling rounding)" in {
+          service.calculateRevaluedStartingAmount(200, 155.65) shouldBe 204.35
+        }
+      }
+
+      "full rate" should {
+        "return 159.55 for 155.65" in {
+          service.calculateRevaluedStartingAmount(155.65, 155.65) shouldBe 159.55
+        }
+      }
+
+      "starting amount" should {
+        "return 102.51 for 100" in {
+          service.calculateRevaluedStartingAmount(100, 100) shouldBe 102.51
+        }
+        "return 153.82 for 123 (ceiling rounding)" in {
+          service.calculateRevaluedStartingAmount(123, 100) shouldBe 126.09
+        }
+      }
+
+
+    }
+
   }
 
   "calculateForecastAmount" when {

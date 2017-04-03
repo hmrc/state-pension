@@ -31,7 +31,16 @@ trait ForecastingService {
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
     amountA2016.max(amountB2016)
-    //TODO Revaluation
+  }
+
+  def calculateRevaluedStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
+    val startingAmount2016 = calculateStartingAmount(amountA2016, amountB2016)
+    if (startingAmount2016 < rateService.MAX_AMOUNT_2016) (startingAmount2016 * rateService.revaluationRates.startingAmount).setScale(2, RoundingMode.CEILING)
+    else if (startingAmount2016 == rateService.MAX_AMOUNT_2016) rateService.MAX_AMOUNT
+    else {
+      val protectedPayment2016 = startingAmount2016 - rateService.MAX_AMOUNT_2016
+      (protectedPayment2016 * rateService.revaluationRates.protectedPayment).setScale(2, RoundingMode.CEILING) + rateService.MAX_AMOUNT
+    }
   }
 
   def calculateForecastAmount(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, currentAmount: BigDecimal, qualifyingYears: Int): Forecast = {
@@ -70,7 +79,7 @@ trait ForecastingService {
 
   private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYears: Int, payableGaps: Int,
                               additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFill: Int) => {
-    val startingAmount = calculateStartingAmount(
+    val startingAmount = calculateRevaluedStartingAmount(
       amountA(qualifyingYears + gapsToFill, additionalPension),
       amountB(qualifyingYears + gapsToFill, rebateDerivedAmount)
     )
