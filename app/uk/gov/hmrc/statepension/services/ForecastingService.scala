@@ -69,12 +69,7 @@ trait ForecastingService {
       earningsIncludedUpTo, finalRelevantStartYear, qualifyingYearsPre2016, qualifyingYearsPost2016, additionalPension, rebateDerivedAmount
     )
     val totalMaximum = personalMaxCalculation(payableGapsPre2016)
-    if (payableGapsPre2016 > 0) {
-      personalMaxGenerator(totalMaximum.amount, payableGapsPre2016, personalMaxCalculation)
-    }
-    else {
-      PersonalMaximum(totalMaximum.amount, totalMaximum.yearsToWork, gapsToFill = 0)
-    }
+    PersonalMaximum(totalMaximum.amount, totalMaximum.yearsToWork, gapsToFill = payableGapsPre2016)
   }
 
   private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYearsPre2016: Int, qualifyingYearsPost2016: Int,
@@ -84,23 +79,9 @@ trait ForecastingService {
       amountB(qualifyingYearsPre2016 + gapsToFill, rebateDerivedAmount)
     )
     val currentAmount =
-      if(startingAmount >= rateService.MAX_AMOUNT) startingAmount
+      if (startingAmount >= rateService.MAX_AMOUNT) startingAmount
       else (startingAmount + rateService.getSPAmount(qualifyingYearsPost2016)).min(rateService.MAX_AMOUNT)
     calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = currentAmount, qualifyingYearsPre2016 + qualifyingYearsPost2016 + gapsToFill)
-  }
-
-  private def personalMaxGenerator(maximum: BigDecimal, payableGaps: Int, calculation: (Int) => (Forecast)): PersonalMaximum = {
-    require(payableGaps > 0)
-
-    @tailrec def go(years: Int): Int = {
-      if (years < 0) 0
-      else if (calculation(years).amount < maximum) years + 1
-      else go(years - 1)
-    }
-
-    val minimumGaps = go(payableGaps)
-    val minYearsToContributeForecast = calculation(minimumGaps)
-    PersonalMaximum(maximum, minYearsToContributeForecast.yearsToWork, minimumGaps)
   }
 
   def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int = {

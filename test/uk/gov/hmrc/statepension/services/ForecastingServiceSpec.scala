@@ -303,8 +303,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           "return zero years to work as there is none" in {
             max.yearsToWork shouldBe 0
           }
-          "return zero gap to fill as none are required" in {
-            max.gapsToFill shouldBe 0
+          "return 1 gap to fill as none are required but it's the number of payable gaps (tactical behaviour)" in {
+            max.gapsToFill shouldBe 1
           }
         }
         "there is 28 qualifying years" should {
@@ -342,8 +342,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           "return one year to work" in {
             max.yearsToWork shouldBe 1
           }
-          "return zero gaps to fill as they will not matter" in {
-            max.gapsToFill shouldBe 0
+          "return 1 gaps to fill as they will not matter but it's the number of payable gaps (tactical behaviour)" in {
+            max.gapsToFill shouldBe 1
           }
         }
         "there is 28 qualifying years" should {
@@ -382,20 +382,20 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           "return 0 years to work" in {
             max.yearsToWork shouldBe 0
           }
-          "return 7 gaps to fill" in {
-            max.gapsToFill shouldBe 7
+          "return 10 gaps to fill should be 7 but it's the number of payable gaps (tactical behaviour)" in {
+            max.gapsToFill shouldBe 10
           }
         }
-        "there is 23 QYs, 6 gaps, 5 years to contribute, 40 AP (working is more cost effective than paying)" should {
+        "there is 23 QYs, 6 gaps, 5 years to contribute, 40 AP (working is more cost effective than paying but it's the tactical solution so paying is favoured over working)" should {
           val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGapsPre2016 = 6, additionalPension = 40)
           "return a maximum of 219.30" in {
             max.amount shouldBe 155.65
           }
-          "return 5 years to work" in {
-            max.yearsToWork shouldBe 5
+          "return 5 years to work but tactical behaviour so return 1" in {
+            max.yearsToWork shouldBe 1
           }
-          "return 1 gaps to fill" in {
-            max.gapsToFill shouldBe 1
+          "return 1 gaps to fill but tactical behaviour so fill 6 (total payable gaps)" in {
+            max.gapsToFill shouldBe 6
           }
         }
       }
@@ -405,11 +405,11 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         "return the full rate of 155.65" in {
           max.amount shouldBe 155.65
         }
-        "return 1 year to work" in {
-          max.yearsToWork shouldBe 1
+        "return 1 year to work but tactical behaviour so 0" in {
+          max.yearsToWork shouldBe 0
         }
-        "return no gaps to fill" in {
-          max.gapsToFill shouldBe 0
+        "return no gaps to fill but tactical so 1" in {
+          max.gapsToFill shouldBe 1
         }
       }
     }
