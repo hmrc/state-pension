@@ -1260,6 +1260,10 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
       recordJson.payableGapsPost2016 shouldBe 2
     }
 
+    "parse qualifying years post 2016 correctly (count them)" in {
+      recordJson.qualifyingYearsPost2016 shouldBe 1
+    }
+
     "purge" should {
       "return an nirecord with no tax years after 2014 when the FRY 2014" in {
         val niRecord = NpsNIRecord(List(
@@ -1275,6 +1279,7 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
         val purged = niRecord.purge(finalRelevantStartYear = 2014)
 
         purged.payableGapsPre2016 shouldBe 0
+        purged.qualifyingYearsPost2016 shouldBe 0
         purged.taxYears shouldBe List(
           NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
           NpsNITaxYear(2011, qualifying = true, underInvestigation = false, payableFlag = false),
@@ -1298,6 +1303,7 @@ class NpsNIRecordSpec extends StatePensionUnitSpec {
         val purged = niRecord.purge(finalRelevantStartYear = 2015)
 
         purged.payableGapsPre2016 shouldBe 2
+        purged.qualifyingYearsPost2016 shouldBe 0
         purged.taxYears shouldBe List(
           NpsNITaxYear(2010, qualifying = true, underInvestigation = false, payableFlag = false),
           NpsNITaxYear(2011, qualifying = false, underInvestigation = false, payableFlag = false),

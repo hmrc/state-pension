@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 case class NpsNIRecord(taxYears: List[NpsNITaxYear]) {
   val payableGapsPre2016: Int = taxYears.filter(_.startTaxYear < 2016).count(_.payable)
   val payableGapsPost2016: Int = taxYears.filter(_.startTaxYear >= 2016).count(_.payable)
+  val qualifyingYearsPost2016: Int = taxYears.filter(_.startTaxYear >= 2016).count(_.qualifying)
 
   def purge(finalRelevantStartYear: Int): NpsNIRecord = {
     val filteredYears = taxYears.filter(_.startTaxYear <= finalRelevantStartYear)
