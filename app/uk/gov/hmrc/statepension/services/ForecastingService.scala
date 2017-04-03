@@ -35,11 +35,11 @@ trait ForecastingService {
 
   def calculateRevaluedStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
     val startingAmount2016 = calculateStartingAmount(amountA2016, amountB2016)
-    if (startingAmount2016 < rateService.MAX_AMOUNT_2016) (startingAmount2016 * rateService.revaluationRates.startingAmount).setScale(2, RoundingMode.CEILING)
+    if (startingAmount2016 < rateService.MAX_AMOUNT_2016) (startingAmount2016 * rateService.revaluationRates.startingAmount).setScale(2, RoundingMode.HALF_UP)
     else if (startingAmount2016 == rateService.MAX_AMOUNT_2016) rateService.MAX_AMOUNT
     else {
       val protectedPayment2016 = startingAmount2016 - rateService.MAX_AMOUNT_2016
-      (protectedPayment2016 * rateService.revaluationRates.protectedPayment).setScale(2, RoundingMode.CEILING) + rateService.MAX_AMOUNT
+      (protectedPayment2016 * rateService.revaluationRates.protectedPayment).setScale(2, RoundingMode.HALF_UP) + rateService.MAX_AMOUNT
     }
   }
 

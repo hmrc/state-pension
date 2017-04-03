@@ -84,12 +84,12 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
       }
 
       "protected payment" should {
-        "return 159.97 for 155.66" in {
-          service.calculateRevaluedStartingAmount(155.66, 155.65) shouldBe 159.57
+        "return 159.56 for 155.66" in {
+          service.calculateRevaluedStartingAmount(155.66, 155.65) shouldBe 159.56
         }
 
-        "return 204.35 for 200 (ceiling rounding)" in {
-          service.calculateRevaluedStartingAmount(200, 155.65) shouldBe 204.35
+        "return 204.34 for 200 (half-up rounding)" in {
+          service.calculateRevaluedStartingAmount(200, 155.65) shouldBe 204.34
         }
       }
 
@@ -103,8 +103,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
         "return 102.51 for 100" in {
           service.calculateRevaluedStartingAmount(100, 100) shouldBe 102.51
         }
-        "return 153.82 for 123 (ceiling rounding)" in {
-          service.calculateRevaluedStartingAmount(123, 100) shouldBe 126.09
+        "return 126.08 for 123 (half-up rounding)" in {
+          service.calculateRevaluedStartingAmount(123, 100) shouldBe 126.08
         }
       }
 
