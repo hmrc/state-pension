@@ -16,21 +16,40 @@
 
 package uk.gov.hmrc.statepension.services
 
+import play.api.Configuration
+import uk.gov.hmrc.statepension.config.{AppContext, RevaluationRates}
+
 import scala.math.BigDecimal.RoundingMode
 
-object RateService {
+object RateService extends RateService {
+  override lazy val ratesConfig: Configuration = AppContext.rates
+  override lazy val revaluationConfig: Option[Configuration] = AppContext.revaluation
+}
 
-  final val MAX_AMOUNT: BigDecimal = 155.65
-  final val MAX_YEARS: BigDecimal = 35
+trait RateService {
+  def ratesConfig: Configuration
+  def revaluationConfig: Option[Configuration]
 
-  val spAmountPerYear: BigDecimal = MAX_AMOUNT / MAX_YEARS
+  val revaluationRates: RevaluationRates = RevaluationRates(revaluationConfig)
+
+  private[services] lazy val ratesTable: Map[Int, BigDecimal] = {
+      ratesConfig.keys.map(k => k.toInt -> ratesConfig.getString(k).fold[BigDecimal](0)(BigDecimal(_))).toMap
+  }
+
+  val MAX_YEARS: Int = ratesTable.keys.max
+  val MAX_AMOUNT: BigDecimal = ratesTable(MAX_YEARS)
 
   def getSPAmount(totalQualifyingYears: Int): BigDecimal = {
     if (totalQualifyingYears > MAX_YEARS) {
       MAX_AMOUNT
     } else {
-      spAmountPerYear * totalQualifyingYears
+      ratesTable(totalQualifyingYears)
     }
+  }
+
+  def yearsNeededForAmount(amount: BigDecimal): Int = {
+    if(amount < 0) 0
+    else ratesTable.filter(_._2 >= amount).keys.min
   }
 
   final val MAX_BASIC_AMOUNT: BigDecimal = 119.30
@@ -46,4 +65,14 @@ object RateService {
     }
   }
 
+  final val MAX_AMOUNT_2016: BigDecimal = 155.65
+  final val MAX_YEARS_2016: BigDecimal = 35
+
+  def getSPAmount2016(totalQualifyingYears: Int): BigDecimal = {
+    if(totalQualifyingYears < 1) {
+      0
+    } else {
+      ((MAX_AMOUNT_2016 / MAX_YEARS_2016) * totalQualifyingYears).setScale(2, RoundingMode.HALF_UP).min(MAX_AMOUNT_2016)
+    }
+  }
 }

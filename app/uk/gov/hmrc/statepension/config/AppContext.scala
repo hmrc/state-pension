@@ -27,6 +27,8 @@ trait AppContext {
   def access: Option[Configuration]
   def status: Option[String]
   def connectToHOD: Boolean
+  def rates: Configuration
+  def revaluation: Option[Configuration]
 }
 
 object AppContext extends AppContext with ServicesConfig {
@@ -37,4 +39,6 @@ object AppContext extends AppContext with ServicesConfig {
   lazy val access = current.configuration.getConfig("api.access")
   lazy val status = current.configuration.getString("api.status")
   lazy val connectToHOD = current.configuration.getBoolean("feature.connectToHOD").getOrElse(false)
+  override lazy val rates: Configuration = current.configuration.getConfig("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
+  override lazy val revaluation: Option[Configuration] = current.configuration.getConfig("rates.revaluation")
 }

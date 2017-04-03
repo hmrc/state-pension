@@ -28,6 +28,7 @@ import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
+import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
@@ -114,6 +115,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     val mockCitizenDetails = mock[CitizenDetailsService]
     when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
 
+    val defaultForecasting = new ForecastingService {
+      override lazy val rateService: RateService = RateServiceBuilder.default
+    }
+
     "there are no exclusions" when {
       "there is a regular statement (Reached)" should {
 
@@ -123,6 +128,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
           override lazy val metrics: Metrics = mock[Metrics]
           override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+          override lazy val forecastingService: ForecastingService = defaultForecasting
+          override lazy val rateService: RateService = RateServiceBuilder.default
         }
 
         val regularStatement = NpsSummary(
@@ -167,7 +174,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           NpsNIRecord(payableGaps = 0)
         ))
 
-         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
         "log a summary metric" in {
           verify(service.metrics, Mockito.atLeastOnce()).summary(
@@ -210,14 +217,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a pensionSharingOrder return true" in {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = true)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
         }
 
         "when there is no pensionSharingOrder return false" in {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = false)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
@@ -236,21 +243,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a protected payment of some value return true" in {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
         }
 
         "when there is a protected payment of 0 return false" in {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
         }
 
         "when there is a rebate derived amount of 12.34 it" should {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
           ))
 
@@ -270,7 +277,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a rebate derived amount of 0 it" should {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
           ))
 
@@ -291,7 +298,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 161.18 it" should {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
           ))
 
@@ -329,7 +336,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 0 it" should {
-         when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = NpsStatePensionAmounts())
           ))
 
@@ -359,6 +366,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val regularStatement = NpsSummary(
@@ -391,7 +400,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
@@ -449,6 +458,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val regularStatement = NpsSummary(
@@ -481,7 +492,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
@@ -543,6 +554,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val regularStatement = NpsSummary(
@@ -601,6 +614,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -621,7 +636,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(payableGaps = 2)
       ))
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
@@ -668,6 +683,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -685,7 +702,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       )
 
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
@@ -736,6 +753,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -752,7 +771,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsStatePensionAmounts()
       )
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
@@ -803,6 +822,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -820,7 +841,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       )
 
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
@@ -869,6 +890,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -888,7 +911,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
@@ -936,6 +959,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -948,7 +973,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
@@ -997,6 +1022,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
         override lazy val metrics: Metrics = mock[Metrics]
         override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
       val summary = NpsSummary(
@@ -1009,7 +1036,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-     when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
