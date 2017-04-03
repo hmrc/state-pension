@@ -111,11 +111,15 @@ trait NpsConnection extends StatePensionService {
           summary.qualifyingYears
         )
 
+        val qualifyingYearsPre2016 = summary.qualifyingYears - purgedRecord.qualifyingYearsPost2016
+
         val personalMaximum = forecastingService.calculatePersonalMaximum(
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
-          summary.qualifyingYears,
-          payableGaps = purgedRecord.payableGapsPre2016,
+          qualifyingYearsPre2016,
+          purgedRecord.qualifyingYearsPost2016,
+          payableGapsPre2016 = purgedRecord.payableGapsPre2016,
+          payableGapsPost2016 = purgedRecord.payableGapsPost2016,
           additionalPension = summary.amounts.amountA2016.totalAP,
           rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
         )

@@ -63,27 +63,30 @@ trait ForecastingService {
   }
 
   def calculatePersonalMaximum(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int,
-                               qualifyingYears: Int, payableGaps: Int,
+                               qualifyingYearsPre2016: Int, qualifyingYearsPost2016: Int, payableGapsPre2016: Int, payableGapsPost2016: Int,
                                additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal): PersonalMaximum = {
     val personalMaxCalculation = personalMaxCalc(
-      earningsIncludedUpTo, finalRelevantStartYear, qualifyingYears, payableGaps, additionalPension, rebateDerivedAmount
+      earningsIncludedUpTo, finalRelevantStartYear, qualifyingYearsPre2016, qualifyingYearsPost2016, additionalPension, rebateDerivedAmount
     )
-    val totalMaximum = personalMaxCalculation(payableGaps)
-    if (payableGaps > 0) {
-      personalMaxGenerator(totalMaximum.amount, payableGaps, personalMaxCalculation)
+    val totalMaximum = personalMaxCalculation(payableGapsPre2016)
+    if (payableGapsPre2016 > 0) {
+      personalMaxGenerator(totalMaximum.amount, payableGapsPre2016, personalMaxCalculation)
     }
     else {
       PersonalMaximum(totalMaximum.amount, totalMaximum.yearsToWork, gapsToFill = 0)
     }
   }
 
-  private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYears: Int, payableGaps: Int,
+  private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYearsPre2016: Int, qualifyingYearsPost2016: Int,
                               additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFill: Int) => {
     val startingAmount = calculateRevaluedStartingAmount(
-      amountA(qualifyingYears + gapsToFill, additionalPension),
-      amountB(qualifyingYears + gapsToFill, rebateDerivedAmount)
+      amountA(qualifyingYearsPre2016 + gapsToFill, additionalPension),
+      amountB(qualifyingYearsPre2016 + gapsToFill, rebateDerivedAmount)
     )
-    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = startingAmount, qualifyingYears + gapsToFill)
+    val currentAmount =
+      if(startingAmount >= rateService.MAX_AMOUNT) startingAmount
+      else (startingAmount + rateService.getSPAmount(qualifyingYearsPost2016)).min(rateService.MAX_AMOUNT)
+    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = currentAmount, qualifyingYearsPre2016 + qualifyingYearsPost2016 + gapsToFill)
   }
 
   private def personalMaxGenerator(maximum: BigDecimal, payableGaps: Int, calculation: (Int) => (Forecast)): PersonalMaximum = {
