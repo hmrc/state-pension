@@ -533,6 +533,18 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
             max.gapsToFill shouldBe 5
           }
         }
+        "people with 35 QYs and RDA cannot improve their amount" should {
+          val max = maximumCalculation(new LocalDate(2016, 4, 5), finalRelevantStartYear = 2015, qualifyingYearsPre2016 = 35, qualifyingYearsPost2016 = 0, additionalPension = 0, payableGapsPre2016 = 5, rebateDerivedAmount = 20, forecastingService = service)
+          "return 139.05 for the current/forecast amount" in {
+            max.amount shouldBe 139.05
+          }
+          "return 0 years to work" in {
+            max.yearsToWork shouldBe 0
+          }
+          "return 0 gaps to fill but tactical solution so return 5 payable gaps" in {
+            max.gapsToFill shouldBe 5
+          }
+        }
       }
       "there are only post16 gaps" should {
         "do nothing for a protected payment customers" should {
@@ -597,6 +609,18 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           }
           "return 2 gaps to fill" in {
             max.gapsToFill shouldBe 2
+          }
+        }
+        "people with 35 QYs and RDA can only improve their amount with post 16 gaps" should {
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 35, qualifyingYearsPost2016 = 0, additionalPension = 0, payableGapsPre2016 = 5, payableGapsPost2016 = 2, rebateDerivedAmount = 20, forecastingService = service)
+          "return 148.17 for the current/forecast amount" in {
+            max.amount shouldBe 148.17
+          }
+          "return 0 years to work" in {
+            max.yearsToWork shouldBe 0
+          }
+          "return 2 gaps to fill but tactical solution so return 7 payable gaps" in {
+            max.gapsToFill shouldBe 7
           }
         }
       }
