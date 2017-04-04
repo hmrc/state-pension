@@ -99,12 +99,12 @@
           "properties": {
             "yearsToWork": {
               "type": "number",
-              "description": "The number of future qualifying years needed to get the most amount possible",
+              "description": "The number of future qualifying years needed to get the most amount possible after paying all gaps",
               "example": "3"
             },
             "gapsToFill": {
               "type": "number",
-              "description": "The least number of National Insurance gaps that need to be filled to get the most possible",
+              "description": "The total number of payable gaps - using this field may result in the customer filling more gaps than necessary",
               "example": "2"
             },
             "weeklyAmount": {
