@@ -68,20 +68,20 @@ trait ForecastingService {
     val personalMaxCalculation = personalMaxCalc(
       earningsIncludedUpTo, finalRelevantStartYear, qualifyingYearsPre2016, qualifyingYearsPost2016, additionalPension, rebateDerivedAmount
     )
-    val totalMaximum = personalMaxCalculation(payableGapsPre2016)
-    PersonalMaximum(totalMaximum.amount, totalMaximum.yearsToWork, gapsToFill = payableGapsPre2016)
+    val totalMaximum = personalMaxCalculation(payableGapsPre2016, payableGapsPost2016)
+    PersonalMaximum(totalMaximum.amount, totalMaximum.yearsToWork, gapsToFill = payableGapsPre2016 + payableGapsPost2016)
   }
 
   private def personalMaxCalc(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int, qualifyingYearsPre2016: Int, qualifyingYearsPost2016: Int,
-                              additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFill: Int) => {
+                              additionalPension: BigDecimal, rebateDerivedAmount: BigDecimal) = (gapsToFillPre2016: Int, gapsToFillPost2016: Int) => {
     val startingAmount = calculateRevaluedStartingAmount(
-      amountA(qualifyingYearsPre2016 + gapsToFill, additionalPension),
-      amountB(qualifyingYearsPre2016 + gapsToFill, rebateDerivedAmount)
+      amountA(qualifyingYearsPre2016 + gapsToFillPre2016, additionalPension),
+      amountB(qualifyingYearsPre2016 + gapsToFillPre2016, rebateDerivedAmount)
     )
     val currentAmount =
       if (startingAmount >= rateService.MAX_AMOUNT) startingAmount
-      else (startingAmount + rateService.getSPAmount(qualifyingYearsPost2016)).min(rateService.MAX_AMOUNT)
-    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = currentAmount, qualifyingYearsPre2016 + qualifyingYearsPost2016 + gapsToFill)
+      else (startingAmount + rateService.getSPAmount(qualifyingYearsPost2016 + gapsToFillPost2016)).min(rateService.MAX_AMOUNT)
+    calculateForecastAmount(earningsIncludedUpTo, finalRelevantStartYear, currentAmount = currentAmount, qualifyingYearsPre2016 + qualifyingYearsPost2016 + gapsToFillPre2016 + gapsToFillPost2016)
   }
 
   def yearsLeftToContribute(earningsIncludedUpTo: LocalDate, finalRelevantStartYear: Int): Int = {

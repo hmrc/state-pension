@@ -496,8 +496,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           }
         }
       }
-      "there are only pre16 gaps" when {
-        "should be able to still affect amount A" should {
+      "there are only pre16 gaps" should {
+        "be able to still affect amount A" should {
           val max = maximumCalculation(new LocalDate(2017, 4, 5), finalRelevantStartYear = 2016, qualifyingYearsPre2016 = 25, qualifyingYearsPost2016 = 1, additionalPension = 30, payableGapsPre2016 = 5, rebateDerivedAmount = 100, forecastingService = service)
           "return 157.60 for the current/forecast amount" in {
             max.amount shouldBe 157.6
@@ -509,7 +509,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
             max.gapsToFill shouldBe 5
           }
         }
-        "should be able to still affect amount B" should {
+        "be able to still affect amount B" should {
           val max = maximumCalculation(new LocalDate(2017, 4, 5), finalRelevantStartYear = 2016, qualifyingYearsPre2016 = 29, qualifyingYearsPost2016 = 1, payableGapsPre2016 = 5, forecastingService = service)
           "return 159.55 for the current/forecast amount" in {
             max.amount shouldBe 159.55
@@ -521,7 +521,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
             max.gapsToFill shouldBe 5
           }
         }
-        "should be able to push people into protected payments" should {
+        "be able to push people into protected payments" should {
           val max = maximumCalculation(new LocalDate(2017, 4, 5), finalRelevantStartYear = 2016, qualifyingYearsPre2016 = 25, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPre2016 = 5, rebateDerivedAmount = 100, forecastingService = service)
           "return 173.34 for the current/forecast amount" in {
             max.amount shouldBe 173.34
@@ -531,6 +531,72 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
           }
           "return 5 gaps to fill" in {
             max.gapsToFill shouldBe 5
+          }
+        }
+      }
+      "there are only post16 gaps" should {
+        "do nothing for a protected payment customers" should {
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 28, qualifyingYearsPost2016 = 0, additionalPension = 100, payableGapsPre2016 = 0, payableGapsPost2016 = 2, rebateDerivedAmount = 100, forecastingService = service)
+          "return 215.81 for the current/forecast amount" in {
+            max.amount shouldBe 215.81
+          }
+          "return 0 years to work" in {
+            max.yearsToWork shouldBe 0
+          }
+          "return 0 gaps to fill but it's the tactical solution and total payable gaps = 2" in {
+            max.gapsToFill shouldBe 2
+          }
+        }
+        "can not push people into protected payments (capped at max)" should {
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 25, qualifyingYearsPost2016 = 0, additionalPension = 50, payableGapsPost2016 = 2, rebateDerivedAmount = 100, forecastingService = service)
+          "return 159.55 for the current/forecast amount" in {
+            max.amount shouldBe 159.55
+          }
+          "return 0 years to work" in {
+            max.yearsToWork shouldBe 0
+          }
+          "return 2 gaps to fill" in {
+            max.gapsToFill shouldBe 2
+          }
+        }
+        "calculation takes into account post16 qualifying years and gaps when calculating current amount (should be 2/35ths)" should {
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 24, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
+          "return 158.2 for the current/forecast amount" in {
+            max.amount shouldBe 158.20
+          }
+          "return 0 years to work" in {
+            max.yearsToWork shouldBe 0
+          }
+          "return 1 gaps to fill" in {
+            max.gapsToFill shouldBe 1
+          }
+        }
+
+        "calculation takes into account post16 qualifying years and gaps when calculating current amount and then treats the forecast separate (should be 2/35ths + 3/35ths)" should {
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2020, qualifyingYearsPre2016 = 20, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
+          "return 158.2 for the current/forecast amount" in {
+            max.amount shouldBe 155.58
+          }
+          "return 3 years to work" in {
+            max.yearsToWork shouldBe 3
+          }
+          "return 1 gaps to fill" in {
+            max.gapsToFill shouldBe 1
+          }
+        }
+      }
+
+      "there is a mixture of pre and post 16 gaps" should {
+        "take both into account" should {
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2020, qualifyingYearsPre2016 = 20, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPre2016 = 1, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
+          "return 159.55 for the current/forecast amount" in {
+            max.amount shouldBe 159.55
+          }
+          "return 3 years to work" in {
+            max.yearsToWork shouldBe 3
+          }
+          "return 2 gaps to fill" in {
+            max.gapsToFill shouldBe 2
           }
         }
       }
