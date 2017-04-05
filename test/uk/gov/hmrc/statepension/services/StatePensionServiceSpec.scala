@@ -171,7 +171,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         ))
 
         when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          NpsNIRecord(payableGaps = 0)
+          NpsNIRecord(List())
         ))
 
         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -409,7 +409,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 0)
+        NpsNIRecord(List())
       ))
 
       val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -501,7 +501,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -597,7 +597,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 0)
+        NpsNIRecord(List())
       ))
 
       "return 0 for the current amount" in {
@@ -633,7 +633,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       )
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
@@ -711,7 +711,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -780,7 +780,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -848,7 +848,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         List()
       ))
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -918,7 +918,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         List()
       ))
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -980,7 +980,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         List(NpsLiability(5))
       ))
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
 
@@ -1044,7 +1044,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
       when(service.citizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(payableGaps = 2)
+        NpsNIRecord(List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get

@@ -492,9 +492,13 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
     }
 
-    "parse the json and return a Future[List[NpsLiability]" in {
+    "parse the json and return a Future[NpsNIRecord]" in {
       val summary = await(connector.getNIRecord(nino))
-      summary shouldBe NpsNIRecord(5)
+      summary shouldBe NpsNIRecord(List(
+        NpsNITaxYear(1975, qualifying = true, underInvestigation = false, payableFlag = false),
+        NpsNITaxYear(1976, qualifying = true, underInvestigation = false, payableFlag = false),
+        NpsNITaxYear(1977, qualifying = true, underInvestigation = false, payableFlag = false)
+      ))
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsNIRecord" in {
@@ -533,7 +537,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
       ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/non_qualifying_years_payable - error.expected.jsnumber"
+        ex.getMessage shouldBe "/npsLnitaxyr - error.path.missing"
       }
     }
   }

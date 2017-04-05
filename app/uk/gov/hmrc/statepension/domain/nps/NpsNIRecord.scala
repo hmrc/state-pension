@@ -16,10 +16,28 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
+import play.api.Logger
 import play.api.libs.json.{Reads, __}
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-case class NpsNIRecord(payableGaps: Int)
+case class NpsNIRecord(taxYears: List[NpsNITaxYear]) {
+  val payableGapsPre2016: Int = taxYears.filter(_.startTaxYear < 2016).count(_.payable)
+  val payableGapsPost2016: Int = taxYears.filter(_.startTaxYear >= 2016).count(_.payable)
+  val qualifyingYearsPost2016: Int = taxYears.filter(_.startTaxYear >= 2016).count(_.qualifying)
+
+  def purge(finalRelevantStartYear: Int): NpsNIRecord = {
+    val filteredYears = taxYears.filter(_.startTaxYear <= finalRelevantStartYear)
+    val purgedYears = taxYears.filter(_.startTaxYear > finalRelevantStartYear)
+    if(purgedYears.nonEmpty) Logger.info(s"Purged years (FRY $finalRelevantStartYear): ${purgedYears.map(_.startTaxYear).mkString(",")}")
+
+    this.copy(
+      taxYears = filteredYears
+    )
+  }
+}
+
+
 
 object NpsNIRecord {
-  implicit val reads: Reads[NpsNIRecord] = (__ \ "non_qualifying_years_payable").read[Int].map(NpsNIRecord.apply)
+  implicit val reads: Reads[NpsNIRecord] = (__ \ "npsLnitaxyr").read[List[NpsNITaxYear]].map(NpsNIRecord.apply)
 }

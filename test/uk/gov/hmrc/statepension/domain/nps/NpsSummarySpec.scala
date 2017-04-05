@@ -539,7 +539,7 @@ class NpsSummarySpec extends UnitSpec {
     }
 
     "finalRelevantStartYear is 1999" should {
-      "return 1999-99" in {
+      "return 1999-00" in {
         summaryWithFinalRelevantStartYear(1999).finalRelevantYear shouldBe "1999-00"
       }
     }
