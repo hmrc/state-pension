@@ -20,6 +20,8 @@ import org.joda.time.{LocalDate, Period}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
+import scala.math.BigDecimal.RoundingMode
+
 
 case class NpsSummary(
                        earningsIncludedUpTo: LocalDate,
@@ -65,7 +67,9 @@ case class NpsStatePensionAmounts(
                                    protectedPayment2016: BigDecimal = 0,
                                    amountA2016: NpsAmountA2016 = NpsAmountA2016(),
                                    amountB2016: NpsAmountB2016 = NpsAmountB2016()
-                                 )
+                                 ) {
+  lazy val pensionEntitlementRounded: BigDecimal = pensionEntitlement.setScale(2, RoundingMode.HALF_UP)
+}
 
 object NpsStatePensionAmounts {
 

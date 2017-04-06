@@ -471,7 +471,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
         amounts = NpsStatePensionAmounts(
-          pensionEntitlement = 121.41,
+          pensionEntitlement = 121.4123,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
           NpsAmountA2016(

@@ -593,4 +593,13 @@ class NpsSummarySpec extends UnitSpec {
       }
     }
   }
+
+  "pensionEntitlementRounded" should {
+    "return 5 up" in {
+      NpsStatePensionAmounts(pensionEntitlement = 123.4554).pensionEntitlementRounded shouldBe 123.46
+    }
+    "return 4 down" in {
+      NpsStatePensionAmounts(pensionEntitlement = 123.4547).pensionEntitlementRounded shouldBe 123.45
+    }
+  }
 }
