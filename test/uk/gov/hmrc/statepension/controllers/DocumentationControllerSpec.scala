@@ -40,7 +40,7 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
     val appContext = new AppContext {
       override def appName: String = ""
       override def apiGatewayContext: String = ""
-      override def appUrl: String = ""
+      //override def appUrl: String = ""
       override def access: Option[Configuration] = apiConfig
       override def status: Option[String] = apiStatus
       override def connectToHOD: Boolean = false
