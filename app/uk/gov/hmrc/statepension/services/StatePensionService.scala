@@ -100,23 +100,21 @@ trait NpsConnection extends StatePensionService {
         ))
       } else {
 
-        auditNPSSummary(nino, summary)
-
         val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
+
+        auditNPSSummary(nino, summary, purgedRecord.qualifyingYears)
 
         val forecast = forecastingService.calculateForecastAmount(
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
           summary.amounts.pensionEntitlementRounded,
-          summary.qualifyingYears
+          purgedRecord.qualifyingYears
         )
-
-        val qualifyingYearsPre2016 = summary.qualifyingYears - purgedRecord.qualifyingYearsPost2016
 
         val personalMaximum = forecastingService.calculatePersonalMaximum(
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
-          qualifyingYearsPre2016,
+          purgedRecord.qualifyingYearsPre2016,
           purgedRecord.qualifyingYearsPost2016,
           payableGapsPre2016 = purgedRecord.payableGapsPre2016,
           payableGapsPost2016 = purgedRecord.payableGapsPost2016,
@@ -128,7 +126,7 @@ trait NpsConnection extends StatePensionService {
           earningsIncludedUpTo = summary.earningsIncludedUpTo,
           amounts = StatePensionAmounts(
             summary.amounts.protectedPayment2016 > 0,
-            StatePensionAmount(None, None, forecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlementRounded, summary.qualifyingYears)),
+            StatePensionAmount(None, None, forecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlementRounded, purgedRecord.qualifyingYears)),
             StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
             StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
             StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount)
@@ -136,7 +134,7 @@ trait NpsConnection extends StatePensionService {
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
           finalRelevantYear = summary.finalRelevantYear,
-          numberOfQualifyingYears = summary.qualifyingYears,
+          numberOfQualifyingYears = purgedRecord.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT
         )
@@ -170,12 +168,12 @@ trait NpsConnection extends StatePensionService {
     }
   }
 
-  private[services] def auditNPSSummary(nino: Nino, summary: NpsSummary)(implicit hc: HeaderCarrier): Unit = {
+  private[services] def auditNPSSummary(nino: Nino, summary: NpsSummary, qualifyingYears: Int)(implicit hc: HeaderCarrier): Unit = {
     //Audit NPS Data used in calculation
     customAuditConnector.sendEvent(Forecasting(
       nino,
       summary.earningsIncludedUpTo,
-      summary.qualifyingYears,
+      qualifyingYears,
       summary.amounts.amountA2016,
       summary.amounts.amountB2016,
       summary.finalRelevantStartYear

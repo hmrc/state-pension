@@ -82,14 +82,13 @@ class NpsSummarySpec extends UnitSpec {
     """.stripMargin)
 
   "NpsSummary" should {
+
     "parse earnings included up to correctly" in {
       summaryJson.as[NpsSummary].earningsIncludedUpTo shouldBe new LocalDate(2015, 4, 5)
     }
+
     "parse sex correctly" in {
       summaryJson.as[NpsSummary].sex shouldBe "M"
-    }
-    "parse qualifying_years correctly" in {
-      summaryJson.as[NpsSummary].qualifyingYears shouldBe 36
     }
 
     "parse state pension age date correctly" when {
@@ -524,7 +523,6 @@ class NpsSummarySpec extends UnitSpec {
     def summaryWithFinalRelevantStartYear(finalRelevantStartYear: Int) = NpsSummary(
       earningsIncludedUpTo = new LocalDate(2016, 4, 5),
       sex = "F",
-      qualifyingYears = 20,
       statePensionAgeDate = new LocalDate(2020, 6, 9),
       finalRelevantStartYear = finalRelevantStartYear,
       pensionSharingOrderSERPS = false,
@@ -562,7 +560,6 @@ class NpsSummarySpec extends UnitSpec {
     def summaryWithDOBandSPA(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate) = NpsSummary(
       earningsIncludedUpTo = new LocalDate(2016, 4, 5),
       sex = "F",
-      qualifyingYears = 20,
       statePensionAgeDate = statePensionAgeDate,
       finalRelevantStartYear = 2020,
       pensionSharingOrderSERPS = false,

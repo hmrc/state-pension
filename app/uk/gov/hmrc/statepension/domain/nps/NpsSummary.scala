@@ -26,7 +26,6 @@ import scala.math.BigDecimal.RoundingMode
 case class NpsSummary(
                        earningsIncludedUpTo: LocalDate,
                        sex: String,
-                       qualifyingYears: Int,
                        statePensionAgeDate: LocalDate,
                        finalRelevantStartYear: Int,
                        pensionSharingOrderSERPS: Boolean,
@@ -48,7 +47,6 @@ object NpsSummary {
   implicit val reads: Reads[NpsSummary] = (
     (JsPath \ "earnings_included_upto").read[LocalDate] and
       (JsPath \ "sex").read[String] and
-      (JsPath \ "nsp_qualifying_years").read[Int] and
       (JsPath \ "spa_date").read[LocalDate] and
       (JsPath \ "final_relevant_year").read[Int] and
       readBooleanFromInt(JsPath \ "pension_share_order_serps") and
