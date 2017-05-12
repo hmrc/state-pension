@@ -44,6 +44,9 @@ object NpsSummary {
   val readBooleanFromInt: JsPath => Reads[Boolean] =
     jsPath => jsPath.readNullable[Int].map(_.getOrElse(0) != 0)
 
+  val readNullableInt: JsPath => Reads[Int] =
+    jsPath => jsPath.readNullable[Int].map(_.getOrElse(0))
+
   implicit val reads: Reads[NpsSummary] = (
     (JsPath \ "earnings_included_upto").read[LocalDate] and
       (JsPath \ "sex").read[String] and
@@ -53,7 +56,7 @@ object NpsSummary {
       (JsPath \ "date_of_birth").read[LocalDate] and
       (JsPath \ "date_of_death").readNullable[LocalDate] and
       readBooleanFromInt(JsPath \ "rre_to_consider") and
-      (JsPath \ "country_code").read[Int] and
+      readNullableInt(JsPath \ "country_code") and
       (JsPath \ "npsSpnam").read[NpsStatePensionAmounts]
     ) (NpsSummary.apply _)
 
