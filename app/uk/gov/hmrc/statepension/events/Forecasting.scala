@@ -19,16 +19,17 @@ package uk.gov.hmrc.statepension.events
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NpsAmountA2016, NpsAmountB2016}
 
 object Forecasting {
   def apply(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: NpsAmountA2016, amountB: NpsAmountB2016,
-            finalRelevantYear: Int)(implicit hc: HeaderCarrier): Forecasting =
-    new Forecasting(nino, earningsIncludedUpTo, currentQualifyingYears, amountA, amountB, finalRelevantYear)
+            finalRelevantYear: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Forecasting =
+    new Forecasting(nino, earningsIncludedUpTo, currentQualifyingYears, amountA, amountB, finalRelevantYear, exclusions)
 }
 
 class Forecasting(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: NpsAmountA2016,
-                  amountB: NpsAmountB2016, finalRelevantYear: Int)
+                  amountB: NpsAmountB2016, finalRelevantYear: Int, exclusions: List[Exclusion])
                  (implicit hc: HeaderCarrier)
   extends BusinessEvent("Forecasting", nino, Map(
     "nino" -> nino.value,
@@ -47,5 +48,6 @@ class Forecasting(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifying
     "totalAP" -> amountA.totalAP.toString(),
     "amountBmain" -> amountB.mainComponent.toString(),
     "rda" -> amountB.rebateDerivedAmount.toString(),
-    "fry" -> finalRelevantYear.toString
+    "fry" -> finalRelevantYear.toString,
+    "exclusions" -> exclusions.map(_.toString).mkString(",")
   ))

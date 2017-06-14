@@ -89,6 +89,10 @@ trait NpsConnection extends StatePensionService {
         manualCorrespondence
       ).getExclusions
 
+      val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
+
+      auditNPSSummary(nino, summary, purgedRecord.qualifyingYears, exclusions)
+
       if (exclusions.nonEmpty) {
 
         metrics.exclusion(filterExclusions(exclusions))
@@ -100,9 +104,7 @@ trait NpsConnection extends StatePensionService {
         ))
       } else {
 
-        val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
 
-        auditNPSSummary(nino, summary, purgedRecord.qualifyingYears)
 
         val forecast = forecastingService.calculateForecastAmount(
           summary.earningsIncludedUpTo,
@@ -168,7 +170,7 @@ trait NpsConnection extends StatePensionService {
     }
   }
 
-  private[services] def auditNPSSummary(nino: Nino, summary: NpsSummary, qualifyingYears: Int)(implicit hc: HeaderCarrier): Unit = {
+  private[services] def auditNPSSummary(nino: Nino, summary: NpsSummary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit = {
     //Audit NPS Data used in calculation
     customAuditConnector.sendEvent(Forecasting(
       nino,
@@ -176,7 +178,8 @@ trait NpsConnection extends StatePensionService {
       qualifyingYears,
       summary.amounts.amountA2016,
       summary.amounts.amountB2016,
-      summary.finalRelevantStartYear
+      summary.finalRelevantStartYear,
+      exclusions
     ))
   }
 }
