@@ -107,7 +107,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
     }
 
-
   }
 
   "StatePensionService with a HOD Connection" when {
@@ -778,11 +777,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
-      "return married women exclusion" in {
-        whenReady(exclusionF) { exclusion =>
-          exclusion.exclusionReasons shouldBe List(Exclusion.MarriedWomenReducedRateElection)
-        }
-      }
+      /*
+       "return married women exclusion" in {
+         whenReady(exclusionF) { exclusion =>
+           exclusion.exclusionReasons shouldBe List(Exclusion.MarriedWomenReducedRateElection)
+         }
+       }
 
       "have a pension age of 61" in {
         whenReady(exclusionF) { exclusion =>
@@ -794,12 +794,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
-      }
+      }*/
 
-      "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
-          Matchers.eq(Exclusion.MarriedWomenReducedRateElection)
-        )
+     "not log an exclusion metric" in {
+        verify(service.metrics, never).exclusion(Matchers.any())
       }
 
       "not log a summary metric" in {

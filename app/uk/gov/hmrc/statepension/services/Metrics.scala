@@ -88,7 +88,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
 
   val exclusionMeters: Map[Exclusion, Counter] = Map(
     Exclusion.Abroad -> metrics.defaultRegistry.counter("exclusion-abroad"),
-    Exclusion.MarriedWomenReducedRateElection -> metrics.defaultRegistry.counter("exclusion-mwrre"),
+    //Exclusion.MarriedWomenReducedRateElection -> metrics.defaultRegistry.counter("exclusion-mwrre"),
     Exclusion.Dead -> metrics.defaultRegistry.counter("exclusion-dead"),
     Exclusion.IsleOfMan -> metrics.defaultRegistry.counter("exclusion-isle-of-man"),
     Exclusion.AmountDissonance -> metrics.defaultRegistry.counter("amount-dissonance"),

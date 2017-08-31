@@ -39,7 +39,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               manualCorrespondenceOnly: Boolean = false) =
     new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
-
   "getExclusions" when {
     "there is no exclusions" should {
       "return an empty list" in {
@@ -73,11 +72,11 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
-    "there is reduced rate election" should {
+/*    "there is reduced rate election" should {
       "return a List(MarriwedWomensReducedRateElection" in {
         exclusionServiceBuilder(reducedRateElection = true).getExclusions shouldBe List(Exclusion.MarriedWomenReducedRateElection)
       }
-    }
+    }*/
 
     "there is no reduced rate election" should {
       "return no exclusions" in {
@@ -97,7 +96,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
 
       "the user is currently male" when {
-
         "the user is not abroad" should  {
           "return no exclusions" in {
             exclusionServiceBuilder(sex = "M", pensionDate = new LocalDate(2017, 4, 5), isAbroad = false).getExclusions shouldBe Nil
@@ -155,10 +153,10 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
         }
       }
       "there is some liabilities" should {
-        "return List(IsleOfMan) if the list includes liability type 15" in {
+        "return List(IsleOfMan) if the list includes liability type 5" in {
           exclusionServiceBuilder(liabilities = List(NpsLiability(5), NpsLiability(16))).getExclusions shouldBe List(Exclusion.IsleOfMan)
         }
-        "return no exclusions if the list does not include liability type 15" in {
+        "return no exclusions if the list does not include liability type 5" in {
           exclusionServiceBuilder(liabilities = List(NpsLiability(15), NpsLiability(16))).getExclusions shouldBe Nil
         }
       }
@@ -196,7 +194,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           Exclusion.PostStatePensionAge,
           Exclusion.AmountDissonance,
           Exclusion.IsleOfMan,
-          Exclusion.MarriedWomenReducedRateElection,
+          //Exclusion.MarriedWomenReducedRateElection,
           Exclusion.Abroad
         )
       }
