@@ -66,7 +66,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     finalRelevantYear = "2017-18",
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
-    currentFullWeeklyPensionAmount = 155.65
+    currentFullWeeklyPensionAmount = 155.65,
+    reducedRateElection = false
   )
 
   "Sandbox" should {
@@ -766,6 +767,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
+
+      // TODO: check it
+      // when(service.nps.getSummary(Matchers.any())(Matchers.any()).reducedRateElection).thenReturn(true)
 
       when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
