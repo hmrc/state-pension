@@ -88,12 +88,12 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
-  "MWRRE Customer" should {
-    "return false to RRE Flag" in {
-      createStatePension(cope = 0).reducedRateElection shouldBe false
+  "MWRRE customer" should {
+    "return false to Non-RRE Customers" in {
+      createStatePension(reducedRateElection = false).reducedRateElection shouldBe false
     }
 
-    "return true to RRE Flag" in {
+    "return true to RRE Customers" in {
       createStatePension(reducedRateElection = true).reducedRateElection shouldBe true
     }
   }

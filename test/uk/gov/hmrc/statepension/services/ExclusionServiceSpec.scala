@@ -72,11 +72,11 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
-/*    "there is reduced rate election" should {
-      "return a List(MarriwedWomensReducedRateElection" in {
-        exclusionServiceBuilder(reducedRateElection = true).getExclusions shouldBe List(Exclusion.MarriedWomenReducedRateElection)
+    "there is no RRE exclusion even with RREFlag=true" should {
+      "return an empty List()" in {
+        exclusionServiceBuilder(reducedRateElection = true).getExclusions shouldBe List()
       }
-    }*/
+    }
 
     "there is no reduced rate election" should {
       "return no exclusions" in {
@@ -194,7 +194,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           Exclusion.PostStatePensionAge,
           Exclusion.AmountDissonance,
           Exclusion.IsleOfMan,
-          //Exclusion.MarriedWomenReducedRateElection,
           Exclusion.Abroad
         )
       }

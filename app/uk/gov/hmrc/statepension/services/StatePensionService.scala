@@ -160,9 +160,7 @@ trait NpsConnection extends StatePensionService {
       Exclusion.AmountDissonance
     } else if (exclusions.contains(Exclusion.IsleOfMan)) {
       Exclusion.IsleOfMan
-    } /*else if (exclusions.contains(Exclusion.MarriedWomenReducedRateElection)) {
-      Exclusion.MarriedWomenReducedRateElection
-    }*/ else if (exclusions.contains(Exclusion.Abroad)) {
+    } else if (exclusions.contains(Exclusion.Abroad)) {
       Exclusion.Abroad
     } else {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")

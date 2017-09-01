@@ -781,27 +781,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
+      //TODO: How to check RRE Metric log
       /*
-      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
-
-       "return married women exclusion" in {
-         whenReady(exclusionF) { exclusion =>
-           exclusion.exclusionReasons shouldBe List(Exclusion.MarriedWomenReducedRateElection)
-         }
-       }
-
-      "have a pension age of 61" in {
-        whenReady(exclusionF) { exclusion =>
-          exclusion.pensionAge shouldBe 61
-        }
-      }
-
-      "have a pension date of 2018-1-1" in {
-        whenReady(exclusionF) { exclusion =>
-          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
-        }
-      }
-
       log an exclusion metric" in {
         verify(service.metrics, times(1)).exclusion(
           Matchers.eq(Exclusion.MarriedWomenReducedRateElection)
@@ -809,8 +790,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
       */
 
-      //TODO: How to check RRE Metric log
-      
       lazy val summaryF: Future[NpsSummary] = service.nps.getSummary(Matchers.any())(Matchers.any())
 
       "summary have RRE flag as true" in {
@@ -849,7 +828,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         countryCode = 200,
         NpsStatePensionAmounts()
       )
-
 
       when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
