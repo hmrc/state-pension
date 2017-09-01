@@ -28,7 +28,8 @@ trait Metrics {
   def incrementFailedCounter(api: APIType): Unit
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
-              personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario]): Unit
+              personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
+              reducedRateElection: Boolean): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -75,7 +76,8 @@ object Metrics extends Metrics with MicroserviceMetrics {
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
-                       mqpScenario : Option[MQPScenario]): Unit = {
+                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean): Unit = {
+    if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)

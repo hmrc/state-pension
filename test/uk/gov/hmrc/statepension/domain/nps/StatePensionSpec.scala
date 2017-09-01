@@ -50,7 +50,6 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
-
   private def createStatePension(cope: BigDecimal = 0,
                          finalRelevantYear: String = "2018-19",
                          earningsIncludedUpTo: Int = 2015,
@@ -58,7 +57,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          forecastAmount: BigDecimal = 0,
                          maximumAmount: BigDecimal = 0,
                          fullStatePensionAmount: BigDecimal = 155.65,
-                         qualifyingYears: Int = 30
+                         qualifyingYears: Int = 30,
+                         reducedRateElection:Boolean = false
                         ) = {
     StatePension(
       new LocalDate(earningsIncludedUpTo + 1, 4, 5),
@@ -75,7 +75,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
       qualifyingYears,
       false,
       fullStatePensionAmount,
-      false
+      reducedRateElection
     )
   }
 
@@ -87,6 +87,17 @@ class StatePensionSpec extends StatePensionUnitSpec {
       createStatePension(cope = 0).contractedOut shouldBe false
     }
   }
+
+  "MWRRE Customer" should {
+    "return false to RRE Flag" in {
+      createStatePension(cope = 0).reducedRateElection shouldBe false
+    }
+
+    "return true to RRE Flag" in {
+      createStatePension(reducedRateElection = true).reducedRateElection shouldBe true
+    }
+  }
+
   "mqpScenario" should {
 
     "should be an MQP Scenario if they have less than 10 years" in {
