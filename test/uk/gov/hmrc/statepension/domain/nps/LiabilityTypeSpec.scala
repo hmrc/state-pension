@@ -23,5 +23,8 @@ class LiabilityTypeSpec extends StatePensionUnitSpec {
       "be 5" in {
         LiabilityType.ISLE_OF_MAN shouldBe 5
       }
+      "not be 15 (other than 5)" in {
+        LiabilityType.ISLE_OF_MAN should not be 15
+      }
     }
 }
