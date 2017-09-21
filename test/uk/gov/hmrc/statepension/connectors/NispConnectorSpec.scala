@@ -98,6 +98,9 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
             |      "weeklyAmount": 0.25,
             |      "monthlyAmount": 1.09,
             |      "annualAmount": 13.04
+            |    },
+            |    "oldRules": {
+            |      "apAndGrad": 41.88
             |    }
             |  },
             |  "pensionAge": 67,
@@ -120,7 +123,8 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
           StatePensionAmount(None, None, 123.65),
           StatePensionAmount(Some(4), None, 151.25),
           StatePensionAmount(Some(4), Some(1), 155.65),
-          StatePensionAmount(None, None, 0.25)
+          StatePensionAmount(None, None, 0.25),
+          OldRules(41.88)
         ),
         67,
         new LocalDate(2019, 7 ,1),

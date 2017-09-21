@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension
+package uk.gov.hmrc.statepension.controllers
 
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
@@ -56,7 +56,8 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       StatePensionAmount(None, None, 123.65),
       StatePensionAmount(Some(4), None, 151.25),
       StatePensionAmount(Some(4), Some(1), 155.65),
-      StatePensionAmount(None, None, 0.25)
+      StatePensionAmount(None, None, 0.25),
+      OldRules(48.90)
     ),
     67,
     new LocalDate(2019, 7 ,1),
@@ -91,11 +92,13 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "amounts" \ "maximum" \ "weeklyAmount").as[BigDecimal] shouldBe 155.65
       (json \ "amounts" \ "maximum" \ "monthlyAmount").as[BigDecimal] shouldBe 676.80
       (json \ "amounts" \ "maximum" \ "annualAmount").as[BigDecimal] shouldBe 8121.59
+      (json \ "amounts" \ "oldRules" \ "apAndGrad").as[BigDecimal] shouldBe 48.90
       (json \ "pensionAge").as[Int] shouldBe 67
       (json \ "pensionDate").as[LocalDate] shouldBe new LocalDate(2019, 7, 1)
       (json \ "finalRelevantYear").as[String] shouldBe "2018-19"
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
+      (json \ "reducedRateElection").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }

@@ -389,6 +389,15 @@ class NpsSummarySpec extends UnitSpec {
                                       |    "starting_amount": 300.00
                                       |}""".stripMargin)
 
+    "parse and calculate TotalAP and grad" when {
+       "it exists as 73.73" in {
+         amountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 73.73
+       }
+       "it is null" in {
+         nullAmountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 0
+       }
+      }
+
       "parse 2016 starting amount correctly" when {
         "it exists as 300.00" in {
           amountJson.as[NpsStatePensionAmounts].startingAmount2016 shouldBe 300.00

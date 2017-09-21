@@ -58,7 +58,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          maximumAmount: BigDecimal = 0,
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
-                         reducedRateElection:Boolean = false
+                         reducedRateElection:Boolean = false,
+                         oldRules: OldRules = OldRules(48.90)
                         ) = {
     StatePension(
       new LocalDate(earningsIncludedUpTo + 1, 4, 5),
@@ -67,7 +68,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
         StatePensionAmount(None, None, currentAmount),
         StatePensionAmount(None, None, forecastAmount),
         StatePensionAmount(None, None, maximumAmount),
-        cope = StatePensionAmount(None, None, cope)
+        cope = StatePensionAmount(None, None, cope),
+        oldRules
       ),
       65,
       new LocalDate(2019, 5, 1),
@@ -78,6 +80,16 @@ class StatePensionSpec extends StatePensionUnitSpec {
       reducedRateElection
     )
   }
+
+  "oldRules" should {
+    "return 48.90 when the user has a apAndGrad amount of 48.90" in {
+      createStatePension(cope = 0).amounts.oldRules.apAndGrad shouldBe 48.90
+    }
+    "return 20.00 when the user has a apAndGrad amount of 20.00" in {
+      createStatePension(oldRules = OldRules(20.00)).amounts.oldRules.apAndGrad shouldBe 20.00
+    }
+  }
+
 
   "contractedOut" should {
     "return true when the user has a COPE amount more than 0" in {

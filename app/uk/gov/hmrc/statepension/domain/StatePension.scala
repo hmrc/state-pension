@@ -42,12 +42,18 @@ object StatePensionAmount {
   implicit val formats: Format[StatePensionAmount] = Format(reads, writes)
 }
 
+case class OldRules(apAndGrad:BigDecimal)
+
+object OldRules {
+  implicit val formats = Json.format[OldRules]
+}
 
 case class StatePensionAmounts(protectedPayment: Boolean,
                                current: StatePensionAmount,
                                forecast: StatePensionAmount,
                                maximum: StatePensionAmount,
-                               cope: StatePensionAmount)
+                               cope: StatePensionAmount,
+                               oldRules: OldRules)
 
 object StatePensionAmounts {
   implicit val formats = Json.format[StatePensionAmounts]

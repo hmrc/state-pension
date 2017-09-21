@@ -29,7 +29,7 @@ trait Metrics {
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
               personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-              reducedRateElection: Boolean): Unit
+              reducedRateElection: Boolean, oldRulesAPAndGrad: BigDecimal): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -73,11 +73,13 @@ object Metrics extends Metrics with MicroserviceMetrics {
   val yearsNeededToContribute: Histogram = metrics.defaultRegistry.histogram("years-needed-to-contribute")
   val contractedOutMeter: Counter = metrics.defaultRegistry.counter("contracted-out")
   val notContractedOutMeter: Counter = metrics.defaultRegistry.counter("not-contracted-out")
+  val oldRulesAPAndGradAmountMeter: Counter = metrics.defaultRegistry.counter("oldrules-ap-grad-amount")
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
-                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean): Unit = {
+                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean, oldRulesAPAndGrad: BigDecimal): Unit = {
     if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+    oldRulesAPAndGradAmountMeter.inc()
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)

@@ -31,6 +31,6 @@ object StubMetrics extends Metrics with MockitoSugar {
   override def incrementFailedCounter(api: APIType): Unit = {}
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
                        personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-                       reducedRateElection: Boolean): Unit = {}
+                       reducedRateElection: Boolean, oldRulesAPAndGrad: BigDecimal): Unit = {}
   override def exclusion(exclusion: Exclusion): Unit = {}
 }

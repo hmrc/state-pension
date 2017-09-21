@@ -129,7 +129,8 @@ trait NpsConnection extends StatePensionService {
             StatePensionAmount(None, None, forecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlementRounded, purgedRecord.qualifyingYears)),
             StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
             StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
-            StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount)
+            StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
+            oldRules = OldRules(summary.amounts.amountA2016.totalAP)
           ),
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
@@ -140,9 +141,10 @@ trait NpsConnection extends StatePensionService {
           summary.reducedRateElection
         )
 
-        metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount, statePension.contractedOut,
-          statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount, statePension.amounts.forecast.yearsToWork.getOrElse(0),
-          statePension.mqpScenario, summary.reducedRateElection)
+        metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
+          statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
+          statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
+          summary.reducedRateElection,summary.amounts.amountA2016.totalAP)
 
         Right(statePension)
       }
@@ -218,7 +220,8 @@ object SandboxStatePensionService extends StatePensionService {
         None,
         None,
         0.00
-      )
+      ),
+      oldRules = OldRules(48.90)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),
