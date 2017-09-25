@@ -28,8 +28,7 @@ trait Metrics {
   def incrementFailedCounter(api: APIType): Unit
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
-              personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-              reducedRateElection: Boolean): Unit
+              personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario]): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -76,8 +75,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
-                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean): Unit = {
-    if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+                       mqpScenario : Option[MQPScenario]): Unit = {
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)
@@ -87,8 +85,10 @@ object Metrics extends Metrics with MicroserviceMetrics {
     if(contractedOut) contractedOutMeter.inc() else notContractedOutMeter.inc()
   }
 
+
   val exclusionMeters: Map[Exclusion, Counter] = Map(
     Exclusion.Abroad -> metrics.defaultRegistry.counter("exclusion-abroad"),
+    Exclusion.MarriedWomenReducedRateElection -> metrics.defaultRegistry.counter("exclusion-mwrre"),
     Exclusion.Dead -> metrics.defaultRegistry.counter("exclusion-dead"),
     Exclusion.IsleOfMan -> metrics.defaultRegistry.counter("exclusion-isle-of-man"),
     Exclusion.AmountDissonance -> metrics.defaultRegistry.counter("amount-dissonance"),

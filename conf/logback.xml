@@ -39,8 +39,6 @@
         <appender-ref ref="ACCESS_LOG_FILE" />
     </logger>
 
-    <logger name="org.asynchttpclient.netty.channel" additivity="false"/>
-
     <logger name="com.ning.http.client.providers.netty" additivity="false">
         <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>

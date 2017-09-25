@@ -29,8 +29,6 @@ object StubMetrics extends Metrics with MockitoSugar {
   val stubTimerContext: Context = mock[Timer.Context]
   override def startTimer(api: APIType): Context = mock[Timer.Context]
   override def incrementFailedCounter(api: APIType): Unit = {}
-  override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
-                       personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-                       reducedRateElection: Boolean): Unit = {}
+  override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario]): Unit = {}
   override def exclusion(exclusion: Exclusion): Unit = {}
 }
