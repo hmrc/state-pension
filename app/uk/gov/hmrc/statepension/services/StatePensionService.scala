@@ -104,6 +104,8 @@ trait NpsConnection extends StatePensionService {
         ))
       } else {
 
+
+
         val forecast = forecastingService.calculateForecastAmount(
           summary.earningsIncludedUpTo,
           summary.finalRelevantStartYear,
@@ -136,13 +138,12 @@ trait NpsConnection extends StatePensionService {
           finalRelevantYear = summary.finalRelevantYear,
           numberOfQualifyingYears = purgedRecord.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
-          currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
-          summary.reducedRateElection
+          currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount, statePension.contractedOut,
           statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount, statePension.amounts.forecast.yearsToWork.getOrElse(0),
-          statePension.mqpScenario, summary.reducedRateElection)
+          statePension.mqpScenario)
 
         Right(statePension)
       }
@@ -160,6 +161,8 @@ trait NpsConnection extends StatePensionService {
       Exclusion.AmountDissonance
     } else if (exclusions.contains(Exclusion.IsleOfMan)) {
       Exclusion.IsleOfMan
+    } else if (exclusions.contains(Exclusion.MarriedWomenReducedRateElection)) {
+      Exclusion.MarriedWomenReducedRateElection
     } else if (exclusions.contains(Exclusion.Abroad)) {
       Exclusion.Abroad
     } else {
@@ -225,8 +228,7 @@ object SandboxStatePensionService extends StatePensionService {
     finalRelevantYear = "2017-18",
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
-    currentFullWeeklyPensionAmount = 155.65,
-    reducedRateElection = false
+    currentFullWeeklyPensionAmount = 155.65
   )
   private val defaultResponse = Right(dummyStatement)
 
