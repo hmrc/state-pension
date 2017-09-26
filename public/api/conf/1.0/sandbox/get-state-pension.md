@@ -8,10 +8,10 @@
     </thead>
     <tbody>
         <tr>
-            <th>More than 10 qualifying years</th>
+            <th colspan="3">More than 10 qualifying years</th>
         </tr>
         <tr>
-            <th>Forecast</th>
+            <th colspan="3">Forecast</th>
         </tr>
         <tr>
             <td><p>Taxpayer who is predicted to receive the full rate</p></td>
@@ -24,7 +24,7 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
-            <th>Personal maximum</th>
+            <th colspan="3">Personal maximum</th>
         </tr>
         <tr>
             <td><p>Taxpayer who is predicted to receive the full rate by paying gaps</p></td>
@@ -42,7 +42,7 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
-            <th>Reached</th>
+            <th colspan="3">Reached</th>
         </tr>
         <tr>
             <td><p>Taxpayer who will receive the full rate</p></td>
@@ -60,7 +60,7 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
-            <th>Less than 10 qualifying years</th>
+            <th colspan="3">Less than 10 qualifying years</th>
         </tr>
         <tr>
             <td><p>Taxpayer who has many years to contribute and will get the full rate</p></td>
@@ -83,7 +83,7 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
-            <th>More variants</th>
+            <th colspan="3">More variants</th>
         </tr>
         <tr>
             <td><p>Taxpayer who has Contracted Out Pension Equivalent (COPE)</p></td>
@@ -96,12 +96,7 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
-            <td><p>Taxpayer who has the Married Women's Reduced Rate Election flag</p></td>
-            <td><p><code>EA791213A</code></p></td>
-            <td><p>200 (OK) Payload as regular example above</p></td>
-        </tr>
-        <tr>
-            <th>Exclusions</th>
+            <th colspan="3">Exclusions</th>
         </tr>
         <tr>
             <td><p>Taxpayer who has amount dissonance</p></td>
@@ -121,6 +116,11 @@
         <tr>
             <td><p>Taxpayer who has Isle of Man liability</p></td>
             <td><p><code>MA000002A</code></p></td>
+            <td><p>200 (OK) Payload as exclusion example above</p></td>
+        </tr>
+        <tr>
+            <td><p>Taxpayer who has the Married Women's Reduced Rate Election flag</p></td>
+            <td><p><code>EA791213A</code></p></td>
             <td><p>200 (OK) Payload as exclusion example above</p></td>
         </tr>
         <tr>
