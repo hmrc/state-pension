@@ -63,7 +63,8 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     "2018-19",
     30,
     pensionSharingOrder = false,
-    155.65
+    155.65,
+    false
   )
 
   "get" should {

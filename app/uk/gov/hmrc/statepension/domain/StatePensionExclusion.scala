@@ -19,12 +19,10 @@ package uk.gov.hmrc.statepension.domain
 import org.joda.time.LocalDate
 import play.api.libs.json._
 
-
 object Exclusion extends Enumeration {
   type Exclusion = Value
   val Abroad = Value
   val IsleOfMan = Value
-  val MarriedWomenReducedRateElection = Value
   val Dead = Value
   val AmountDissonance = Value
   val PostStatePensionAge = Value
@@ -35,7 +33,6 @@ object Exclusion extends Enumeration {
     def writes(exclusion: Exclusion): JsValue = JsString(exclusion.toString)
   }
 }
-
 
 case class StatePensionExclusion(exclusionReasons: List[Exclusion.Exclusion],
                                  pensionAge: Int,
