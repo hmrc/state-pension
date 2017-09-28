@@ -59,7 +59,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
-                         oldRules: OldRules = OldRules(48.90)
+                         oldRules: OldRules = OldRules(additionalStatePension= 30.00,
+                                                       graduatedRetirementBenefits =10.88)
                         ) = {
     StatePension(
       new LocalDate(earningsIncludedUpTo + 1, 4, 5),
@@ -82,11 +83,13 @@ class StatePensionSpec extends StatePensionUnitSpec {
   }
 
   "oldRules" should {
-    "return 48.90 when the user has a apAndGrad amount of 48.90" in {
-      createStatePension(cope = 0).amounts.oldRules.apAndGrad shouldBe 48.90
+    "return OldRules where graduatedRetirementBenefits is 10.88 and additionalStatePension is 30.00" in {
+        createStatePension(cope = 0).amounts.oldRules shouldBe
+            OldRules(additionalStatePension=30.00,graduatedRetirementBenefits =10.88)
     }
-    "return 20.00 when the user has a apAndGrad amount of 20.00" in {
-      createStatePension(oldRules = OldRules(20.00)).amounts.oldRules.apAndGrad shouldBe 20.00
+    "return OldRules where additionalStatePension is 20.00 and graduatedRetirementBenefits is 10.00" in {
+       createStatePension(oldRules = OldRules(additionalStatePension=20.00, graduatedRetirementBenefits=10.00))
+           .amounts.oldRules shouldBe OldRules(additionalStatePension=20.00,graduatedRetirementBenefits=10.00)
     }
   }
 

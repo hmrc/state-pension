@@ -60,7 +60,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         None,
         0.00
       ),
-      OldRules(48.90)
+      OldRules(additionalStatePension = 38.90,
+               graduatedRetirementBenefits = 10.00
+      )
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),
@@ -212,12 +214,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           }
         }
 
-        "return oldRules AP And Grad Amount = 41.88" in {
+        "return oldRules Additonal Pension as 39.22" in {
           whenReady(statement) { sp =>
-            sp.amounts.oldRules.apAndGrad shouldBe 41.88
+            sp.amounts.oldRules.additionalStatePension  shouldBe 39.22
           }
         }
 
+        "return oldRules GraduatedRetirementsBenefits as 2.66" in {
+          whenReady(statement) { sp =>
+            sp.amounts.oldRules.graduatedRetirementBenefits shouldBe 2.66
+          }
+        }
         "return final relevant year" in {
           whenReady(statement) { sp =>
             sp.finalRelevantYear shouldBe "2018-19"
@@ -422,8 +429,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "the OldRules amounts" should {
-        "return APAndGradB amount of 41.88" in {
-          statement.amounts.oldRules.apAndGrad shouldBe 41.88
+        "return additionalPension amount of 39.22" in {
+          statement.amounts.oldRules.additionalStatePension shouldBe 39.22
+        }
+        "return graduatedRetirementBenefits amount of 2.66" in {
+          statement.amounts.oldRules.graduatedRetirementBenefits shouldBe 2.66
         }
       }
 
@@ -549,9 +559,27 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           summary.amounts.amountA2016.totalAP shouldBe 41.88
         }
       }
-      "statePension have APAndGradAmount as 41.88" in {
+
+      "summary have additionalStatePension as 39.99" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.additionalStatePension shouldBe 39.22
+        }
+      }
+
+      "summary have graduatedRetirementBenefits as 2.66" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.graduatedRetirementBenefits shouldBe 2.66
+        }
+      }
+      "statePension have AdditionalStatePension as 39.22" in {
         whenReady(statement) { statePension =>
-          statePension.amounts.oldRules.apAndGrad shouldBe 41.88
+          statePension.amounts.oldRules.additionalStatePension shouldBe 39.22
+
+        }
+      }
+      "statePension have graduatedRetirementBenefits as 2.66" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.oldRules.graduatedRetirementBenefits shouldBe 2.66
         }
       }
 

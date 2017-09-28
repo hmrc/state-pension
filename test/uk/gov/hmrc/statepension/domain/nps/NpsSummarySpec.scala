@@ -389,7 +389,7 @@ class NpsSummarySpec extends UnitSpec {
                                       |    "starting_amount": 300.00
                                       |}""".stripMargin)
 
-    "parse and calculate TotalAP and grad" when {
+    "parse and calculate TotalAP" when {
        "it exists as 73.73" in {
          amountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 73.73
        }
@@ -397,6 +397,24 @@ class NpsSummarySpec extends UnitSpec {
          nullAmountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 0
        }
       }
+    "parse and return graduatedRetirementsBenefits" when {
+       "it exists as 25.25" in {
+            amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefits shouldBe 25.25
+      }
+
+      "it is null" in {
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefits shouldBe 0
+      }
+    }
+
+    "parse and calculate additionalStatePension" when {
+      "it exists as 48.48" in {
+        amountJson.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 48.48
+      }
+      "it is null" in {
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 0
+      }
+    }
 
       "parse 2016 starting amount correctly" when {
         "it exists as 300.00" in {
