@@ -42,7 +42,9 @@ object StatePensionAmount {
   implicit val formats: Format[StatePensionAmount] = Format(reads, writes)
 }
 
-case class OldRules(apAndGrad:BigDecimal)
+case class OldRules(additionalStatePension:BigDecimal,
+                    graduatedRetirementBenefits:BigDecimal
+                   )
 
 object OldRules {
   implicit val formats = Json.format[OldRules]
