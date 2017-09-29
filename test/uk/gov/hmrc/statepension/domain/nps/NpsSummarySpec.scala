@@ -389,6 +389,29 @@ class NpsSummarySpec extends UnitSpec {
                                       |    "starting_amount": 300.00
                                       |}""".stripMargin)
 
+
+    val amountWithPRE97Json = Json.parse("""{
+                                  |    "nsp_entitlement": 100.10,
+                                  |    "ap_amount": 11.11,
+                                  |    "npsAmnbpr16": {
+                                  |      "main_component": 12.12,
+                                  |      "rebate_derived_amount": 13.13
+                                  |    },
+                                  |    "npsAmnapr16": {
+                                  |      "ltb_post97_ap_cash_value": 20.20,
+                                  |      "ltb_cat_a_cash_value": 21.21,
+                                  |      "ltb_post88_cod_cash_value": 2.22,
+                                  |      "ltb_pre97_ap_cash_value": 23.23,
+                                  |      "ltb_pre88_cod_cash_value": 2.24,
+                                  |      "grb_cash": 25.25,
+                                  |      "ltb_pst88_gmp_cash_value": 2.26,
+                                  |      "pre88_gmp": 2.27,
+                                  |      "ltb_post02_ap_cash_value": 28.28
+                                  |    },
+                                  |    "protected_payment_2016": 29.29,
+                                  |    "starting_amount": 300.00
+                                  |}""".stripMargin)
+
     "parse and calculate TotalAP" when {
        "it exists as 73.73" in {
          amountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 73.73
@@ -416,7 +439,14 @@ class NpsSummarySpec extends UnitSpec {
       }
     }
 
-      "parse 2016 starting amount correctly" when {
+    "parse and calculate additionalStatePension where PRE97 is above 0" when {
+      "it exists as 62.72" in {
+        amountWithPRE97Json.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 62.72
+      }
+    }
+
+
+    "parse 2016 starting amount correctly" when {
         "it exists as 300.00" in {
           amountJson.as[NpsStatePensionAmounts].startingAmount2016 shouldBe 300.00
         }
