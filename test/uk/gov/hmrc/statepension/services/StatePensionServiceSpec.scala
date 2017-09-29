@@ -61,7 +61,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         0.00
       ),
       OldRules(additionalStatePension = 38.90,
-               graduatedRetirementBenefits = 10.00
+               graduatedRetirementBenefit = 10.00
       )
     ),
     pensionAge = 64,
@@ -188,7 +188,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq(0),
             Matchers.eq(None),
             Matchers.eq(false),
-            Matchers.eq[BigDecimal](41.88)
+            Matchers.eq[BigDecimal](39.22),
+            Matchers.eq[BigDecimal](2.66)
           )
         }
 
@@ -222,7 +223,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
         "return oldRules GraduatedRetirementsBenefits as 2.66" in {
           whenReady(statement) { sp =>
-            sp.amounts.oldRules.graduatedRetirementBenefits shouldBe 2.66
+            sp.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
           }
         }
         "return final relevant year" in {
@@ -433,7 +434,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
         "return graduatedRetirementBenefits amount of 2.66" in {
-          statement.amounts.oldRules.graduatedRetirementBenefits shouldBe 2.66
+          statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
         }
       }
 
@@ -467,7 +468,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq(3),
           Matchers.eq(None),
           Matchers.eq(false),
-          Matchers.eq[BigDecimal](41.88)
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66)
         )
       }
 
@@ -554,7 +556,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "summary have APAndGradAmount as 41.88" in {
+      "summary have totalAP as 41.88" in {
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.totalAP shouldBe 41.88
         }
@@ -568,7 +570,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "summary have graduatedRetirementBenefits as 2.66" in {
         whenReady(summaryF) { summary =>
-          summary.amounts.amountA2016.graduatedRetirementBenefits shouldBe 2.66
+          summary.amounts.amountA2016.graduatedRetirementBenefit shouldBe 2.66
         }
       }
       "statePension have AdditionalStatePension as 39.22" in {
@@ -579,7 +581,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
       "statePension have graduatedRetirementBenefits as 2.66" in {
         whenReady(statement) { statePension =>
-          statePension.amounts.oldRules.graduatedRetirementBenefits shouldBe 2.66
+          statePension.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
         }
       }
 
@@ -593,7 +595,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq(3),
           Matchers.eq(None),
           Matchers.eq(false),
-          Matchers.eq[BigDecimal](41.88)
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66)
         )
       }
 
@@ -726,7 +729,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -796,7 +800,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -863,6 +867,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq(34),
           Matchers.eq(Some(MQPScenario.ContinueWorking)),
           Matchers.eq(true),
+          Matchers.eq[BigDecimal](0),
           Matchers.eq[BigDecimal](0)
         )
       }
@@ -931,7 +936,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -1001,7 +1006,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1064,7 +1069,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1127,7 +1132,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
   }

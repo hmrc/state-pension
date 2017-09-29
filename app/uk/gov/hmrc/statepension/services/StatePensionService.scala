@@ -131,7 +131,7 @@ trait NpsConnection extends StatePensionService {
             StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
             StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
             oldRules = OldRules(additionalStatePension=summary.amounts.amountA2016.additionalStatePension,
-                                graduatedRetirementBenefits=summary.amounts.amountA2016.graduatedRetirementBenefits)
+                                graduatedRetirementBenefit=summary.amounts.amountA2016.graduatedRetirementBenefit)
           ),
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
@@ -145,7 +145,9 @@ trait NpsConnection extends StatePensionService {
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
           statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
           statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
-          summary.reducedRateElection,summary.amounts.amountA2016.totalAP)
+          summary.reducedRateElection,
+          additionalStatePension=summary.amounts.amountA2016.additionalStatePension,
+          graduatedRetirementBenefit=summary.amounts.amountA2016.graduatedRetirementBenefit)
 
         Right(statePension)
       }
@@ -223,7 +225,7 @@ object SandboxStatePensionService extends StatePensionService {
         0.00
       ),
       oldRules = OldRules(additionalStatePension = 38.9,
-                          graduatedRetirementBenefits = 10.00)
+                          graduatedRetirementBenefit = 10.00)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),

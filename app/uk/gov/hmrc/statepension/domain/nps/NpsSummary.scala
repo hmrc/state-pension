@@ -97,10 +97,10 @@ case class NpsAmountA2016(
                            post88COD: BigDecimal = 0,
                            grb: BigDecimal = 0
                          ) {
-   val graduatedRetirementBenefits: BigDecimal =grb
+   val graduatedRetirementBenefit: BigDecimal =grb
    val additionalStatePension: BigDecimal =(pre97AP - (pre88GMP + post88GMP + pre88COD + post88COD)).max(0) + post97AP + post02AP
 
-   val totalAP: BigDecimal = additionalStatePension + graduatedRetirementBenefits
+   val totalAP: BigDecimal = additionalStatePension + graduatedRetirementBenefit
    val total: BigDecimal = totalAP + basicPension
 
 }

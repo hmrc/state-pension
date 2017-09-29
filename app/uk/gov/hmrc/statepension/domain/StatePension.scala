@@ -43,7 +43,7 @@ object StatePensionAmount {
 }
 
 case class OldRules(additionalStatePension:BigDecimal,
-                    graduatedRetirementBenefits:BigDecimal
+                    graduatedRetirementBenefit:BigDecimal
                    )
 
 object OldRules {

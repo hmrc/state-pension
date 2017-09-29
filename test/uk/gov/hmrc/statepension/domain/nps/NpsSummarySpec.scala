@@ -399,11 +399,11 @@ class NpsSummarySpec extends UnitSpec {
       }
     "parse and return graduatedRetirementsBenefits" when {
        "it exists as 25.25" in {
-            amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefits shouldBe 25.25
+            amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 25.25
       }
 
       "it is null" in {
-        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefits shouldBe 0
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 0
       }
     }
 
