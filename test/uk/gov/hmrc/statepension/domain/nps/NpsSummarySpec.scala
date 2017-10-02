@@ -435,7 +435,7 @@ class NpsSummarySpec extends UnitSpec {
         amountJson.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 48.48
       }
       "it is null" in {
-        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 0
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 0
       }
     }
 
