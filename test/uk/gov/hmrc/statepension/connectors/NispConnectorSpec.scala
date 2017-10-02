@@ -126,7 +126,8 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
           StatePensionAmount(Some(4), None, 151.25),
           StatePensionAmount(Some(4), Some(1), 155.65),
           StatePensionAmount(None, None, 0.25),
-          OldRules(additionalStatePension=39.22,
+          OldRules(basicStatePension = 119.30,
+                   additionalStatePension=39.22,
                    graduatedRetirementBenefit = 2.66)
         ),
         67,

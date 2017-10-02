@@ -59,7 +59,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
-                         oldRules: OldRules = OldRules(additionalStatePension= 30.00,
+                         oldRules: OldRules = OldRules(basicStatePension = 119.30,
+                                                       additionalStatePension= 30.00,
                                                        graduatedRetirementBenefit =10.88)
                         ) = {
     StatePension(
@@ -83,16 +84,15 @@ class StatePensionSpec extends StatePensionUnitSpec {
   }
 
   "oldRules" should {
-    "return OldRules where graduatedRetirementBenefits is 10.88 and additionalStatePension is 30.00" in {
+    "return OldRules where basicStatePension is 119.30 graduatedRetirementBenefit is 10.88 and additionalStatePension is 30.00" in {
         createStatePension(cope = 0).amounts.oldRules shouldBe
-            OldRules(additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
+            OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
     }
-    "return OldRules where additionalStatePension is 20.00 and graduatedRetirementBenefits is 10.00" in {
-       createStatePension(oldRules = OldRules(additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
-           .amounts.oldRules shouldBe OldRules(additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
+    "return OldRules where basicStatePension is 119.30, additionalStatePension is 20.00 and graduatedRetirementBenefit is 10.00" in {
+       createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
+           .amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
     }
   }
-
 
   "contractedOut" should {
     "return true when the user has a COPE amount more than 0" in {

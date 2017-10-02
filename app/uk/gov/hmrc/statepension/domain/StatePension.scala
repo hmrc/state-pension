@@ -29,6 +29,7 @@ case class StatePensionAmount(yearsToWork: Option[Int],
   val monthlyAmount: BigDecimal = (((weeklyAmount / 7) * 365.25) / 12).setScale(2, RoundingMode.HALF_UP)
   val annualAmount: BigDecimal = ((weeklyAmount / 7) * 365.25).setScale(2, RoundingMode.HALF_UP)
 }
+
 object StatePensionAmount {
   implicit val reads = Json.reads[StatePensionAmount]
   implicit val writes: Writes[StatePensionAmount] = (
@@ -42,7 +43,8 @@ object StatePensionAmount {
   implicit val formats: Format[StatePensionAmount] = Format(reads, writes)
 }
 
-case class OldRules(additionalStatePension:BigDecimal,
+case class OldRules(basicStatePension:BigDecimal,
+                    additionalStatePension:BigDecimal,
                     graduatedRetirementBenefit:BigDecimal
                    )
 
@@ -60,7 +62,6 @@ case class StatePensionAmounts(protectedPayment: Boolean,
 object StatePensionAmounts {
   implicit val formats = Json.format[StatePensionAmounts]
 }
-
 
 case class StatePension(earningsIncludedUpTo: LocalDate,
                         amounts: StatePensionAmounts,

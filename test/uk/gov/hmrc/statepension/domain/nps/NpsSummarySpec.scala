@@ -20,8 +20,8 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
 
-
 class NpsSummarySpec extends UnitSpec {
+
   val summaryJson = Json.parse(
     """
       |{
@@ -183,7 +183,6 @@ class NpsSummarySpec extends UnitSpec {
       }
 
     }
-
 
     "parse reduced rate election correctly" when {
       "it is 0 and therefore false" in {
@@ -419,8 +418,9 @@ class NpsSummarySpec extends UnitSpec {
        "it is null" in {
          nullAmountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 0
        }
-      }
-    "parse and return graduatedRetirementsBenefits" when {
+     }
+
+    "parse and return graduatedRetirementBenefit" when {
        "it exists as 25.25" in {
             amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 25.25
       }
@@ -439,12 +439,20 @@ class NpsSummarySpec extends UnitSpec {
       }
     }
 
+    "parse and calculate basicStatePension" when {
+      "it exists as 21.21" in {
+        amountJson.as[NpsStatePensionAmounts].amountA2016.basicStatePension shouldBe 21.21
+      }
+      "it is null" in {
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.basicStatePension shouldBe 0
+      }
+    }
+
     "parse and calculate additionalStatePension where PRE97 is above 0" when {
       "it exists as 62.72" in {
         amountWithPRE97Json.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 62.72
       }
     }
-
 
     "parse 2016 starting amount correctly" when {
         "it exists as 300.00" in {
@@ -477,7 +485,6 @@ class NpsSummarySpec extends UnitSpec {
       }
 
       "be parsing Amount A correctly and therefore" should {
-
 
         "parse basic pension correctly" when {
           "it exists as 21.21" in {
@@ -591,8 +598,6 @@ class NpsSummarySpec extends UnitSpec {
           }
         }
       }
-
-
   }
 
   "NpsAmountA2016" should {
@@ -645,7 +650,6 @@ class NpsSummarySpec extends UnitSpec {
       pensionSharingOrderSERPS = false,
       dateOfBirth = new LocalDate(1960, 4, 5)
     )
-
 
     "finalRelevantStartYear is 2015" should {
       "return 2015-16" in {

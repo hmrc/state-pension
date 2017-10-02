@@ -60,7 +60,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         None,
         0.00
       ),
-      OldRules(additionalStatePension = 38.90,
+      OldRules(basicStatePension = 119.30,
+               additionalStatePension = 38.90,
                graduatedRetirementBenefit = 10.00
       )
     ),

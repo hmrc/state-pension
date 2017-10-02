@@ -130,8 +130,9 @@ trait NpsConnection extends StatePensionService {
             StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
             StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
             StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
-            oldRules = OldRules(additionalStatePension=summary.amounts.amountA2016.additionalStatePension,
-                                graduatedRetirementBenefit=summary.amounts.amountA2016.graduatedRetirementBenefit)
+            oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
+                                additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
+                                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit)
           ),
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
@@ -224,7 +225,8 @@ object SandboxStatePensionService extends StatePensionService {
         None,
         0.00
       ),
-      oldRules = OldRules(additionalStatePension = 38.9,
+      oldRules = OldRules(basicStatePension = 119.30,
+                          additionalStatePension = 38.9,
                           graduatedRetirementBenefit = 10.00)
     ),
     pensionAge = 64,
