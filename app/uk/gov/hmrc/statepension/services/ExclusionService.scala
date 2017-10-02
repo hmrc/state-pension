@@ -63,9 +63,6 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
     if (liabilities.exists(_.liabilityType == LiabilityType.ISLE_OF_MAN)) Exclusion.IsleOfMan :: exclusionList
     else exclusionList
 
-  private val checkMarriedWomensReducedRateElection = (exclusionList: List[Exclusion]) =>
-    if (reducedRateElection) Exclusion.MarriedWomenReducedRateElection :: exclusionList else exclusionList
-
   // scalastyle:off magic.number
   final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
   // scalastyle:on magic.number
@@ -85,7 +82,6 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
     checkPostStatePensionAge,
     checkAmountDissonance,
     checkIsleOfMan,
-    checkMarriedWomensReducedRateElection,
     checkOverseasMaleAutoCredits
   ))
 }

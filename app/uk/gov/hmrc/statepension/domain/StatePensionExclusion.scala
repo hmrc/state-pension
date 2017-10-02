@@ -24,7 +24,6 @@ object Exclusion extends Enumeration {
   type Exclusion = Value
   val Abroad = Value
   val IsleOfMan = Value
-  val MarriedWomenReducedRateElection = Value
   val Dead = Value
   val AmountDissonance = Value
   val PostStatePensionAge = Value
