@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>Scenario</th>
-            <th>NINO Prefix</th>
+            <th>NINO</th>
             <th>Response</th>
         </tr>
     </thead>
@@ -121,7 +121,7 @@
         <tr>
             <td><p>Taxpayer who has the Married Women's Reduced Rate Election flag</p></td>
             <td><p><code>EA791213A</code></p></td>
-            <td><p>200 (OK) Payload as exclusion example above</p></td>
+            <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
             <td><p>Taxpayer who has the manual correspondence indicator flag</p></td>
