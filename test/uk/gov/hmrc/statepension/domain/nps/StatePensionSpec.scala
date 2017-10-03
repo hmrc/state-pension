@@ -61,7 +61,9 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          reducedRateElection:Boolean = false,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
-                                                       graduatedRetirementBenefit =10.88)
+                                                       graduatedRetirementBenefit =10.88),
+                         newRules: NewRules = NewRules(grossStatePension = 155.65,
+                                                       rebateDerivedAmount= 0.00)
                         ) = {
     StatePension(
       new LocalDate(earningsIncludedUpTo + 1, 4, 5),
@@ -71,7 +73,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
         StatePensionAmount(None, None, forecastAmount),
         StatePensionAmount(None, None, maximumAmount),
         cope = StatePensionAmount(None, None, cope),
-        oldRules
+        oldRules,
+        newRules
       ),
       65,
       new LocalDate(2019, 5, 1),
@@ -91,6 +94,17 @@ class StatePensionSpec extends StatePensionUnitSpec {
     "return OldRules where basicStatePension is 119.30, additionalStatePension is 20.00 and graduatedRetirementBenefit is 10.00" in {
        createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
            .amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
+    }
+  }
+
+  "newRules" should {
+    "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 0.00" in {
+        createStatePension(cope = 0).amounts.newRules shouldBe
+            NewRules(grossStatePension = 155.65, rebateDerivedAmount=0.00)
+    }
+    "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 20.00" in {
+       createStatePension(newRules = NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00))
+           .amounts.newRules shouldBe NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00)
     }
   }
 

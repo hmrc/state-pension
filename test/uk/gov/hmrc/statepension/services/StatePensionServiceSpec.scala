@@ -63,7 +63,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       OldRules(basicStatePension = 119.30,
                additionalStatePension = 38.90,
                graduatedRetirementBenefit = 10.00
-      )
+      ),
+      NewRules(grossStatePension = 155.65,
+        rebateDerivedAmount= 0.00)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),
@@ -216,17 +218,36 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           }
         }
 
-        "return oldRules Additonal Pension as 39.22" in {
+        "return oldRules additionalStatePension as 39.22" in {
           whenReady(statement) { sp =>
             sp.amounts.oldRules.additionalStatePension  shouldBe 39.22
           }
         }
 
-        "return oldRules GraduatedRetirementsBenefits as 2.66" in {
+        "return oldRules graduatedRetirementsBenefit as 2.66" in {
           whenReady(statement) { sp =>
             sp.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
           }
         }
+
+        "return oldRules basicStatePension as 119.3" in {
+          whenReady(statement) { sp =>
+            sp.amounts.oldRules.basicStatePension shouldBe 119.3
+          }
+        }
+
+        "return newRules grossStatePension as 155.65" in {
+          whenReady(statement) { sp =>
+            sp.amounts.newRules.grossStatePension  shouldBe 155.65
+          }
+        }
+
+        "return newRules rebateDerivedAmount as 0.00" in {
+          whenReady(statement) { sp =>
+            sp.amounts.newRules.rebateDerivedAmount shouldBe 0.00
+          }
+        }
+
         "return final relevant year" in {
           whenReady(statement) { sp =>
             sp.finalRelevantYear shouldBe "2018-19"
@@ -434,8 +455,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         "return additionalPension amount of 39.22" in {
           statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
-        "return graduatedRetirementBenefits amount of 2.66" in {
+
+        "return graduatedRetirementBenefit amount of 2.66" in {
           statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+        }
+
+        "return basicStatePension amount of 2.66" in {
+          statement.amounts.oldRules.basicStatePension shouldBe 79.53
+        }
+      }
+
+      "the NewRules amounts" should {
+        "return grossStatePension amount of 88.94" in {
+          statement.amounts.newRules.grossStatePension shouldBe 88.94
+        }
+
+        "return rebateDerivedAmount amount of 0.00" in {
+          statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
       }
 
@@ -569,20 +605,46 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "summary have graduatedRetirementBenefits as 2.66" in {
+      "summary have graduatedRetirementBenefit as 2.66" in {
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.graduatedRetirementBenefit shouldBe 2.66
         }
       }
-      "statePension have AdditionalStatePension as 39.22" in {
+
+      "summary have basicStatePension as 79.53" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.basicStatePension shouldBe 79.53
+        }
+      }
+
+      "statePension have additionalStatePension as 39.22" in {
         whenReady(statement) { statePension =>
           statePension.amounts.oldRules.additionalStatePension shouldBe 39.22
 
         }
       }
-      "statePension have graduatedRetirementBenefits as 2.66" in {
+
+      "statePension have graduatedRetirementBenefit as 2.66" in {
         whenReady(statement) { statePension =>
           statePension.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+        }
+      }
+
+      "statePension have basicStatePension as 79.53" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.oldRules.basicStatePension shouldBe 79.53
+        }
+      }
+
+      "statePension have grossStatePension as 88.94" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.newRules.grossStatePension shouldBe 88.94
+        }
+      }
+
+      "statePension have rebateDerivedAmount as 0.00" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
       }
 

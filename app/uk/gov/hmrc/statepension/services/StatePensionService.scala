@@ -132,7 +132,9 @@ trait NpsConnection extends StatePensionService {
             StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
             oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
                                 additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
-                                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit)
+                                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit),
+            newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent,
+                                rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount)
           ),
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
@@ -227,7 +229,9 @@ object SandboxStatePensionService extends StatePensionService {
       ),
       oldRules = OldRules(basicStatePension = 119.30,
                           additionalStatePension = 38.9,
-                          graduatedRetirementBenefit = 10.00)
+                          graduatedRetirementBenefit = 10.00),
+      newRules = NewRules(grossStatePension = 155.65,
+                          rebateDerivedAmount= 0.00)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),

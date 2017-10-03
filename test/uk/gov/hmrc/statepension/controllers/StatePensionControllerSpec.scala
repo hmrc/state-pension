@@ -59,7 +59,10 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       StatePensionAmount(None, None, 0.25),
       OldRules(basicStatePension = 119.30,
         additionalStatePension=39.22,
-        graduatedRetirementBenefit=2.66)
+        graduatedRetirementBenefit=2.66),
+      NewRules(grossStatePension=155.40,
+        rebateDerivedAmount= 0.25
+      )
     ),
     67,
     new LocalDate(2019, 7 ,1),
@@ -94,8 +97,11 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "amounts" \ "maximum" \ "weeklyAmount").as[BigDecimal] shouldBe 155.65
       (json \ "amounts" \ "maximum" \ "monthlyAmount").as[BigDecimal] shouldBe 676.80
       (json \ "amounts" \ "maximum" \ "annualAmount").as[BigDecimal] shouldBe 8121.59
+      (json \ "amounts" \ "oldRules" \ "basicStatePension").as[BigDecimal] shouldBe 119.30
       (json \ "amounts" \ "oldRules" \ "additionalStatePension").as[BigDecimal] shouldBe 39.22
       (json \ "amounts" \ "oldRules" \ "graduatedRetirementBenefit").as[BigDecimal] shouldBe 2.66
+      (json \ "amounts" \ "newRules" \ "grossStatePension").as[BigDecimal] shouldBe 155.40
+      (json \ "amounts" \ "newRules" \ "rebateDerivedAmount").as[BigDecimal] shouldBe 0.25
       (json \ "pensionAge").as[Int] shouldBe 67
       (json \ "pensionDate").as[LocalDate] shouldBe new LocalDate(2019, 7, 1)
       (json \ "finalRelevantYear").as[String] shouldBe "2018-19"
@@ -148,6 +154,5 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
   }
-
 
 }

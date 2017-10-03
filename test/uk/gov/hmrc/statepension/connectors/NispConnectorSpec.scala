@@ -30,7 +30,6 @@ import uk.gov.hmrc.statepension.connectors.NispConnector.JsonValidationException
 
 import scala.concurrent.Future
 
-
 class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with WithFakeApplication {
 
   val testNispConnector = new NispConnector {
@@ -101,8 +100,13 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
             |      "annualAmount": 13.04
             |    },
             |    "oldRules": {
+            |      "basicStatePension" : 119.30,
             |      "additionalStatePension": 39.22,
             |      "graduatedRetirementBenefit":2.66
+            |    },
+            |    "newRules": {
+            |      "grossStatePension" : 155.40,
+            |      "rebateDerivedAmount": 0.25
             |    }
             |  },
             |  "pensionAge": 67,
@@ -128,7 +132,9 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
           StatePensionAmount(None, None, 0.25),
           OldRules(basicStatePension = 119.30,
                    additionalStatePension=39.22,
-                   graduatedRetirementBenefit = 2.66)
+                   graduatedRetirementBenefit = 2.66),
+          NewRules(grossStatePension = 155.40,
+            rebateDerivedAmount=0.25)
         ),
         67,
         new LocalDate(2019, 7 ,1),
@@ -171,3 +177,4 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
   }
 
 }
+
