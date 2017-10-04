@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.statepension.domain.{Exclusion, _}
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
@@ -59,6 +59,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         None,
         None,
         0.00
+      ),
+      starting = StatePensionAmount(
+        None,
+        None,
+        160.18
       ),
       OldRules(basicStatePension = 119.30,
                additionalStatePension = 38.90,
@@ -312,6 +317,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           "return an annual cope amount of 643.88" in {
             statement.amounts.cope.annualAmount shouldBe 643.88
           }
+
+          "return a weekly starting amount of 161.18" in {
+            statement.amounts.starting.weeklyAmount shouldBe 161.18
+          }
+
+          "return a monthly starting amount of 700.85" in {
+            statement.amounts.starting.monthlyAmount shouldBe 700.85
+          }
+
+          "return an annual starting amount of 8410.14" in {
+            statement.amounts.starting.annualAmount shouldBe 8410.14
+          }
         }
 
         "when there is a rebate derived amount of 0 it" should {
@@ -332,7 +349,46 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           "return an annual cope amount of 0" in {
             statement.amounts.cope.annualAmount shouldBe 0
           }
+        }
 
+        "when there is all amounts of 0 it" should {
+
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement.copy(amounts = regularStatement.amounts.copy(
+              pensionEntitlement = 0,
+              startingAmount2016 = 0,
+              protectedPayment2016 = 0,
+              NpsAmountA2016(
+                basicPension = 0,
+                pre97AP = 0,
+                post97AP = 0,
+                post02AP = 0,
+                pre88GMP = 0,
+                post88GMP = 0,
+                pre88COD = 0,
+                post88COD = 0,
+                grb = 0
+              ),
+              NpsAmountB2016(
+                mainComponent = 0,
+                rebateDerivedAmount = 0
+              )
+            ))
+          ))
+
+          val statement = service.getStatement(generateNino()).right.get
+
+          "return a weekly starting amount of 0" in {
+            statement.amounts.starting.weeklyAmount shouldBe 0
+          }
+
+          "return a monthly starting amount of 0" in {
+            statement.amounts.starting.monthlyAmount shouldBe 0
+          }
+
+          "return an annual starting amount of 0" in {
+            statement.amounts.starting.annualAmount shouldBe 0
+          }
         }
 
         "when there is an entitlement of 161.18 it" should {
@@ -392,6 +448,80 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             statement.amounts.current.annualAmount shouldBe 0
           }
         }
+      }
+
+    }
+
+    "there are exclusions" when {
+      "there is a regular statement (Reached)" should {
+
+        val service = new NpsConnection {
+          override lazy val nps: NpsConnector = mock[NpsConnector]
+          override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+          override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+          override lazy val metrics: Metrics = mock[Metrics]
+          override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+          override lazy val forecastingService: ForecastingService = defaultForecasting
+          override lazy val rateService: RateService = RateServiceBuilder.default
+        }
+
+        val regularStatement = NpsSummary(
+          earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+          sex = "F",
+          statePensionAgeDate = new LocalDate(2019, 9, 6),
+          finalRelevantStartYear = 2018,
+          pensionSharingOrderSERPS = false,
+          dateOfBirth = new LocalDate(1954, 3, 9),
+          amounts = NpsStatePensionAmounts(
+            pensionEntitlement = 161.18,
+            startingAmount2016 = 161.18,
+            protectedPayment2016 = 5.53,
+            NpsAmountA2016(
+              basicPension = 119.3,
+              pre97AP = 17.79,
+              post97AP = 6.03,
+              post02AP = 15.4,
+              pre88GMP = 0,
+              post88GMP = 0,
+              pre88COD = 0,
+              post88COD = 0,
+              grb = 2.66
+            ),
+            NpsAmountB2016(
+              mainComponent = 155.65,
+              rebateDerivedAmount = 0
+            )
+          )
+        )
+
+        when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          regularStatement
+        ))
+
+        when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          List()
+        ))
+
+        when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          NpsNIRecord(qualifyingYears = 36, List())
+        ))
+
+        val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+        "when there is a starting amount of 0 it" should {
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement.copy(amounts = regularStatement.amounts.copy(startingAmount2016 = 0))
+          ))
+
+          val statement = service.getStatement(generateNino()).left
+          "return an AmountDissonance exclusion" in {
+            statement.get.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
+            statement.get.pensionAge shouldBe 65
+            statement.get.pensionDate.toString shouldBe "2019-09-06"
+          }
+
+        }
+
       }
 
     }
@@ -1200,3 +1330,4 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
   }
 }
+

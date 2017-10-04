@@ -52,9 +52,7 @@ object OldRules {
   implicit val formats = Json.format[OldRules]
 }
 
-case class NewRules(grossStatePension:BigDecimal,
-                    rebateDerivedAmount:BigDecimal
-                   )
+case class NewRules(grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal)
 
 object NewRules {
   implicit val formats = Json.format[NewRules]
@@ -65,6 +63,7 @@ case class StatePensionAmounts(protectedPayment: Boolean,
                                forecast: StatePensionAmount,
                                maximum: StatePensionAmount,
                                cope: StatePensionAmount,
+                               starting: StatePensionAmount,
                                oldRules: OldRules,
                                newRules: NewRules)
 

@@ -59,6 +59,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
+                         startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
                                                        graduatedRetirementBenefit =10.88),
@@ -73,6 +74,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
         StatePensionAmount(None, None, forecastAmount),
         StatePensionAmount(None, None, maximumAmount),
         cope = StatePensionAmount(None, None, cope),
+        starting = StatePensionAmount(None, None, startingAmount),
         oldRules,
         newRules
       ),
@@ -86,9 +88,18 @@ class StatePensionSpec extends StatePensionUnitSpec {
     )
   }
 
+  "starting" should {
+    "return starting amount" in {
+        createStatePension().amounts.starting shouldBe StatePensionAmount(None,None,160.18)
+        createStatePension().amounts.starting.weeklyAmount shouldBe 160.18
+        createStatePension().amounts.starting.monthlyAmount shouldBe 696.50
+        createStatePension().amounts.starting.annualAmount shouldBe 8357.96
+    }
+  }
+
   "oldRules" should {
     "return OldRules where basicStatePension is 119.30 graduatedRetirementBenefit is 10.88 and additionalStatePension is 30.00" in {
-        createStatePension(cope = 0).amounts.oldRules shouldBe
+        createStatePension().amounts.oldRules shouldBe
             OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
     }
     "return OldRules where basicStatePension is 119.30, additionalStatePension is 20.00 and graduatedRetirementBenefit is 10.00" in {
@@ -99,7 +110,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
 
   "newRules" should {
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 0.00" in {
-        createStatePension(cope = 0).amounts.newRules shouldBe
+        createStatePension().amounts.newRules shouldBe
             NewRules(grossStatePension = 155.65, rebateDerivedAmount=0.00)
     }
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 20.00" in {
