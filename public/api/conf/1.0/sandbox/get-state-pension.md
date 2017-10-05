@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>Scenario</th>
-            <th>NINO Prefix</th>
+            <th>NINO</th>
             <th>Response</th>
         </tr>
     </thead>
@@ -96,6 +96,11 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
+            <td><p>Taxpayer who has the Married Women's Reduced Rate Election flag</p></td>
+            <td><p><code>EA791213A</code></p></td>
+            <td><p>200 (OK) Payload as regular example above</p></td>
+        </tr>
+        <tr>
             <th colspan="3">Exclusions</th>
         </tr>
         <tr>
@@ -116,11 +121,6 @@
         <tr>
             <td><p>Taxpayer who has Isle of Man liability</p></td>
             <td><p><code>MA000002A</code></p></td>
-            <td><p>200 (OK) Payload as exclusion example above</p></td>
-        </tr>
-        <tr>
-            <td><p>Taxpayer who has the Married Women's Reduced Rate Election flag</p></td>
-            <td><p><code>EA791213A</code></p></td>
             <td><p>200 (OK) Payload as exclusion example above</p></td>
         </tr>
         <tr>

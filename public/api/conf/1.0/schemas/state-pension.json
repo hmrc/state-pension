@@ -16,12 +16,7 @@
             "enum": ["IsleOfMan"],
             "description": "The customer has National Insurance contributions from the Isle of Man. Manual separation of National Insurance record required, customer should contact the National Insurance Helpline."
           },
-          
-          {
-            "enum": ["MarriedWomensReducedRateElection"],
-            "description": "The customer has a \u2018reduced rate election\u2019 in force at the beginning of the tax year 35 years before the tax year of State Pension age. Current marital status required, unable to determine State Pension amounts."
-          },
-          
+
           {
             "enum": ["AmountDissonance"],
             "description": "Contention between amounts on internal systems. There is contention between the pension amounts in the internal systems, therefore a reliable forecast cannot be provided."
@@ -175,6 +170,11 @@
       "type": "number",
       "description": "The full rate of State Pension each week ",
       "example": "155.65"
+    },
+    "reducedRateElection": {
+      "type": "boolean",
+      "description": "Whether the customer has a \u2018reduced rate election\u2019 in force at the beginning of the tax year 35 years before the tax year of State Pension age",
+      "example": "true"
     }
   }
 }
