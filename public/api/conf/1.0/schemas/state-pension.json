@@ -138,6 +138,21 @@
               "example": "0"
             }
           }
+        },
+        "oldRules": {
+          "type": "object",
+          "properties": {
+            "additionalStatePension": {
+              "type": "number",
+              "description": "The amount of Additional State Pension",
+              "example": "0"
+            },
+            "graduatedRetirementBenefit": {
+              "type": "number",
+              "description": "The amount of Graduated Retirement Benefit",
+              "example": "0"
+            }
+          }
         }
       }
     },
