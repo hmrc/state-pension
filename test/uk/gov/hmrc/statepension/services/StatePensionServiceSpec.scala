@@ -587,7 +587,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "log a summary metric" in {
         verify(service.metrics, times(1)).summary(
-            Matchers.eq[BigDecimal](134.75),
+          Matchers.eq[BigDecimal](134.75),
           Matchers.eq[BigDecimal](121.41),
           Matchers.eq(false),
           Matchers.eq(Scenario.FillGaps),

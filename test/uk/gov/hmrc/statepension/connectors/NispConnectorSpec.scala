@@ -30,7 +30,6 @@ import uk.gov.hmrc.statepension.connectors.NispConnector.JsonValidationException
 
 import scala.concurrent.Future
 
-
 class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with WithFakeApplication {
 
   val testNispConnector = new NispConnector {
