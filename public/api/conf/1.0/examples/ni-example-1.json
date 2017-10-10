@@ -24,6 +24,20 @@
       "weeklyAmount": 0,
       "monthlyAmount": 0,
       "annualAmount": 0
+    },
+    "starting": {
+      "weeklyAmount": 130.05,
+      "monthlyAmount": 565.49,
+      "annualAmount": 6785.82
+    },
+    "oldRules": {
+      "basicStatePension": 119.30,
+      "additionalStatePension": 10.75,
+      "graduatedRetirementBenefit": 0
+    },
+    "newRules": {
+      "grossStatePension": 130.05,
+      "rebateDerivedAmount": 0
     }
   },
   "pensionAge": 64,
