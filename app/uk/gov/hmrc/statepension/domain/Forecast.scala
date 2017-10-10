@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.domain
 
-
 case class Forecast(amount: BigDecimal, yearsToWork: Int)
 
 object Forecast

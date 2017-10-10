@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-
 object Country {
 
   final val GREAT_BRITAIN = 1

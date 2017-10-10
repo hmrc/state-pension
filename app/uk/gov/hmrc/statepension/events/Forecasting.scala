@@ -44,7 +44,7 @@ class Forecasting(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifying
     "post88GMP" -> amountA.post88GMP.toString(),
     "pre88COD" -> amountA.pre88COD.toString(),
     "post88COD" -> amountA.post88COD.toString(),
-    "grb" -> amountA.grb.toString(),
+    "grb" -> amountA.graduatedRetirementBenefit.toString(),
     "totalAP" -> amountA.totalAP.toString(),
     "amountBmain" -> amountB.mainComponent.toString(),
     "rda" -> amountB.rebateDerivedAmount.toString(),

@@ -139,7 +139,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 155.65,

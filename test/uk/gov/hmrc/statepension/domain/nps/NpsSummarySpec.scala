@@ -332,7 +332,7 @@ class NpsSummarySpec extends UnitSpec {
           post88GMP = 0,
           pre88COD = 0,
           post88COD = 0,
-          grb =  2.66
+          graduatedRetirementBenefit =  2.66
         ),
         NpsAmountB2016(
           mainComponent = 155.65,
@@ -560,11 +560,11 @@ class NpsSummarySpec extends UnitSpec {
         }
         "parse graduated retirement benefit" when {
           "it exists as  25.25" in {
-            amountJson.as[NpsStatePensionAmounts].amountA2016.grb shouldBe  25.25
+            amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe  25.25
           }
 
           "it is null" in {
-            nullAmountJson.as[NpsStatePensionAmounts].amountA2016.grb shouldBe 0
+            nullAmountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 0
           }
         }
 

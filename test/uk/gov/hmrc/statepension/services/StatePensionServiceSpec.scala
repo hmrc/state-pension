@@ -155,7 +155,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               post88GMP = 0,
               pre88COD = 0,
               post88COD = 0,
-              grb = 2.66
+              graduatedRetirementBenefit = 2.66
             ),
             NpsAmountB2016(
               mainComponent = 155.65,
@@ -406,7 +406,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 88.94,
@@ -509,7 +509,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 88.94,
@@ -637,7 +637,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 0
+            graduatedRetirementBenefit = 0
           ),
           NpsAmountB2016(
             mainComponent = 40.02,

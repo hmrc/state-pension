@@ -39,7 +39,6 @@ case class NpsNIRecord(qualifyingYears: Int, taxYears: List[NpsNITaxYear]) {
   }
 }
 
-
 object NpsNIRecord {
   implicit val reads: Reads[NpsNIRecord] = (
       (__ \ "number_of_qualifying_years").read[Int] and
