@@ -73,7 +73,6 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
     } else {
       exclusionList
     }
-
   }
 
   private val exclusions = FunctionHelper.composeAll(List(

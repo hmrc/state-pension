@@ -163,7 +163,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               post88GMP = 0,
               pre88COD = 0,
               post88COD = 0,
-              grb = 2.66
+              graduatedRetirementBenefit = 2.66
             ),
             NpsAmountB2016(
               mainComponent = 155.65,
@@ -367,7 +367,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
                 post88GMP = 0,
                 pre88COD = 0,
                 post88COD = 0,
-                grb = 0
+                graduatedRetirementBenefit = 0
               ),
               NpsAmountB2016(
                 mainComponent = 0,
@@ -485,7 +485,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               post88GMP = 0,
               pre88COD = 0,
               post88COD = 0,
-              grb = 2.66
+              graduatedRetirementBenefit = 2.66
             ),
             NpsAmountB2016(
               mainComponent = 155.65,
@@ -558,7 +558,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 88.94,
@@ -676,7 +676,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 88.94,
@@ -780,7 +780,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "log a summary metric" in {
         verify(service.metrics, times(1)).summary(
-            Matchers.eq[BigDecimal](134.75),
+          Matchers.eq[BigDecimal](134.75),
           Matchers.eq[BigDecimal](121.41),
           Matchers.eq(false),
           Matchers.eq(Scenario.FillGaps),
@@ -830,7 +830,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 0
+            graduatedRetirementBenefit = 0
           ),
           NpsAmountB2016(
             mainComponent = 40.02,

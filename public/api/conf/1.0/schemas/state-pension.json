@@ -130,7 +130,7 @@
             "monthlyAmount": {
               "type": "number",
               "description": "The amount of Contracted Out Pension Equivalent every month",
-              "example": "0"
+              "example": "10.75"
             },
             "annualAmount": {
               "type": "number",
