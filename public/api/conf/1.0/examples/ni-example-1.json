@@ -24,6 +24,10 @@
       "weeklyAmount": 0,
       "monthlyAmount": 0,
       "annualAmount": 0
+    },
+    "oldRules": {
+      "additionalStatePension": 10.75,
+      "graduatedRetirementBenefit": 0
     }
   },
   "pensionAge": 64,

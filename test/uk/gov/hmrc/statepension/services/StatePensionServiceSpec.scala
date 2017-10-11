@@ -59,6 +59,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         None,
         None,
         0.00
+      ),
+      OldRules(additionalStatePension = 38.90,
+               graduatedRetirementBenefit = 10.00
       )
     ),
     pensionAge = 64,
@@ -152,7 +155,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               post88GMP = 0,
               pre88COD = 0,
               post88COD = 0,
-              grb = 2.66
+              graduatedRetirementBenefit = 2.66
             ),
             NpsAmountB2016(
               mainComponent = 155.65,
@@ -184,7 +187,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq[BigDecimal](161.18),
             Matchers.eq(0),
             Matchers.eq(None),
-            Matchers.eq(false)
+            Matchers.eq(false),
+            Matchers.eq[BigDecimal](39.22),
+            Matchers.eq[BigDecimal](2.66)
           )
         }
 
@@ -210,6 +215,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           }
         }
 
+        "return oldRules Additonal Pension as 39.22" in {
+          whenReady(statement) { sp =>
+            sp.amounts.oldRules.additionalStatePension  shouldBe 39.22
+          }
+        }
+
+        "return oldRules GraduatedRetirementsBenefits as 2.66" in {
+          whenReady(statement) { sp =>
+            sp.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+          }
+        }
         "return final relevant year" in {
           whenReady(statement) { sp =>
             sp.finalRelevantYear shouldBe "2018-19"
@@ -267,11 +283,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             statement.amounts.cope.weeklyAmount shouldBe 12.34
           }
 
-          "return a monthly cope amount of 12.34" in {
+          "return a monthly cope amount of 53.66" in {
             statement.amounts.cope.monthlyAmount shouldBe 53.66
           }
 
-          "return an annual cope amount of 12.34" in {
+          "return an annual cope amount of 643.88" in {
             statement.amounts.cope.annualAmount shouldBe 643.88
           }
         }
@@ -390,7 +406,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 88.94,
@@ -412,6 +428,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "the OldRules amounts" should {
+        "return additionalPension amount of 39.22" in {
+          statement.amounts.oldRules.additionalStatePension shouldBe 39.22
+        }
+        "return graduatedRetirementBenefits amount of 2.66" in {
+          statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+        }
+      }
 
       "the forecast amount" should {
 
@@ -442,7 +467,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](134.75),
           Matchers.eq(3),
           Matchers.eq(None),
-          Matchers.eq(false)
+          Matchers.eq(false),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66)
         )
       }
 
@@ -482,7 +509,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 2.66
+            graduatedRetirementBenefit = 2.66
           ),
           NpsAmountB2016(
             mainComponent = 88.94,
@@ -503,6 +530,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(qualifyingYears = 20, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
+      lazy val summaryF: Future[NpsSummary] = service.nps.getSummary(Matchers.any())(Matchers.any())
       lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "the personal maximum amount" should {
@@ -528,6 +556,35 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
+      "summary have totalAP as 41.88" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.totalAP shouldBe 41.88
+        }
+      }
+
+      "summary have additionalStatePension as 39.99" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.additionalStatePension shouldBe 39.22
+        }
+      }
+
+      "summary have graduatedRetirementBenefits as 2.66" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.graduatedRetirementBenefit shouldBe 2.66
+        }
+      }
+      "statePension have AdditionalStatePension as 39.22" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.oldRules.additionalStatePension shouldBe 39.22
+
+        }
+      }
+      "statePension have graduatedRetirementBenefits as 2.66" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+        }
+      }
+
       "log a summary metric" in {
         verify(service.metrics, times(1)).summary(
           Matchers.eq[BigDecimal](134.75),
@@ -537,7 +594,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](142.71),
           Matchers.eq(3),
           Matchers.eq(None),
-          Matchers.eq(false)
+          Matchers.eq(false),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66)
         )
       }
 
@@ -578,7 +637,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88GMP = 0,
             pre88COD = 0,
             post88COD = 0,
-            grb = 0
+            graduatedRetirementBenefit = 0
           ),
           NpsAmountB2016(
             mainComponent = 40.02,
@@ -670,7 +729,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -740,7 +800,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -806,7 +866,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](155.65),
           Matchers.eq(34),
           Matchers.eq(Some(MQPScenario.ContinueWorking)),
-          Matchers.eq(true)
+          Matchers.eq(true),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0)
         )
       }
 
@@ -874,7 +936,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -944,7 +1006,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1007,7 +1069,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1070,7 +1132,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
   }

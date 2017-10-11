@@ -20,7 +20,7 @@ import com.codahale.metrics.Timer.Context
 import com.codahale.metrics.{Counter, Histogram, Timer}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.APIType
-import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, Scenario}
+import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, OldRules, Scenario}
 import uk.gov.hmrc.play.graphite.MicroserviceMetrics
 
 trait Metrics {
@@ -29,7 +29,8 @@ trait Metrics {
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
               personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-              reducedRateElection: Boolean): Unit
+              reducedRateElection: Boolean, additionalStatePension: BigDecimal,
+              graduatedRetirementBenefit:BigDecimal): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -73,11 +74,17 @@ object Metrics extends Metrics with MicroserviceMetrics {
   val yearsNeededToContribute: Histogram = metrics.defaultRegistry.histogram("years-needed-to-contribute")
   val contractedOutMeter: Counter = metrics.defaultRegistry.counter("contracted-out")
   val notContractedOutMeter: Counter = metrics.defaultRegistry.counter("not-contracted-out")
+  val oldRulesAdditionalStatePension: Histogram=metrics.defaultRegistry.histogram("oldrules-additional-state-pension")
+  val oldRulesGraduatedRetirementBenefit: Histogram=metrics.defaultRegistry.histogram("oldrules-graduated-retirement-benefit")
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
-                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean): Unit = {
+                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean,
+                       additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal
+                      ): Unit = {
     if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+    oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
+    oldRulesGraduatedRetirementBenefit.update(graduatedRetirementBenefit.toInt)
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)

@@ -24,14 +24,17 @@ import uk.gov.hmrc.statepension.domain.{StatePensionAmount, StatePensionAmounts}
 object StatePension{
   def apply(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
             pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int, pensionSharingOrder: Boolean,
-            currentFullWeeklyPensionAmount: BigDecimal)(implicit hc: HeaderCarrier): StatePension =
+            currentFullWeeklyPensionAmount: BigDecimal,reducedRateElection: Boolean, additionalStatePension: BigDecimal,
+            graduatedRetirementBenefit:BigDecimal)(implicit hc: HeaderCarrier): StatePension =
     new StatePension(nino, earningsIncludedUpTo, amounts, pensionAge, pensionDate, finalRelevantYear, numberOfQualifyingYears,
-      pensionSharingOrder, currentFullWeeklyPensionAmount)
+      pensionSharingOrder, currentFullWeeklyPensionAmount, reducedRateElection, additionalStatePension, graduatedRetirementBenefit)
 }
 
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
                         pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int,
-                        pensionSharingOrder: Boolean, currentFullWeeklyPensionAmount: BigDecimal) (implicit hc: HeaderCarrier)
+                        pensionSharingOrder: Boolean, currentFullWeeklyPensionAmount: BigDecimal,
+                        reducedRateElection: Boolean, additionalStatePension: BigDecimal,
+                        graduatedRetirementBenefit:BigDecimal) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePension", nino,
     Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
@@ -47,7 +50,10 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "finalRelevantYear" -> finalRelevantYear,
       "numberOfQualifyingYears" -> numberOfQualifyingYears.toString,
       "pensionSharingOrder" -> pensionSharingOrder.toString,
-      "currentFullWeeklyPensionAmount" -> currentFullWeeklyPensionAmount.toString()
+      "currentFullWeeklyPensionAmount" -> currentFullWeeklyPensionAmount.toString(),
+      "reducedRateElection" -> reducedRateElection.toString(),
+      "additionalStatePension" -> additionalStatePension.toString(),
+      "graduatedRetirementBenefit" -> graduatedRetirementBenefit.toString()
     )
 
   )

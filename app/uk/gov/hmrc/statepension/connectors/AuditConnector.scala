@@ -23,7 +23,6 @@ import uk.gov.hmrc.play.config.AppName
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-
 object CustomAuditConnector extends CustomAuditConnector {
   override lazy val auditConnector = StatePensionAuditConnector
 }

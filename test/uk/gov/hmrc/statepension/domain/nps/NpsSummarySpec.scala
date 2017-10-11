@@ -332,7 +332,7 @@ class NpsSummarySpec extends UnitSpec {
           post88GMP = 0,
           pre88COD = 0,
           post88COD = 0,
-          grb =  2.66
+          graduatedRetirementBenefit =  2.66
         ),
         NpsAmountB2016(
           mainComponent = 155.65,
@@ -389,7 +389,64 @@ class NpsSummarySpec extends UnitSpec {
                                       |    "starting_amount": 300.00
                                       |}""".stripMargin)
 
-      "parse 2016 starting amount correctly" when {
+
+    val amountWithPRE97Json = Json.parse("""{
+                                  |    "nsp_entitlement": 100.10,
+                                  |    "ap_amount": 11.11,
+                                  |    "npsAmnbpr16": {
+                                  |      "main_component": 12.12,
+                                  |      "rebate_derived_amount": 13.13
+                                  |    },
+                                  |    "npsAmnapr16": {
+                                  |      "ltb_post97_ap_cash_value": 20.20,
+                                  |      "ltb_cat_a_cash_value": 21.21,
+                                  |      "ltb_post88_cod_cash_value": 2.22,
+                                  |      "ltb_pre97_ap_cash_value": 23.23,
+                                  |      "ltb_pre88_cod_cash_value": 2.24,
+                                  |      "grb_cash": 25.25,
+                                  |      "ltb_pst88_gmp_cash_value": 2.26,
+                                  |      "pre88_gmp": 2.27,
+                                  |      "ltb_post02_ap_cash_value": 28.28
+                                  |    },
+                                  |    "protected_payment_2016": 29.29,
+                                  |    "starting_amount": 300.00
+                                  |}""".stripMargin)
+
+    "parse and calculate TotalAP" when {
+       "it exists as 73.73" in {
+         amountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 73.73
+       }
+       "it is null" in {
+         nullAmountJson.as[NpsStatePensionAmounts].amountA2016.totalAP shouldBe 0
+       }
+      }
+    "parse and return graduatedRetirementsBenefits" when {
+       "it exists as 25.25" in {
+            amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 25.25
+      }
+
+      "it is null" in {
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 0
+      }
+    }
+
+    "parse and calculate additionalStatePension" when {
+      "it exists as 48.48" in {
+        amountJson.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 48.48
+      }
+      "it is null" in {
+        nullAmountJson.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 0
+      }
+    }
+
+    "parse and calculate additionalStatePension where PRE97 is above 0" when {
+      "it exists as 62.72" in {
+        amountWithPRE97Json.as[NpsStatePensionAmounts].amountA2016.additionalStatePension shouldBe 62.72
+      }
+    }
+
+
+    "parse 2016 starting amount correctly" when {
         "it exists as 300.00" in {
           amountJson.as[NpsStatePensionAmounts].startingAmount2016 shouldBe 300.00
         }
@@ -503,11 +560,11 @@ class NpsSummarySpec extends UnitSpec {
         }
         "parse graduated retirement benefit" when {
           "it exists as  25.25" in {
-            amountJson.as[NpsStatePensionAmounts].amountA2016.grb shouldBe  25.25
+            amountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe  25.25
           }
 
           "it is null" in {
-            nullAmountJson.as[NpsStatePensionAmounts].amountA2016.grb shouldBe 0
+            nullAmountJson.as[NpsStatePensionAmounts].amountA2016.graduatedRetirementBenefit shouldBe 0
           }
         }
 

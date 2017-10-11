@@ -22,7 +22,6 @@ import play.api.libs.functional.syntax._
 
 import scala.math.BigDecimal.RoundingMode
 
-
 case class NpsSummary(
                        earningsIncludedUpTo: LocalDate,
                        sex: String,
@@ -95,10 +94,11 @@ case class NpsAmountA2016(
                            post88GMP: BigDecimal = 0,
                            pre88COD: BigDecimal = 0,
                            post88COD: BigDecimal = 0,
-                           grb: BigDecimal = 0
+                           graduatedRetirementBenefit: BigDecimal = 0
                          ) {
-  val totalAP: BigDecimal = (pre97AP - (pre88GMP + post88GMP + pre88COD + post88COD)).max(0) + post97AP + post02AP + grb
-  val total: BigDecimal = totalAP + basicPension
+   val additionalStatePension: BigDecimal =(pre97AP - (pre88GMP + post88GMP + pre88COD + post88COD)).max(0) + post97AP + post02AP
+   val totalAP: BigDecimal = additionalStatePension + graduatedRetirementBenefit
+   val total: BigDecimal = totalAP + basicPension
 }
 
 object NpsAmountA2016 {

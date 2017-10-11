@@ -16,5 +16,4 @@
 
 package uk.gov.hmrc.statepension.domain
 
-
 case class PersonalMaximum(amount: BigDecimal, yearsToWork: Int, gapsToFill: Int)
