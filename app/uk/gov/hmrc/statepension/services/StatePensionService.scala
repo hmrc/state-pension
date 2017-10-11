@@ -149,9 +149,11 @@ trait NpsConnection extends StatePensionService {
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
           statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
           statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
-          summary.reducedRateElection,
-          additionalStatePension=summary.amounts.amountA2016.additionalStatePension,
-          graduatedRetirementBenefit=summary.amounts.amountA2016.graduatedRetirementBenefit)
+          statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
+          statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
+          statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
+          statePension.reducedRateElection
+          )
 
         Right(statePension)
       }

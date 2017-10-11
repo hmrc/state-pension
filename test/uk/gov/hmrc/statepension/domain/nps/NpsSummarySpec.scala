@@ -323,7 +323,7 @@ class NpsSummarySpec extends UnitSpec {
         startingAmount2016 = 161.18,
         protectedPayment2016 = 5.53,
         NpsAmountA2016(
-          basicPension = 119.3,
+          basicStatePension = 119.3,
           pre97AP = 17.79,
           post97AP = 6.03,
           post02AP = 15.4,
@@ -488,11 +488,11 @@ class NpsSummarySpec extends UnitSpec {
 
         "parse basic pension correctly" when {
           "it exists as 21.21" in {
-            amountJson.as[NpsStatePensionAmounts].amountA2016.basicPension shouldBe 21.21
+            amountJson.as[NpsStatePensionAmounts].amountA2016.basicStatePension shouldBe 21.21
           }
 
           "it is null" in {
-            nullAmountJson.as[NpsStatePensionAmounts].amountA2016.basicPension shouldBe 0
+            nullAmountJson.as[NpsStatePensionAmounts].amountA2016.basicStatePension shouldBe 0
           }
         }
 

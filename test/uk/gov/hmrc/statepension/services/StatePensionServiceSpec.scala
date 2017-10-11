@@ -155,7 +155,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
             NpsAmountA2016(
-              basicPension = 119.3,
+              basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
               post02AP = 15.4,
@@ -195,9 +195,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq[BigDecimal](161.18),
             Matchers.eq(0),
             Matchers.eq(None),
-            Matchers.eq(false),
+            Matchers.eq[BigDecimal](161.18),
+            Matchers.eq[BigDecimal](119.3),
             Matchers.eq[BigDecimal](39.22),
-            Matchers.eq[BigDecimal](2.66)
+            Matchers.eq[BigDecimal](2.66),
+            Matchers.eq[BigDecimal](155.65),
+            Matchers.eq[BigDecimal](0),
+            Matchers.eq(false)
           )
         }
 
@@ -359,7 +363,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               startingAmount2016 = 0,
               protectedPayment2016 = 0,
               NpsAmountA2016(
-                basicPension = 0,
+                basicStatePension = 0,
                 pre97AP = 0,
                 post97AP = 0,
                 post02AP = 0,
@@ -477,7 +481,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
             NpsAmountA2016(
-              basicPension = 119.3,
+              basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
               post02AP = 15.4,
@@ -550,7 +554,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
           NpsAmountA2016(
-            basicPension = 79.53,
+            basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
@@ -634,9 +638,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](134.75),
           Matchers.eq(3),
           Matchers.eq(None),
-          Matchers.eq(false),
+          Matchers.eq[BigDecimal](121.41),
+          Matchers.eq[BigDecimal](79.53),
           Matchers.eq[BigDecimal](39.22),
-          Matchers.eq[BigDecimal](2.66)
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](88.94),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false)
         )
       }
 
@@ -668,7 +676,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
           NpsAmountA2016(
-            basicPension = 79.53,
+            basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
@@ -787,9 +795,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](142.71),
           Matchers.eq(3),
           Matchers.eq(None),
-          Matchers.eq(false),
+          Matchers.eq[BigDecimal](121.41),
+          Matchers.eq[BigDecimal](79.53),
           Matchers.eq[BigDecimal](39.22),
-          Matchers.eq[BigDecimal](2.66)
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](88.94),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false)
         )
       }
 
@@ -822,7 +834,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           startingAmount2016 = 40.53,
           protectedPayment2016 = 0,
           NpsAmountA2016(
-            basicPension = 35.79,
+            basicStatePension = 35.79,
             pre97AP = 0,
             post97AP = 0,
             post02AP = 4.74,
@@ -922,8 +934,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any())
       }
 
     }
@@ -993,7 +1006,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -1059,9 +1073,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](155.65),
           Matchers.eq(34),
           Matchers.eq(Some(MQPScenario.ContinueWorking)),
-          Matchers.eq(true),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq[BigDecimal](0)
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(true)
         )
       }
 
@@ -1129,7 +1147,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -1199,7 +1218,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1262,7 +1282,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1325,7 +1346,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
   }

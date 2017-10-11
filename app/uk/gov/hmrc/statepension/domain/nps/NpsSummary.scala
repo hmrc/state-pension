@@ -86,7 +86,7 @@ object NpsStatePensionAmounts {
 }
 
 case class NpsAmountA2016(
-                           basicPension: BigDecimal = 0,
+                           basicStatePension: BigDecimal = 0,
                            pre97AP: BigDecimal = 0,
                            post97AP: BigDecimal = 0,
                            post02AP: BigDecimal = 0,
@@ -96,11 +96,11 @@ case class NpsAmountA2016(
                            post88COD: BigDecimal = 0,
                            graduatedRetirementBenefit: BigDecimal = 0
                          ) {
-   val basicStatePension = basicPension
+   //val basicStatePension = basicStatePension
    val additionalStatePension: BigDecimal = (pre97AP - (pre88GMP + post88GMP + pre88COD + post88COD)).max(0) + post97AP + post02AP
 
    val totalAP: BigDecimal = additionalStatePension + graduatedRetirementBenefit
-   val total: BigDecimal = totalAP + basicPension
+   val total: BigDecimal = totalAP + basicStatePension
 
 }
 

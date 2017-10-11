@@ -53,8 +53,11 @@ trait StatePensionController extends BaseController with HeaderValidator with Er
         case Right(statePension) =>
           customAuditConnector.sendEvent(StatePension(nino, statePension.earningsIncludedUpTo, statePension.amounts,
             statePension.pensionAge, statePension.pensionDate, statePension.finalRelevantYear, statePension.numberOfQualifyingYears,
-            statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount, statePension.reducedRateElection,
-            statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit))
+            statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount,
+            statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
+            statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
+            statePension.amounts.newRules.grossStatePension,statePension.amounts.newRules.rebateDerivedAmount,
+            statePension.reducedRateElection))
 
           Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       })
