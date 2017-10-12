@@ -36,7 +36,7 @@ class Forecasting(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifying
     "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
     "currentQualifyingYears" -> currentQualifyingYears.toString,
     "amountAtotal" -> amountA.total.toString(),
-    "basicPension" -> amountA.basicPension.toString(),
+    "basicPension" -> amountA.basicStatePension.toString(),
     "pre97AP" -> amountA.pre97AP.toString(),
     "post97AP" -> amountA.post97AP.toString(),
     "post02AP" -> amountA.post02AP.toString(),

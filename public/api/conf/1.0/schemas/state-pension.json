@@ -139,17 +139,57 @@
             }
           }
         },
+        "starting": {
+          "type": "object",
+          "properties": {
+            "weeklyAmount": {
+              "type": "number",
+              "description": "The starting amount of State Pension each week",
+              "example": "130.05"
+            },
+            "monthlyAmount": {
+              "type": "number",
+              "description": "The starting amount of State Pension every month",
+              "example": "565.49"
+            },
+            "annualAmount": {
+              "type": "number",
+              "description": "The starting amount of State Pension each year",
+              "example": "6785.82"
+            }
+          }
+        },
         "oldRules": {
           "type": "object",
           "properties": {
+            "basicStatePension": {
+              "type": "number",
+              "description": "The Old Rules Basic Pension before any additions",
+              "example": "119.30"
+            },
             "additionalStatePension": {
               "type": "number",
-              "description": "The amount of Additional State Pension",
-              "example": "0"
+              "description": "The earnings related pension on top of the Basic State Pension",
+              "example": "10.75"
             },
             "graduatedRetirementBenefit": {
               "type": "number",
-              "description": "The amount of Graduated Retirement Benefit",
+              "description": "The benefit accrued when individuals paid NI contributions when ERB scheme was in operation between April 61 to April 75",
+              "example": "0"
+            }
+          }
+        },
+        "newRules": {
+          "type": "object",
+          "properties": {
+            "grossStatePension": {
+              "type": "number",
+              "description": "The New Rules Basic Pension before any deductions",
+              "example": "130.05"
+            },
+            "rebateDerivedAmount": {
+              "type": "number",
+              "description": "The Rebate Derived Amount which gets deducted from Gross State Pension",
               "example": "0"
             }
           }
@@ -183,7 +223,7 @@
     },
     "currentWeeklyPensionAmount": {
       "type": "number",
-      "description": "The full rate of State Pension each week ",
+      "description": "The full rate of State Pension each week",
       "example": "155.65"
     },
     "reducedRateElection": {

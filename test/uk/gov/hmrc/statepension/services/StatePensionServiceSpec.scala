@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.statepension.domain.{Exclusion, _}
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
@@ -60,9 +60,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         None,
         0.00
       ),
-      OldRules(additionalStatePension = 38.90,
+      starting = StatePensionAmount(
+        None,
+        None,
+        160.18
+      ),
+      OldRules(basicStatePension = 119.30,
+               additionalStatePension = 38.90,
                graduatedRetirementBenefit = 10.00
-      )
+      ),
+      NewRules(grossStatePension = 155.65,
+        rebateDerivedAmount= 0.00)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),
@@ -147,7 +155,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
             NpsAmountA2016(
-              basicPension = 119.3,
+              basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
               post02AP = 15.4,
@@ -187,9 +195,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq[BigDecimal](161.18),
             Matchers.eq(0),
             Matchers.eq(None),
-            Matchers.eq(false),
+            Matchers.eq[BigDecimal](161.18),
+            Matchers.eq[BigDecimal](119.3),
             Matchers.eq[BigDecimal](39.22),
-            Matchers.eq[BigDecimal](2.66)
+            Matchers.eq[BigDecimal](2.66),
+            Matchers.eq[BigDecimal](155.65),
+            Matchers.eq[BigDecimal](0),
+            Matchers.eq(false)
           )
         }
 
@@ -215,17 +227,36 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           }
         }
 
-        "return oldRules Additonal Pension as 39.22" in {
+        "return oldRules additionalStatePension as 39.22" in {
           whenReady(statement) { sp =>
             sp.amounts.oldRules.additionalStatePension  shouldBe 39.22
           }
         }
 
-        "return oldRules GraduatedRetirementsBenefits as 2.66" in {
+        "return oldRules graduatedRetirementsBenefit as 2.66" in {
           whenReady(statement) { sp =>
             sp.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
           }
         }
+
+        "return oldRules basicStatePension as 119.3" in {
+          whenReady(statement) { sp =>
+            sp.amounts.oldRules.basicStatePension shouldBe 119.3
+          }
+        }
+
+        "return newRules grossStatePension as 155.65" in {
+          whenReady(statement) { sp =>
+            sp.amounts.newRules.grossStatePension  shouldBe 155.65
+          }
+        }
+
+        "return newRules rebateDerivedAmount as 0.00" in {
+          whenReady(statement) { sp =>
+            sp.amounts.newRules.rebateDerivedAmount shouldBe 0.00
+          }
+        }
+
         "return final relevant year" in {
           whenReady(statement) { sp =>
             sp.finalRelevantYear shouldBe "2018-19"
@@ -290,6 +321,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           "return an annual cope amount of 643.88" in {
             statement.amounts.cope.annualAmount shouldBe 643.88
           }
+
+          "return a weekly starting amount of 161.18" in {
+            statement.amounts.starting.weeklyAmount shouldBe 161.18
+          }
+
+          "return a monthly starting amount of 700.85" in {
+            statement.amounts.starting.monthlyAmount shouldBe 700.85
+          }
+
+          "return an annual starting amount of 8410.14" in {
+            statement.amounts.starting.annualAmount shouldBe 8410.14
+          }
         }
 
         "when there is a rebate derived amount of 0 it" should {
@@ -310,7 +353,46 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           "return an annual cope amount of 0" in {
             statement.amounts.cope.annualAmount shouldBe 0
           }
+        }
 
+        "when there is all amounts of 0 it" should {
+
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement.copy(amounts = regularStatement.amounts.copy(
+              pensionEntitlement = 0,
+              startingAmount2016 = 0,
+              protectedPayment2016 = 0,
+              NpsAmountA2016(
+                basicStatePension = 0,
+                pre97AP = 0,
+                post97AP = 0,
+                post02AP = 0,
+                pre88GMP = 0,
+                post88GMP = 0,
+                pre88COD = 0,
+                post88COD = 0,
+                graduatedRetirementBenefit = 0
+              ),
+              NpsAmountB2016(
+                mainComponent = 0,
+                rebateDerivedAmount = 0
+              )
+            ))
+          ))
+
+          val statement = service.getStatement(generateNino()).right.get
+
+          "return a weekly starting amount of 0" in {
+            statement.amounts.starting.weeklyAmount shouldBe 0
+          }
+
+          "return a monthly starting amount of 0" in {
+            statement.amounts.starting.monthlyAmount shouldBe 0
+          }
+
+          "return an annual starting amount of 0" in {
+            statement.amounts.starting.annualAmount shouldBe 0
+          }
         }
 
         "when there is an entitlement of 161.18 it" should {
@@ -374,6 +456,80 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     }
 
+    "there are exclusions" when {
+      "there is a regular statement (Reached)" should {
+
+        val service = new NpsConnection {
+          override lazy val nps: NpsConnector = mock[NpsConnector]
+          override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+          override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+          override lazy val metrics: Metrics = mock[Metrics]
+          override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+          override lazy val forecastingService: ForecastingService = defaultForecasting
+          override lazy val rateService: RateService = RateServiceBuilder.default
+        }
+
+        val regularStatement = NpsSummary(
+          earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+          sex = "F",
+          statePensionAgeDate = new LocalDate(2019, 9, 6),
+          finalRelevantStartYear = 2018,
+          pensionSharingOrderSERPS = false,
+          dateOfBirth = new LocalDate(1954, 3, 9),
+          amounts = NpsStatePensionAmounts(
+            pensionEntitlement = 161.18,
+            startingAmount2016 = 161.18,
+            protectedPayment2016 = 5.53,
+            NpsAmountA2016(
+              basicStatePension = 119.3,
+              pre97AP = 17.79,
+              post97AP = 6.03,
+              post02AP = 15.4,
+              pre88GMP = 0,
+              post88GMP = 0,
+              pre88COD = 0,
+              post88COD = 0,
+              graduatedRetirementBenefit = 2.66
+            ),
+            NpsAmountB2016(
+              mainComponent = 155.65,
+              rebateDerivedAmount = 0
+            )
+          )
+        )
+
+        when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          regularStatement
+        ))
+
+        when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          List()
+        ))
+
+        when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          NpsNIRecord(qualifyingYears = 36, List())
+        ))
+
+        val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+        "when there is a starting amount of 0 it" should {
+          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement.copy(amounts = regularStatement.amounts.copy(startingAmount2016 = 0))
+          ))
+
+          val statement = service.getStatement(generateNino()).left
+          "return an AmountDissonance exclusion" in {
+            statement.get.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
+            statement.get.pensionAge shouldBe 65
+            statement.get.pensionDate.toString shouldBe "2019-09-06"
+          }
+
+        }
+
+      }
+
+    }
+
     "there is a regular statement (Forecast)" should {
 
       val service = new NpsConnection {
@@ -398,7 +554,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
           NpsAmountA2016(
-            basicPension = 79.53,
+            basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
@@ -433,8 +589,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         "return additionalPension amount of 39.22" in {
           statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
-        "return graduatedRetirementBenefits amount of 2.66" in {
+
+        "return graduatedRetirementBenefit amount of 2.66" in {
           statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+        }
+
+        "return basicStatePension amount of 2.66" in {
+          statement.amounts.oldRules.basicStatePension shouldBe 79.53
+        }
+      }
+
+      "the NewRules amounts" should {
+        "return grossStatePension amount of 88.94" in {
+          statement.amounts.newRules.grossStatePension shouldBe 88.94
+        }
+
+        "return rebateDerivedAmount amount of 0.00" in {
+          statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
       }
 
@@ -467,9 +638,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](134.75),
           Matchers.eq(3),
           Matchers.eq(None),
-          Matchers.eq(false),
+          Matchers.eq[BigDecimal](121.41),
+          Matchers.eq[BigDecimal](79.53),
           Matchers.eq[BigDecimal](39.22),
-          Matchers.eq[BigDecimal](2.66)
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](88.94),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false)
         )
       }
 
@@ -501,7 +676,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
           NpsAmountA2016(
-            basicPension = 79.53,
+            basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
@@ -568,20 +743,46 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "summary have graduatedRetirementBenefits as 2.66" in {
+      "summary have graduatedRetirementBenefit as 2.66" in {
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.graduatedRetirementBenefit shouldBe 2.66
         }
       }
-      "statePension have AdditionalStatePension as 39.22" in {
+
+      "summary have basicStatePension as 79.53" in {
+        whenReady(summaryF) { summary =>
+          summary.amounts.amountA2016.basicStatePension shouldBe 79.53
+        }
+      }
+
+      "statePension have additionalStatePension as 39.22" in {
         whenReady(statement) { statePension =>
           statePension.amounts.oldRules.additionalStatePension shouldBe 39.22
 
         }
       }
-      "statePension have graduatedRetirementBenefits as 2.66" in {
+
+      "statePension have graduatedRetirementBenefit as 2.66" in {
         whenReady(statement) { statePension =>
           statePension.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
+        }
+      }
+
+      "statePension have basicStatePension as 79.53" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.oldRules.basicStatePension shouldBe 79.53
+        }
+      }
+
+      "statePension have grossStatePension as 88.94" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.newRules.grossStatePension shouldBe 88.94
+        }
+      }
+
+      "statePension have rebateDerivedAmount as 0.00" in {
+        whenReady(statement) { statePension =>
+          statePension.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
       }
 
@@ -594,9 +795,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](142.71),
           Matchers.eq(3),
           Matchers.eq(None),
-          Matchers.eq(false),
+          Matchers.eq[BigDecimal](121.41),
+          Matchers.eq[BigDecimal](79.53),
           Matchers.eq[BigDecimal](39.22),
-          Matchers.eq[BigDecimal](2.66)
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](88.94),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false)
         )
       }
 
@@ -629,7 +834,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           startingAmount2016 = 40.53,
           protectedPayment2016 = 0,
           NpsAmountA2016(
-            basicPension = 35.79,
+            basicStatePension = 35.79,
             pre97AP = 0,
             post97AP = 0,
             post02AP = 4.74,
@@ -729,8 +934,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any())
       }
 
     }
@@ -800,7 +1006,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -866,9 +1073,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](155.65),
           Matchers.eq(34),
           Matchers.eq(Some(MQPScenario.ContinueWorking)),
-          Matchers.eq(true),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq[BigDecimal](0)
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(true)
         )
       }
 
@@ -936,7 +1147,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -1006,7 +1218,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1069,7 +1282,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1132,8 +1346,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
   }
 }
+

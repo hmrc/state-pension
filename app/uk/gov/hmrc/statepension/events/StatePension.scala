@@ -24,17 +24,20 @@ import uk.gov.hmrc.statepension.domain.{StatePensionAmount, StatePensionAmounts}
 object StatePension{
   def apply(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
             pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int, pensionSharingOrder: Boolean,
-            currentFullWeeklyPensionAmount: BigDecimal,reducedRateElection: Boolean, additionalStatePension: BigDecimal,
-            graduatedRetirementBenefit:BigDecimal)(implicit hc: HeaderCarrier): StatePension =
+            currentFullWeeklyPensionAmount: BigDecimal, starting: BigDecimal, basicStatePension:BigDecimal,
+            additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal,
+            rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean)(implicit hc: HeaderCarrier): StatePension =
     new StatePension(nino, earningsIncludedUpTo, amounts, pensionAge, pensionDate, finalRelevantYear, numberOfQualifyingYears,
-      pensionSharingOrder, currentFullWeeklyPensionAmount, reducedRateElection, additionalStatePension, graduatedRetirementBenefit)
+      pensionSharingOrder, currentFullWeeklyPensionAmount, starting, basicStatePension, additionalStatePension,
+      graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection)
 }
 
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
                         pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int,
                         pensionSharingOrder: Boolean, currentFullWeeklyPensionAmount: BigDecimal,
-                        reducedRateElection: Boolean, additionalStatePension: BigDecimal,
-                        graduatedRetirementBenefit:BigDecimal) (implicit hc: HeaderCarrier)
+                        starting: BigDecimal, basicStatePension:BigDecimal, additionalStatePension: BigDecimal,
+                        graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
+                        reducedRateElection: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePension", nino,
     Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
@@ -51,9 +54,13 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "numberOfQualifyingYears" -> numberOfQualifyingYears.toString,
       "pensionSharingOrder" -> pensionSharingOrder.toString,
       "currentFullWeeklyPensionAmount" -> currentFullWeeklyPensionAmount.toString(),
-      "reducedRateElection" -> reducedRateElection.toString(),
+      "starting" -> starting.toString(),
+      "basicStatePension" -> basicStatePension.toString(),
       "additionalStatePension" -> additionalStatePension.toString(),
-      "graduatedRetirementBenefit" -> graduatedRetirementBenefit.toString()
+      "graduatedRetirementBenefit" -> graduatedRetirementBenefit.toString(),
+      "grossStatePension" -> grossStatePension.toString(),
+      "rebateDerivedAmount" -> rebateDerivedAmount.toString(),
+      "reducedRateElection" -> reducedRateElection.toString()
     )
 
   )

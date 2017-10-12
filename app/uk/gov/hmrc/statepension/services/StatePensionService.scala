@@ -130,8 +130,12 @@ trait NpsConnection extends StatePensionService {
             StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
             StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
             StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
-            oldRules = OldRules(additionalStatePension=summary.amounts.amountA2016.additionalStatePension,
-                                graduatedRetirementBenefit=summary.amounts.amountA2016.graduatedRetirementBenefit)
+            StatePensionAmount(None, None, summary.amounts.startingAmount2016),
+            oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
+                                additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
+                                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit),
+            newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent,
+                                rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount)
           ),
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
@@ -145,9 +149,11 @@ trait NpsConnection extends StatePensionService {
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
           statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
           statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
-          summary.reducedRateElection,
-          additionalStatePension=summary.amounts.amountA2016.additionalStatePension,
-          graduatedRetirementBenefit=summary.amounts.amountA2016.graduatedRetirementBenefit)
+          statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
+          statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
+          statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
+          statePension.reducedRateElection
+          )
 
         Right(statePension)
       }
@@ -224,8 +230,16 @@ object SandboxStatePensionService extends StatePensionService {
         None,
         0.00
       ),
-      oldRules = OldRules(additionalStatePension = 38.9,
-                          graduatedRetirementBenefit = 10.00)
+      starting = StatePensionAmount(
+        None,
+        None,
+        160.18
+      ),
+      oldRules = OldRules(basicStatePension = 119.30,
+                          additionalStatePension = 38.9,
+                          graduatedRetirementBenefit = 10.00),
+      newRules = NewRules(grossStatePension = 155.65,
+                          rebateDerivedAmount= 0.00)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),

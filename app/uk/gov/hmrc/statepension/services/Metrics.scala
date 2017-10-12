@@ -29,8 +29,9 @@ trait Metrics {
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
               personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-              reducedRateElection: Boolean, additionalStatePension: BigDecimal,
-              graduatedRetirementBenefit:BigDecimal): Unit
+              starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
+              graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
+              reducedRateElection: Boolean): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -74,17 +75,27 @@ object Metrics extends Metrics with MicroserviceMetrics {
   val yearsNeededToContribute: Histogram = metrics.defaultRegistry.histogram("years-needed-to-contribute")
   val contractedOutMeter: Counter = metrics.defaultRegistry.counter("contracted-out")
   val notContractedOutMeter: Counter = metrics.defaultRegistry.counter("not-contracted-out")
+  val startingAmount: Histogram=metrics.defaultRegistry.histogram("starting-amount")
+  val oldRulesBasicStatePension: Histogram=metrics.defaultRegistry.histogram("oldrules-basic-state-pension")
   val oldRulesAdditionalStatePension: Histogram=metrics.defaultRegistry.histogram("oldrules-additional-state-pension")
   val oldRulesGraduatedRetirementBenefit: Histogram=metrics.defaultRegistry.histogram("oldrules-graduated-retirement-benefit")
+  val newRulesGrossStatePension: Histogram=metrics.defaultRegistry.histogram("newrules-gross-state-pension")
+  val newRulesRebateDerivedAmount: Histogram=metrics.defaultRegistry.histogram("oldrules-rebate-derived-amount")
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
-                       mqpScenario : Option[MQPScenario], reducedRateElection: Boolean,
-                       additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal
-                      ): Unit = {
-    if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+                       mqpScenario : Option[MQPScenario], starting: BigDecimal, basicStatePension:BigDecimal,
+                       additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
+                       grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
+                       reducedRateElection: Boolean): Unit = {
+    startingAmount.update(starting.toInt)
+    oldRulesBasicStatePension.update(basicStatePension.toInt)
     oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
     oldRulesGraduatedRetirementBenefit.update(graduatedRetirementBenefit.toInt)
+    newRulesGrossStatePension.update(grossStatePension.toInt)
+    newRulesRebateDerivedAmount.update(rebateDerivedAmount.toInt)
+    if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)
