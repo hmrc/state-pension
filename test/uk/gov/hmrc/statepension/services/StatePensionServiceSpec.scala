@@ -78,7 +78,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65,
-    reducedRateElection = false
+    reducedRateElection = false,
+    abroadAutoCredits = false
   )
 
   "Sandbox" should {
@@ -1085,7 +1086,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     }
 
-    "the customer has male overseas auto credits (abroad exclusion)" should {
+    "the customer has male overseas auto credits (abroad)" should {
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
@@ -1119,34 +1120,38 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
-      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      "return abroad" in {
-        whenReady(exclusionF) { exclusion =>
-          exclusion.exclusionReasons shouldBe List(Exclusion.Abroad)
+      "NOT return abroad" in {
+        whenReady(statePensionF) { statePension =>
+          statePension should not be (List(Exclusion.Abroad))
+        }
+      }
+
+      "have abroadAutoCredits as true" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.abroadAutoCredits shouldBe true
         }
       }
 
       "have a pension age of 61" in {
-        whenReady(exclusionF) { exclusion =>
-          exclusion.pensionAge shouldBe 61
+        whenReady(statePensionF) { statePension =>
+          statePension.pensionAge shouldBe 61
         }
       }
 
-      "have a pension date of 2018-1-1" in {
-        whenReady(exclusionF) { exclusion =>
-          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+     "have a pension date of 2018-1-1" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
 
-      "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
-          Matchers.eq(Exclusion.Abroad)
-        )
+      "not log an exclusion metric" in {
+        verify(service.metrics, never).exclusion(Matchers.eq(Exclusion.Abroad))
       }
 
-      "not log a summary metric" in {
-        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+      "log a summary metric" in {
+        verify(service.metrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }

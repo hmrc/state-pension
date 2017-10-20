@@ -37,7 +37,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               calculatedStartingAmount: BigDecimal = 0,
                               liabilities: List[NpsLiability] = List(),
                               manualCorrespondenceOnly: Boolean = false) =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
+    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
   "getExclusions" when {
     "there is no exclusions" should {
@@ -106,7 +106,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
         "the user is abroad" when {
           "the user retires on 05/10/2018" should {
             "return the abroad exclusion" in {
-              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 5)).getExclusions shouldBe List(Exclusion.Abroad)
+              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 5)).getExclusions shouldBe Nil
             }
           }
           "the user retires on 06/10/2018" should {
@@ -193,8 +193,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           Exclusion.ManualCorrespondenceIndicator,
           Exclusion.PostStatePensionAge,
           Exclusion.AmountDissonance,
-          Exclusion.IsleOfMan,
-          Exclusion.Abroad
+          Exclusion.IsleOfMan
         )
       }
     }

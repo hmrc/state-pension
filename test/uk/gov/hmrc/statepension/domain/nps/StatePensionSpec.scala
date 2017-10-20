@@ -59,6 +59,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
+                         abroadAutoCredits:Boolean = false,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
@@ -84,7 +85,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
       qualifyingYears,
       false,
       fullStatePensionAmount,
-      reducedRateElection
+      reducedRateElection,
+      abroadAutoCredits
     )
   }
 
@@ -135,6 +137,16 @@ class StatePensionSpec extends StatePensionUnitSpec {
 
     "return true to RRE Customers" in {
       createStatePension(reducedRateElection = true).reducedRateElection shouldBe true
+    }
+  }
+
+  "Abroad customer" should {
+    "return false to Non-Abroad Customers" in {
+      createStatePension(abroadAutoCredits = false).abroadAutoCredits shouldBe false
+    }
+
+    "return true to Abroad Customers" in {
+      createStatePension(abroadAutoCredits = true).abroadAutoCredits shouldBe true
     }
   }
 
