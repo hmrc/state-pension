@@ -75,6 +75,7 @@ trait NpsConnection extends StatePensionService {
       manualCorrespondence <- manualCorrespondenceF
     ) yield {
 
+
       val exclusions: List[Exclusion] = new ExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
@@ -134,7 +135,7 @@ trait NpsConnection extends StatePensionService {
             oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
                                 additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
                                 graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit),
-            newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent,
+            newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent + summary.amounts.amountB2016.rebateDerivedAmount,
                                 rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount)
           ),
           pensionAge = summary.statePensionAge,
