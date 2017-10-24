@@ -653,6 +653,73 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
     }
 
+    "there is a regular statement (grossStatePension)" should {
+
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
+      }
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1954, 3, 9),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 121.41,
+          startingAmount2016 = 121.41,
+          protectedPayment2016 = 5.53,
+          NpsAmountA2016(
+            basicStatePension = 79.53,
+            pre97AP = 17.79,
+            post97AP = 6.03,
+            post02AP = 15.4,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 2.66
+          ),
+          NpsAmountB2016(
+            mainComponent = 66.37, // Net SP
+            rebateDerivedAmount = 18.13
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(qualifyingYears = 20, List())
+      ))
+
+      val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "the NewRules amounts" should {
+        "return grossStatePension amount of 84.50" in {
+          statement.amounts.newRules.grossStatePension shouldBe 84.50
+        }
+
+        "return rebateDerivedAmount amount of 18.13" in {
+          statement.amounts.newRules.rebateDerivedAmount shouldBe 18.13
+        }
+      }
+
+    }
+
     "there is a regular statement (Fill Gaps)" should {
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
