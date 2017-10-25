@@ -148,7 +148,8 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
         30,
         pensionSharingOrder = false,
         155.65,
-        false
+        false,
+        None
       ))
     }
 

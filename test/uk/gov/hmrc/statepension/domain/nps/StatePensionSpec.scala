@@ -59,6 +59,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
+                         RRECurrentWeeklyAmount:Option[BigDecimal] = None,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
@@ -84,7 +85,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
       qualifyingYears,
       false,
       fullStatePensionAmount,
-      reducedRateElection
+      reducedRateElection,
+      RRECurrentWeeklyAmount
     )
   }
 

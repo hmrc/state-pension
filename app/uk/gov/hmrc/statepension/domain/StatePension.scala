@@ -79,7 +79,8 @@ case class StatePension(earningsIncludedUpTo: LocalDate,
                         numberOfQualifyingYears: Int,
                         pensionSharingOrder: Boolean,
                         currentFullWeeklyPensionAmount: BigDecimal,
-                        reducedRateElection: Boolean) {
+                        reducedRateElection: Boolean,
+                        RRECurrentWeeklyAmount: Option[BigDecimal]) {
   lazy val contractedOut: Boolean = amounts.cope.weeklyAmount > 0
 
   lazy val forecastScenario: Scenario = {

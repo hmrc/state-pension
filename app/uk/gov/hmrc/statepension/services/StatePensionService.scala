@@ -143,7 +143,12 @@ trait NpsConnection extends StatePensionService {
           numberOfQualifyingYears = purgedRecord.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
-          summary.reducedRateElection
+          reducedRateElection = summary.reducedRateElection,
+          RRECurrentWeeklyAmount = if(summary.reducedRateElection) {
+            Some(summary.amounts.pensionEntitlementRounded)
+          } else {
+            None
+          }
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
@@ -247,7 +252,8 @@ object SandboxStatePensionService extends StatePensionService {
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65,
-    reducedRateElection = false
+    reducedRateElection = false,
+    RRECurrentWeeklyAmount = None
   )
   private val defaultResponse = Right(dummyStatement)
 
