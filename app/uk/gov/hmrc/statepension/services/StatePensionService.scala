@@ -151,7 +151,7 @@ trait NpsConnection extends StatePensionService {
           statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
           statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
           statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
-          statePension.reducedRateElection
+          statePension.reducedRateElection, statePension.abroadAutoCredits
           )
 
         Right(statePension)
@@ -170,8 +170,6 @@ trait NpsConnection extends StatePensionService {
       Exclusion.AmountDissonance
     } else if (exclusions.contains(Exclusion.IsleOfMan)) {
       Exclusion.IsleOfMan
-    } else if (exclusions.contains(Exclusion.Abroad)) {
-      Exclusion.Abroad
     } else {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }
