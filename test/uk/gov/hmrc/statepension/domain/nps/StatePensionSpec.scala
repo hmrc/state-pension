@@ -140,7 +140,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
-  "Abroad customer" should {
+  "overseas auto credits (abroad) customer" should {
     "return false to Non-Abroad Customers" in {
       createStatePension(abroadAutoCredits = false).abroadAutoCredits shouldBe false
     }

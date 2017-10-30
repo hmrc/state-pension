@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain.{Exclusion, _}
+import uk.gov.hmrc.statepension.domain.{Exclusion, StatePension, _}
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
@@ -1193,9 +1193,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      "NOT return abroad" in {
+      "return StatePension object" in {
         whenReady(statePensionF) { statePension =>
-          statePension should not be (Nil)
+          statePension shouldBe StatePension(new LocalDate("2016-04-05"),StatePensionAmounts(false,StatePensionAmount(None,None,0.00),StatePensionAmount(Some(34),None,151.20),StatePensionAmount(Some(0),Some(2),155.65),StatePensionAmount(None,None,0),StatePensionAmount(None,None,0),OldRules(0,0,0),NewRules(0,0)),61,new LocalDate("2018-01-01"),"2049-50",35,false,155.65,false,true)
         }
       }
 
