@@ -120,8 +120,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
             |  "numberOfQualifyingYears": 30,
             |  "pensionSharingOrder": false,
             |  "currentFullWeeklyPensionAmount": 155.65,
-            |  "reducedRateElection": false,
-            |  "abroadAutoCredits": false
+            |  "reducedRateElection": false
             |}
           """.stripMargin
         ))
@@ -149,7 +148,6 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
         30,
         pensionSharingOrder = false,
         155.65,
-        false,
         false
       ))
     }

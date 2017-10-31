@@ -21,6 +21,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.statepension.controllers.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 import play.api.test.Helpers._
@@ -70,7 +71,6 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     30,
     pensionSharingOrder = false,
     155.65,
-    false,
     false
   )
 
@@ -112,7 +112,6 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe false
-      (json \ "abroadAutoCredits").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }

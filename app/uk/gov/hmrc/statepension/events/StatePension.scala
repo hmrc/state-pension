@@ -26,10 +26,10 @@ object StatePension{
             pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int, pensionSharingOrder: Boolean,
             currentFullWeeklyPensionAmount: BigDecimal, starting: BigDecimal, basicStatePension:BigDecimal,
             additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal,
-            rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean, abroadAutoCredits: Boolean)(implicit hc: HeaderCarrier): StatePension =
+            rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean)(implicit hc: HeaderCarrier): StatePension =
     new StatePension(nino, earningsIncludedUpTo, amounts, pensionAge, pensionDate, finalRelevantYear, numberOfQualifyingYears,
       pensionSharingOrder, currentFullWeeklyPensionAmount, starting, basicStatePension, additionalStatePension,
-      graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection, abroadAutoCredits)
+      graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection)
 }
 
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
@@ -37,7 +37,7 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
                         pensionSharingOrder: Boolean, currentFullWeeklyPensionAmount: BigDecimal,
                         starting: BigDecimal, basicStatePension:BigDecimal, additionalStatePension: BigDecimal,
                         graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-                        reducedRateElection: Boolean, abroadAutoCredits: Boolean) (implicit hc: HeaderCarrier)
+                        reducedRateElection: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePension", nino,
     Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
@@ -60,8 +60,7 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "graduatedRetirementBenefit" -> graduatedRetirementBenefit.toString(),
       "grossStatePension" -> grossStatePension.toString(),
       "rebateDerivedAmount" -> rebateDerivedAmount.toString(),
-      "reducedRateElection" -> reducedRateElection.toString(),
-      "abroadAutoCredits" -> abroadAutoCredits.toString()
+      "reducedRateElection" -> reducedRateElection.toString()
     )
 
   )
