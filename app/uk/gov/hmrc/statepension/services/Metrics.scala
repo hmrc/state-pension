@@ -31,7 +31,7 @@ trait Metrics {
               personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
               starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
               graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-              reducedRateElection: Boolean, abroadAutoCredits: Boolean): Unit
+              reducedRateElection: Boolean): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -87,7 +87,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
                        mqpScenario : Option[MQPScenario], starting: BigDecimal, basicStatePension:BigDecimal,
                        additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
                        grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-                       reducedRateElection: Boolean, abroadAutoCredits: Boolean): Unit = {
+                       reducedRateElection: Boolean): Unit = {
     startingAmount.update(starting.toInt)
     oldRulesBasicStatePension.update(basicStatePension.toInt)
     oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
@@ -95,7 +95,6 @@ object Metrics extends Metrics with MicroserviceMetrics {
     newRulesGrossStatePension.update(grossStatePension.toInt)
     newRulesRebateDerivedAmount.update(rebateDerivedAmount.toInt)
     if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
-    if(abroadAutoCredits) metrics.defaultRegistry.counter("exclusion-abroad").inc()
 
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
@@ -107,6 +106,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
   }
 
   val exclusionMeters: Map[Exclusion, Counter] = Map(
+    Exclusion.Abroad -> metrics.defaultRegistry.counter("exclusion-abroad"),
     Exclusion.Dead -> metrics.defaultRegistry.counter("exclusion-dead"),
     Exclusion.IsleOfMan -> metrics.defaultRegistry.counter("exclusion-isle-of-man"),
     Exclusion.AmountDissonance -> metrics.defaultRegistry.counter("amount-dissonance"),

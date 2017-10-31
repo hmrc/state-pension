@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain.{Exclusion, StatePension, _}
+import uk.gov.hmrc.statepension.domain.{Exclusion, _}
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
@@ -78,8 +78,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65,
-    reducedRateElection = false,
-    abroadAutoCredits = false
+    reducedRateElection = false
   )
 
   "Sandbox" should {
@@ -202,7 +201,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq[BigDecimal](2.66),
             Matchers.eq[BigDecimal](155.65),
             Matchers.eq[BigDecimal](0),
-            Matchers.eq(false),
             Matchers.eq(false)
           )
         }
@@ -646,7 +644,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](2.66),
           Matchers.eq[BigDecimal](88.94),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq(false),
           Matchers.eq(false)
         )
       }
@@ -871,7 +868,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](2.66),
           Matchers.eq[BigDecimal](88.94),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq(false),
           Matchers.eq(false)
         )
       }
@@ -1007,7 +1003,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any())
+          Matchers.any())
       }
 
     }
@@ -1078,7 +1074,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -1150,14 +1146,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](0),
           Matchers.eq[BigDecimal](0),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq(true),
-          Matchers.eq(false)
+          Matchers.eq(true)
         )
       }
 
     }
 
-    "the customer has male overseas auto credits (abroad)" should {
+    "the customer has male overseas auto credits (abroad exclusion)" should {
       val service = new NpsConnection {
         override lazy val nps: NpsConnector = mock[NpsConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
@@ -1191,40 +1186,36 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
-      "return StatePension object" in {
-        whenReady(statePensionF) { statePension =>
-          statePension shouldBe StatePension(new LocalDate("2016-04-05"),StatePensionAmounts(false,StatePensionAmount(None,None,0.00),StatePensionAmount(Some(34),None,151.20),StatePensionAmount(Some(0),Some(2),155.65),StatePensionAmount(None,None,0),StatePensionAmount(None,None,0),OldRules(0,0,0),NewRules(0,0)),61,new LocalDate("2018-01-01"),"2049-50",35,false,155.65,false,true)
-        }
-      }
-
-      "have abroadAutoCredits as true" in {
-        whenReady(statePensionF) { statePension =>
-          statePension.abroadAutoCredits shouldBe true
+      "return abroad" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.exclusionReasons shouldBe List(Exclusion.Abroad)
         }
       }
 
       "have a pension age of 61" in {
-        whenReady(statePensionF) { statePension =>
-          statePension.pensionAge shouldBe 61
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionAge shouldBe 61
         }
       }
 
-     "have a pension date of 2018-1-1" in {
-        whenReady(statePensionF) { statePension =>
-          statePension.pensionDate shouldBe new LocalDate(2018, 1, 1)
+      "have a pension date of 2018-1-1" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
 
-      "not log an exclusion metric" in {
-        verify(service.metrics, never).exclusion(Matchers.any())
+      "log an exclusion metric" in {
+        verify(service.metrics, times(1)).exclusion(
+          Matchers.eq(Exclusion.Abroad)
+        )
       }
 
-      "log a summary metric" in {
-        verify(service.metrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+      "not log a summary metric" in {
+        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
 
     }
@@ -1295,7 +1286,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1359,7 +1350,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
 
@@ -1423,7 +1414,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
       }
     }
   }

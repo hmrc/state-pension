@@ -47,7 +47,6 @@
   "pensionSharingOrder": false,
   "currentFullWeeklyPensionAmount": 155.65,
   "reducedRateElection": false,
-  "abroadAutoCredits": false,
   "_links" : {
     "self": {
       "href": "/state-pension/ni/QQ123456A"
