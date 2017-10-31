@@ -80,8 +80,6 @@ trait NpsConnection extends StatePensionService {
         pensionDate = summary.statePensionAgeDate,
         now,
         reducedRateElection = summary.reducedRateElection,
-        isAbroad = Country.isAbroad(summary.countryCode),
-        sex = summary.sex,
         summary.amounts.pensionEntitlement,
         summary.amounts.startingAmount2016,
         forecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
@@ -143,7 +141,8 @@ trait NpsConnection extends StatePensionService {
           numberOfQualifyingYears = purgedRecord.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
-          summary.reducedRateElection
+          summary.reducedRateElection,
+          abroadAutoCredits = checkOverseasMaleAutoCredits(summary)
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
@@ -152,7 +151,7 @@ trait NpsConnection extends StatePensionService {
           statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
           statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
           statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
-          statePension.reducedRateElection
+          statePension.reducedRateElection, statePension.abroadAutoCredits
           )
 
         Right(statePension)
@@ -171,8 +170,6 @@ trait NpsConnection extends StatePensionService {
       Exclusion.AmountDissonance
     } else if (exclusions.contains(Exclusion.IsleOfMan)) {
       Exclusion.IsleOfMan
-    } else if (exclusions.contains(Exclusion.Abroad)) {
-      Exclusion.Abroad
     } else {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }
@@ -190,6 +187,16 @@ trait NpsConnection extends StatePensionService {
       exclusions
     ))
   }
+
+  final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
+
+
+  private def checkOverseasMaleAutoCredits(summary: NpsSummary): Boolean = {
+    if ( summary.sex.equalsIgnoreCase("M") && Country.isAbroad(summary.countryCode) && summary.statePensionAgeDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE))
+      true
+    else false
+  }
+
 }
 
 object StatePensionServiceViaNisp extends StatePensionService with NispConnection
@@ -247,7 +254,8 @@ object SandboxStatePensionService extends StatePensionService {
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65,
-    reducedRateElection = false
+    reducedRateElection = false,
+    abroadAutoCredits = false
   )
   private val defaultResponse = Right(dummyStatement)
 

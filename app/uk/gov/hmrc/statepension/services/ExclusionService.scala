@@ -27,8 +27,6 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
                        pensionDate: LocalDate,
                        now: LocalDate,
                        reducedRateElection: Boolean,
-                       isAbroad: Boolean,
-                       sex: String,
                        entitlement: BigDecimal,
                        startingAmount: BigDecimal,
                        calculatedStartingAmount: BigDecimal,
@@ -67,20 +65,11 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
   final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
   // scalastyle:on magic.number
 
-  private val checkOverseasMaleAutoCredits = (exclusionList: List[Exclusion]) => {
-    if (sex.equalsIgnoreCase("M") && isAbroad && pensionDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE)) {
-      Exclusion.Abroad :: exclusionList
-    } else {
-      exclusionList
-    }
-  }
-
   private val exclusions = FunctionHelper.composeAll(List(
     checkDead,
     checkManualCorrespondence,
     checkPostStatePensionAge,
     checkAmountDissonance,
-    checkIsleOfMan,
-    checkOverseasMaleAutoCredits
+    checkIsleOfMan
   ))
 }
