@@ -203,7 +203,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq[BigDecimal](2.66),
             Matchers.eq[BigDecimal](155.65),
             Matchers.eq[BigDecimal](0),
-            Matchers.eq(false)
+            Matchers.eq(false),
+            Matchers.eq(None)
           )
         }
 
@@ -658,7 +659,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](2.66),
           Matchers.eq[BigDecimal](88.94),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq(false)
+          Matchers.eq(false),
+          Matchers.eq(None)
         )
       }
 
@@ -882,7 +884,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](2.66),
           Matchers.eq[BigDecimal](88.94),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq(false)
+          Matchers.eq(false),
+          Matchers.eq(None)
         )
       }
 
@@ -1017,7 +1020,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any())
+          Matchers.any(),Matchers.any())
       }
 
     }
@@ -1088,7 +1091,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),Matchers.any())
       }
 
     }
@@ -1185,7 +1188,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](0),
           Matchers.eq[BigDecimal](35.58),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq(true)
+          Matchers.eq(true),
+          Matchers.eq(Some(32.61))
         )
       }
 
@@ -1254,7 +1258,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),Matchers.any())
       }
 
     }
@@ -1325,7 +1329,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),Matchers.any())
       }
     }
 
@@ -1389,7 +1393,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),Matchers.any())
       }
     }
 
@@ -1453,7 +1457,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),Matchers.any())
       }
     }
   }
