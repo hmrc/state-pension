@@ -101,23 +101,25 @@ class StatePensionSpec extends StatePensionUnitSpec {
 
   "oldRules" should {
     "return OldRules where basicStatePension is 119.30 graduatedRetirementBenefit is 10.88 and additionalStatePension is 30.00" in {
-        createStatePension().amounts.oldRules shouldBe
-            OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
+      val sp=createStatePension()
+      sp.amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
     }
+
     "return OldRules where basicStatePension is 119.30, additionalStatePension is 20.00 and graduatedRetirementBenefit is 10.00" in {
-       createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
-           .amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
+      val sp = createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
+      sp.amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
+
     }
   }
 
   "newRules" should {
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 0.00" in {
-        createStatePension().amounts.newRules shouldBe
-            NewRules(grossStatePension = 155.65, rebateDerivedAmount=0.00)
+      val sp=createStatePension()
+      sp.amounts.newRules shouldBe NewRules(grossStatePension = 155.65, rebateDerivedAmount=0.00)
     }
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 20.00" in {
-       createStatePension(newRules = NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00))
-           .amounts.newRules shouldBe NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00)
+      val sp=createStatePension(newRules = NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00))
+      sp.amounts.newRules shouldBe NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00)
     }
   }
 

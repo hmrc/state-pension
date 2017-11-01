@@ -29,6 +29,7 @@ import uk.gov.hmrc.statepension.domain.{Exclusion, _}
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
+import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
@@ -255,6 +256,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         "return newRules rebateDerivedAmount as 0.00" in {
           whenReady(statement) { sp =>
             sp.amounts.newRules.rebateDerivedAmount shouldBe 0.00
+          }
+        }
+
+        "return RRECurrentWeeklyAmount as None" in {
+          whenReady(statement) { sp =>
+            sp.RRECurrentWeeklyAmount shouldBe None
+          }
+        }
+
+        "return reducedRateElection as false" in {
+          whenReady(statement) { sp =>
+            sp.reducedRateElection shouldBe false
           }
         }
 
@@ -805,7 +818,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
-      "summary have additionalStatePension as 39.99" in {
+      "summary have additionalStatePension as 39.22" in {
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.additionalStatePension shouldBe 39.22
         }
@@ -1101,7 +1114,26 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
-        NpsStatePensionAmounts()
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 32.61,
+          startingAmount2016 = 35.58,
+          protectedPayment2016 = 0,
+          NpsAmountA2016(
+            basicStatePension = 31.81,
+            pre97AP = 0,
+            post97AP = 0,
+            post02AP = 0,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 0
+          ),
+          NpsAmountB2016(
+            mainComponent = 35.58,
+            rebateDerivedAmount = 0
+          )
+        )
       )
 
       when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
@@ -1113,7 +1145,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+        NpsNIRecord(qualifyingYears =9, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1132,20 +1164,26 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
+      "statePension" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.RRECurrentWeeklyAmount shouldBe Some(32.61)
+        }
+      }
+
       "log a summary metric" in {
         verify(service.metrics, times(1)).summary(
-          Matchers.eq[BigDecimal](151.20),
-          Matchers.eq[BigDecimal](0.00),
-          Matchers.eq(false),
-          Matchers.eq(Scenario.FillGaps),
           Matchers.eq[BigDecimal](155.65),
-          Matchers.eq(34),
-          Matchers.eq(Some(MQPScenario.ContinueWorking)),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.ContinueWorkingMax),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq(28),
+          Matchers.eq(Some(ContinueWorking)),
+          Matchers.eq[BigDecimal](35.58),
+          Matchers.eq[BigDecimal](31.81),
           Matchers.eq[BigDecimal](0),
           Matchers.eq[BigDecimal](0),
-          Matchers.eq[BigDecimal](0),
-          Matchers.eq[BigDecimal](0),
-          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](35.58),
           Matchers.eq[BigDecimal](0),
           Matchers.eq(true)
         )

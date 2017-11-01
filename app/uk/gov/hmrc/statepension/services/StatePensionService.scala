@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.APIType.CitizenDetails
-import uk.gov.hmrc.statepension.domain.nps.{Country, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps.{Country, NpsNIRecord, NpsSummary}
 import uk.gov.hmrc.statepension.events.Forecasting
 import uk.gov.hmrc.statepension.util.EitherReads._
 import uk.gov.hmrc.time.TaxYearResolver
@@ -66,7 +66,7 @@ trait NpsConnection extends StatePensionService {
     val summaryF = nps.getSummary(nino)
     val liablitiesF = nps.getLiabilities(nino)
     val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)
-    val niRecordF = nps.getNIRecord(nino)
+    val niRecordF: Future[NpsNIRecord] = nps.getNIRecord(nino)
 
     for (
       summary <- summaryF;
@@ -74,7 +74,6 @@ trait NpsConnection extends StatePensionService {
       niRecord <- niRecordF;
       manualCorrespondence <- manualCorrespondenceF
     ) yield {
-
       val exclusions: List[Exclusion] = new ExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
@@ -144,11 +143,8 @@ trait NpsConnection extends StatePensionService {
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
           reducedRateElection = summary.reducedRateElection,
-          RRECurrentWeeklyAmount = if(summary.reducedRateElection) {
-            Some(summary.amounts.pensionEntitlementRounded)
-          } else {
-            None
-          }
+          RRECurrentWeeklyAmount = if(summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
+                                   else None
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
