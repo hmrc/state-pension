@@ -59,7 +59,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
-                         RRECurrentWeeklyAmount:Option[BigDecimal] = None,
+                         reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal] = None,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
@@ -86,7 +86,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
       false,
       fullStatePensionAmount,
       reducedRateElection,
-      RRECurrentWeeklyAmount
+      reducedRateElectionCurrentWeeklyAmount
     )
   }
 
@@ -132,7 +132,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
-  "MWRRE customer" should {
+  "reducedRateElection" should {
     "return false to Non-RRE Customers" in {
       createStatePension(reducedRateElection = false).reducedRateElection shouldBe false
     }
@@ -142,6 +142,17 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
+  "reducedRateElectionCurrentWeeklyAmount" should {
+    "return None to Non-RRE Customers" in {
+     val sp=createStatePension(reducedRateElection=true,reducedRateElectionCurrentWeeklyAmount = None)
+     sp.reducedRateElectionCurrentWeeklyAmount shouldBe None
+    }
+
+    "return Some() to RRE Customers" in {
+     val sp= createStatePension(reducedRateElection=true,reducedRateElectionCurrentWeeklyAmount = Some(123))
+     sp.reducedRateElectionCurrentWeeklyAmount shouldBe Some(123)
+    }
+  }
   "mqpScenario" should {
 
     "should be an MQP Scenario if they have less than 10 years" in {

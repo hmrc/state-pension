@@ -113,13 +113,13 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe false
-      (json \ "RRECurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
+      (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
 
     "return 200 with a Response for RRE" in {
-      val testStatePensionRRE = testStatePension.copy(reducedRateElection=true, RRECurrentWeeklyAmount=Some(155.65))
+      val testStatePensionRRE = testStatePension.copy(reducedRateElection=true, reducedRateElectionCurrentWeeklyAmount=Some(155.65))
       val response = testStatePensionController(new StatePensionService {
         override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePensionRRE)
       }).get(nino)(emptyRequestWithHeader)
@@ -147,7 +147,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe true
-      (json \ "RRECurrentWeeklyAmount").asOpt[BigDecimal] shouldBe Some(155.65)
+      (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe Some(155.65)
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }

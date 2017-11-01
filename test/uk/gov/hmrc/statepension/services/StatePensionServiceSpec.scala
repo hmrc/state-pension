@@ -80,7 +80,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65,
     reducedRateElection = false,
-    RRECurrentWeeklyAmount = None
+    reducedRateElectionCurrentWeeklyAmount = None
   )
 
   "Sandbox" should {
@@ -261,7 +261,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
         "return RRECurrentWeeklyAmount as None" in {
           whenReady(statement) { sp =>
-            sp.RRECurrentWeeklyAmount shouldBe None
+            sp.reducedRateElectionCurrentWeeklyAmount shouldBe None
           }
         }
 
@@ -1166,7 +1166,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "statePension" in {
         whenReady(statePensionF) { statePension =>
-          statePension.RRECurrentWeeklyAmount shouldBe Some(32.61)
+          statePension.reducedRateElectionCurrentWeeklyAmount shouldBe Some(32.61)
         }
       }
 
