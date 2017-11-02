@@ -46,7 +46,8 @@
   "numberOfQualifyingYears": 30,
   "pensionSharingOrder": false,
   "currentFullWeeklyPensionAmount": 155.65,
-  "reducedRateElection": false,
+  "reducedRateElection": true,
+  "reducedRateElectionCurrentWeeklyAmount":133.41,
   "_links" : {
     "self": {
       "href": "/state-pension/ni/QQ123456A"
