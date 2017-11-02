@@ -78,7 +78,6 @@ trait NpsConnection extends StatePensionService {
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
         now,
-        reducedRateElection = summary.reducedRateElection,
         isAbroad = Country.isAbroad(summary.countryCode),
         sex = summary.sex,
         summary.amounts.pensionEntitlement,

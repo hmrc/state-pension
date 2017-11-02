@@ -26,7 +26,6 @@ import uk.gov.hmrc.statepension.util.FunctionHelper
 class ExclusionService(dateOfDeath: Option[LocalDate],
                        pensionDate: LocalDate,
                        now: LocalDate,
-                       reducedRateElection: Boolean,
                        isAbroad: Boolean,
                        sex: String,
                        entitlement: BigDecimal,
