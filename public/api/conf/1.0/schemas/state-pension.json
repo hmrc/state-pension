@@ -233,7 +233,7 @@
     },
     "reducedRateElectionCurrentWeeklyAmount": {
       "type": "number",
-      "description": "The amount of accrued State Pension to date each week returned only if the customer has \u2018reduced rate election\u2019 ",
+      "description": "The amount of accrued State Pension to date each week returned only if the customer has \u2018reduced rate election\u2019 and regardless of qualifying years ",
       "example": "133.41"
     }
   }
