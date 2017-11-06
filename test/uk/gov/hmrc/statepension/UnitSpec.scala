@@ -17,9 +17,9 @@
 package uk.gov.hmrc.statepension
 
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.util.Random
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait StatePensionUnitSpec extends uk.gov.hmrc.play.test.UnitSpec {
 

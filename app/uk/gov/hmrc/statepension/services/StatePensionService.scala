@@ -22,7 +22,6 @@ import org.joda.time.{DateTimeZone, LocalDate, Period, PeriodType}
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NispConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -35,6 +34,7 @@ import uk.gov.hmrc.statepension.util.EitherReads._
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait StatePensionService {
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]

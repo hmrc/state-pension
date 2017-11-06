@@ -28,6 +28,7 @@ import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.Metrics
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpResponse, InternalServerException, NotFoundException, Upstream4xxResponse }
 
 class CitizenDetailsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
@@ -47,25 +48,25 @@ class CitizenDetailsConnectorSpec extends StatePensionUnitSpec with MockitoSugar
   "CitizenDetailsConnector" should {
 
     "return OK status when successful" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.successful(HttpResponse(200))
+      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.successful(HttpResponse(200))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF) shouldBe 200
     }
 
     "return 423 status when the Upstream is 423" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.failed(new Upstream4xxResponse(":(", 423, 423, Map()))
+      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new Upstream4xxResponse(":(", 423, 423, Map()))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF) shouldBe 423
     }
 
     "return NotFoundException for invalid nino" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.failed(new NotFoundException("Not Found"))
+      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new NotFoundException("Not Found"))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF.failed) shouldBe a [NotFoundException]
     }
 
     "return 500 response code when there is Upstream is 4XX" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())) thenReturn Future.failed(new InternalServerException("InternalServerError"))
+      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new InternalServerException("InternalServerError"))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF.failed) shouldBe a [InternalServerException]
     }

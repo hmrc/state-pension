@@ -29,6 +29,7 @@ import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.connectors.NispConnector.JsonValidationException
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier, HttpGet, HttpResponse }
 
 class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with WithFakeApplication {
 
@@ -41,7 +42,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
 
   "NispConnector" should {
     "return Left(Exclusion) when there is Exclusion JSON" in {
-      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(
+      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(
         200,
         Some(Json.parse(
           """
@@ -68,7 +69,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
     }
 
     "return Right(StatePension) when there is StatePensionJson" in {
-      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(
+      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(
         200,
         Some(Json.parse(
           """
@@ -154,7 +155,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
     }
 
     "return a failed future when it cannot parse to Either an exclusion or statement and report validation errors" in {
-      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(
+      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.successful(HttpResponse(
         200,
         Some(Json.parse(
           """
@@ -176,7 +177,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
     }
 
     "return a failed future when there is an http error and pass on the exception" in {
-      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(Future.failed(new BadRequestException("You want me to do what?")))
+      when(testNispConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(Future.failed(new BadRequestException("You want me to do what?")))
       ScalaFutures.whenReady(testNispConnector.getStatePension(generateNino()).failed) { ex =>
         ex shouldBe a [BadRequestException]
       }

@@ -18,8 +18,8 @@ package uk.gov.hmrc.statepension.events
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.{StatePensionAmount, StatePensionAmounts}
+import uk.gov.hmrc.http.HeaderCarrier
 
 object StatePension{
   def apply(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,

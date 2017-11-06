@@ -22,7 +22,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain.{Exclusion, _}
@@ -33,6 +32,7 @@ import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite with ScalaFutures with MockitoSugar {
 

@@ -23,11 +23,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.helpers.StubMetrics
 import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.http.{ HttpGet, HttpResponse }
 
 class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
@@ -44,7 +44,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       """
         |{
         |  "contracted_out_flag": 0,
@@ -106,12 +106,12 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     connector.getSummary(nino)
 
     "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/sp_summary" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/sp_summary"))(Matchers.any(), Matchers.any())
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/sp_summary"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" in {
       val header = headerCarrier
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
     "parse the json and return a Future[NpsSummary]" in {
@@ -150,7 +150,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         """
           |{
           |  "contracted_out_flag": 0,
@@ -222,7 +222,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       s"""
          |{
          |  "npsErrlist": {
@@ -277,12 +277,12 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     connector.getLiabilities(nino)
 
     "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/liabilities" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/liabilities"))(Matchers.any(), Matchers.any())
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/liabilities"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" in {
       val header = headerCarrier
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
     "parse the json and return a Future[List[NpsLiability]" in {
@@ -305,7 +305,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override val metrics: Metrics = StubMetrics
       }
 
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
            |  "npsErrlist": {
@@ -371,7 +371,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       s"""
          |{
          |  "years_to_fry": 3,
@@ -491,12 +491,12 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     connector.getNIRecord(nino)
 
     "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/ni_record" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/ni_record"))(Matchers.any(), Matchers.any())
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/ni_record"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" in {
       val header = headerCarrier
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))))
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
     "parse the json and return a Future[NpsNIRecord]" in {
@@ -522,7 +522,7 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override def metrics: Metrics = StubMetrics
       }
 
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
            |  "years_to_fry": 3,
