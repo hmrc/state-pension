@@ -59,6 +59,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          fullStatePensionAmount: BigDecimal = 155.65,
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
+                         reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal] = None,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
@@ -84,7 +85,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
       qualifyingYears,
       false,
       fullStatePensionAmount,
-      reducedRateElection
+      reducedRateElection,
+      reducedRateElectionCurrentWeeklyAmount
     )
   }
 
@@ -99,23 +101,25 @@ class StatePensionSpec extends StatePensionUnitSpec {
 
   "oldRules" should {
     "return OldRules where basicStatePension is 119.30 graduatedRetirementBenefit is 10.88 and additionalStatePension is 30.00" in {
-        createStatePension().amounts.oldRules shouldBe
-            OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
+      val sp=createStatePension()
+      sp.amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
     }
+
     "return OldRules where basicStatePension is 119.30, additionalStatePension is 20.00 and graduatedRetirementBenefit is 10.00" in {
-       createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
-           .amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
+      val sp = createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
+      sp.amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
+
     }
   }
 
   "newRules" should {
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 0.00" in {
-        createStatePension().amounts.newRules shouldBe
-            NewRules(grossStatePension = 155.65, rebateDerivedAmount=0.00)
+      val sp=createStatePension()
+      sp.amounts.newRules shouldBe NewRules(grossStatePension = 155.65, rebateDerivedAmount=0.00)
     }
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 20.00" in {
-       createStatePension(newRules = NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00))
-           .amounts.newRules shouldBe NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00)
+      val sp=createStatePension(newRules = NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00))
+      sp.amounts.newRules shouldBe NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00)
     }
   }
 
@@ -128,7 +132,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
-  "MWRRE customer" should {
+  "reducedRateElection" should {
     "return false to Non-RRE Customers" in {
       createStatePension(reducedRateElection = false).reducedRateElection shouldBe false
     }
@@ -138,6 +142,17 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
+  "reducedRateElectionCurrentWeeklyAmount" should {
+    "return None to Non-RRE Customers" in {
+     val sp=createStatePension(reducedRateElection=true,reducedRateElectionCurrentWeeklyAmount = None)
+     sp.reducedRateElectionCurrentWeeklyAmount shouldBe None
+    }
+
+    "return Some() to RRE Customers" in {
+     val sp= createStatePension(reducedRateElection=true,reducedRateElectionCurrentWeeklyAmount = Some(123))
+     sp.reducedRateElectionCurrentWeeklyAmount shouldBe Some(123)
+    }
+  }
   "mqpScenario" should {
 
     "should be an MQP Scenario if they have less than 10 years" in {

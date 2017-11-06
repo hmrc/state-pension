@@ -31,7 +31,7 @@ trait Metrics {
               personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
               starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
               graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-              reducedRateElection: Boolean): Unit
+              reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal]): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -81,21 +81,24 @@ object Metrics extends Metrics with MicroserviceMetrics {
   val oldRulesGraduatedRetirementBenefit: Histogram=metrics.defaultRegistry.histogram("oldrules-graduated-retirement-benefit")
   val newRulesGrossStatePension: Histogram=metrics.defaultRegistry.histogram("newrules-gross-state-pension")
   val newRulesRebateDerivedAmount: Histogram=metrics.defaultRegistry.histogram("oldrules-rebate-derived-amount")
+  val rreCurrentWeeklyAmount:Histogram=metrics.defaultRegistry.histogram("reduced-rate-election-current-weekly-amount")
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
                        mqpScenario : Option[MQPScenario], starting: BigDecimal, basicStatePension:BigDecimal,
                        additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
                        grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-                       reducedRateElection: Boolean): Unit = {
+                       reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal]): Unit = {
     startingAmount.update(starting.toInt)
     oldRulesBasicStatePension.update(basicStatePension.toInt)
     oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
     oldRulesGraduatedRetirementBenefit.update(graduatedRetirementBenefit.toInt)
     newRulesGrossStatePension.update(grossStatePension.toInt)
     newRulesRebateDerivedAmount.update(rebateDerivedAmount.toInt)
-    if(reducedRateElection) metrics.defaultRegistry.counter("exclusion-mwrre").inc()
-
+    if(reducedRateElection) {
+      metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+      rreCurrentWeeklyAmount.update(reducedRateElectionCurrentWeeklyAmount.getOrElse[BigDecimal](0).toInt)
+    }
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)

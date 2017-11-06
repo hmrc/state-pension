@@ -29,7 +29,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
   def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None,
                               pensionDate: LocalDate = examplePensionDate,
                               now: LocalDate = exampleNow,
-                              reducedRateElection: Boolean = false,
                               isAbroad: Boolean = false,
                               sex: String = "F",
                               entitlement: BigDecimal = 0,
@@ -37,7 +36,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               calculatedStartingAmount: BigDecimal = 0,
                               liabilities: List[NpsLiability] = List(),
                               manualCorrespondenceOnly: Boolean = false) =
-    new ExclusionService(dateOfDeath, pensionDate, now, reducedRateElection, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
+    new ExclusionService(dateOfDeath, pensionDate, now, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
   "getExclusions" when {
     "there is no exclusions" should {
@@ -69,18 +68,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
         "the state pension age is two days after the current date" in {
           exclusionServiceBuilder(pensionDate = new LocalDate(2000, 1, 3), now = new LocalDate(2000, 1, 1)).getExclusions shouldBe List()
         }
-      }
-    }
-
-    "there is no RRE exclusion even with RREFlag=true" should {
-      "return an empty List()" in {
-        exclusionServiceBuilder(reducedRateElection = true).getExclusions shouldBe List()
-      }
-    }
-
-    "there is no reduced rate election" should {
-      "return no exclusions" in {
-        exclusionServiceBuilder(reducedRateElection = false).getExclusions shouldBe Nil
       }
     }
 
@@ -180,7 +167,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           dateOfDeath = Some(new LocalDate(1999, 12, 31)),
           pensionDate = new LocalDate(2000, 1, 1),
           now = new LocalDate(2000, 1, 1),
-          reducedRateElection = true,
           isAbroad = true,
           sex = "M",
           entitlement = 100,

@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.APIType.CitizenDetails
-import uk.gov.hmrc.statepension.domain.nps.{Country, NpsSummary}
+import uk.gov.hmrc.statepension.domain.nps.{Country, NpsNIRecord, NpsSummary}
 import uk.gov.hmrc.statepension.events.Forecasting
 import uk.gov.hmrc.statepension.util.EitherReads._
 import uk.gov.hmrc.time.TaxYearResolver
@@ -74,12 +74,10 @@ trait NpsConnection extends StatePensionService {
       niRecord <- niRecordF;
       manualCorrespondence <- manualCorrespondenceF
     ) yield {
-
       val exclusions: List[Exclusion] = new ExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
         now,
-        reducedRateElection = summary.reducedRateElection,
         isAbroad = Country.isAbroad(summary.countryCode),
         sex = summary.sex,
         summary.amounts.pensionEntitlement,
@@ -143,7 +141,9 @@ trait NpsConnection extends StatePensionService {
           numberOfQualifyingYears = purgedRecord.qualifyingYears,
           pensionSharingOrder = summary.pensionSharingOrderSERPS,
           currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
-          summary.reducedRateElection
+          reducedRateElection = summary.reducedRateElection,
+          reducedRateElectionCurrentWeeklyAmount = if(summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
+                                                   else None
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
@@ -152,7 +152,7 @@ trait NpsConnection extends StatePensionService {
           statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
           statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
           statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
-          statePension.reducedRateElection
+          statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount
           )
 
         Right(statePension)
@@ -247,7 +247,8 @@ object SandboxStatePensionService extends StatePensionService {
     numberOfQualifyingYears = 30,
     pensionSharingOrder = false,
     currentFullWeeklyPensionAmount = 155.65,
-    reducedRateElection = false
+    reducedRateElection = false,
+    reducedRateElectionCurrentWeeklyAmount = None
   )
   private val defaultResponse = Right(dummyStatement)
 
