@@ -18,10 +18,10 @@ package uk.gov.hmrc.statepension.events
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.Exclusion
 
 import scala.language.postfixOps
+import uk.gov.hmrc.http.HeaderCarrier
 
 object StatePensionExclusion{
   def apply(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int,

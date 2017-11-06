@@ -26,13 +26,13 @@ import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.AuditEvent
-import uk.gov.hmrc.play.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
 import scala.util.Random
+import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier }
 
 class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 

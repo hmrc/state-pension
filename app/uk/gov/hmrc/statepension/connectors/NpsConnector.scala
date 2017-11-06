@@ -21,13 +21,13 @@ import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.Metrics
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpReads, HttpResponse }
 
 trait NpsConnector {
   def http: HttpGet
@@ -52,7 +52,7 @@ trait NpsConnector {
 
   private def connectToNPS[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
-    val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, headerCarrier.withExtraHeaders(serviceOriginatorId))
+    val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, headerCarrier.withExtraHeaders(serviceOriginatorId),  ec=global)
 
     responseF.map { httpResponse =>
       timerContext.stop()
@@ -87,7 +87,7 @@ trait NpsConnector {
 }
 
 object NpsConnector extends NpsConnector with ServicesConfig {
-  override val http: HttpGet = WSHttp
+  override val http: HttpGet = new HttpGet with WSHttp
   override val npsBaseUrl: String = baseUrl("nps-hod")
   override val serviceOriginatorId: (String, String) = (getConfString("nps-hod.originatoridkey", ""), getConfString("nps-hod.originatoridvalue", ""))
   override val metrics: Metrics = Metrics
