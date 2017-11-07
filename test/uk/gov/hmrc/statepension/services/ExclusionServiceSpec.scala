@@ -29,14 +29,12 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
   def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None,
                               pensionDate: LocalDate = examplePensionDate,
                               now: LocalDate = exampleNow,
-                              isAbroad: Boolean = false,
-                              sex: String = "F",
                               entitlement: BigDecimal = 0,
                               startingAmount: BigDecimal = 0,
                               calculatedStartingAmount: BigDecimal = 0,
                               liabilities: List[NpsLiability] = List(),
                               manualCorrespondenceOnly: Boolean = false) =
-    new ExclusionService(dateOfDeath, pensionDate, now, isAbroad, sex, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
+    new ExclusionService(dateOfDeath, pensionDate, now, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
   "getExclusions" when {
     "there is no exclusions" should {
@@ -71,46 +69,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
-    "the overseas male auto credits (abroad) exclusion criteria is met" when {
-      "the user is currently female" should {
-        "return no exclusion" in {
-          exclusionServiceBuilder(sex = "F").getExclusions shouldBe Nil
-          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2017, 4, 5)).getExclusions shouldBe Nil
-          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2017, 4, 5), isAbroad = true).getExclusions shouldBe Nil
-          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2017, 4, 5), isAbroad = false).getExclusions shouldBe Nil
-          exclusionServiceBuilder(sex = "F", pensionDate = new LocalDate(2020, 4, 5), isAbroad = true).getExclusions shouldBe Nil
-        }
-      }
-
-      "the user is currently male" when {
-        "the user is not abroad" should  {
-          "return no exclusions" in {
-            exclusionServiceBuilder(sex = "M", pensionDate = new LocalDate(2017, 4, 5), isAbroad = false).getExclusions shouldBe Nil
-            exclusionServiceBuilder(sex = "M", pensionDate = new LocalDate(2020, 4, 5), isAbroad = false).getExclusions shouldBe Nil
-          }
-        }
-
-        "the user is abroad" when {
-          "the user retires on 05/10/2018" should {
-            "return the abroad exclusion" in {
-              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 5)).getExclusions shouldBe List(Exclusion.Abroad)
-            }
-          }
-          "the user retires on 06/10/2018" should {
-            "return no exclusion" in {
-              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 6)).getExclusions shouldBe Nil
-            }
-          }
-          "the user retires on 07/10/2018" should {
-            "return no exclusion" in {
-              exclusionServiceBuilder(sex = "M", isAbroad = true, pensionDate = new LocalDate(2018, 10, 7)).getExclusions shouldBe Nil
-            }
-          }
-        }
-      }
-    }
-
-    "the amount dissonance criteria is met" when  {
+   "the amount dissonance criteria is met" when  {
       "the startingAmount and calculatedStartingAmount are the same" should {
         "return no exclusions" in {
           exclusionServiceBuilder(startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
@@ -167,8 +126,6 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           dateOfDeath = Some(new LocalDate(1999, 12, 31)),
           pensionDate = new LocalDate(2000, 1, 1),
           now = new LocalDate(2000, 1, 1),
-          isAbroad = true,
-          sex = "M",
           entitlement = 100,
           startingAmount = 100,
           calculatedStartingAmount = 101,
@@ -179,8 +136,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           Exclusion.ManualCorrespondenceIndicator,
           Exclusion.PostStatePensionAge,
           Exclusion.AmountDissonance,
-          Exclusion.IsleOfMan,
-          Exclusion.Abroad
+          Exclusion.IsleOfMan
         )
       }
     }
