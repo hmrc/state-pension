@@ -114,7 +114,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe false
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
-      (json \ "abroadAutoCredits").as[Boolean] shouldBe false
+      (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
@@ -149,7 +149,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe true
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe Some(155.65)
-      (json \ "abroadAutoCredits").as[Boolean] shouldBe false
+      (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }

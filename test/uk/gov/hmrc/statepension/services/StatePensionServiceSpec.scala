@@ -80,7 +80,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     currentFullWeeklyPensionAmount = 155.65,
     reducedRateElection = false,
     reducedRateElectionCurrentWeeklyAmount = None,
-    abroadAutoCredits = false
+    abroadAutoCredit = false
   )
 
   "Sandbox" should {

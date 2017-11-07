@@ -142,7 +142,7 @@ trait NpsConnection extends StatePensionService {
           reducedRateElection = summary.reducedRateElection,
           reducedRateElectionCurrentWeeklyAmount = if(summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
                                                    else None,
-          abroadAutoCredits = checkOverseasMaleAutoCredits(summary)
+          abroadAutoCredit = checkOverseasMaleAutoCredits(summary)
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
@@ -152,7 +152,7 @@ trait NpsConnection extends StatePensionService {
           statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
           statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
           statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount,
-          statePension.abroadAutoCredits
+          statePension.abroadAutoCredit
           )
 
         Right(statePension)
@@ -256,7 +256,7 @@ object SandboxStatePensionService extends StatePensionService {
     currentFullWeeklyPensionAmount = 155.65,
     reducedRateElection = false,
     reducedRateElectionCurrentWeeklyAmount = None,
-    abroadAutoCredits = false
+    abroadAutoCredit = false
   )
   private val defaultResponse = Right(dummyStatement)
 

@@ -27,13 +27,13 @@ object StatePension{
             currentFullWeeklyPensionAmount: BigDecimal, starting: BigDecimal, basicStatePension:BigDecimal,
             additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal,
             rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-            abroadAutoCredits: Boolean)
+            abroadAutoCredit: Boolean)
             (implicit hc: HeaderCarrier): StatePension =
 
     new StatePension(nino, earningsIncludedUpTo, amounts, pensionAge, pensionDate, finalRelevantYear, numberOfQualifyingYears,
       pensionSharingOrder, currentFullWeeklyPensionAmount, starting, basicStatePension, additionalStatePension,
       graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection,
-      reducedRateElectionCurrentWeeklyAmount, abroadAutoCredits)
+      reducedRateElectionCurrentWeeklyAmount, abroadAutoCredit)
 }
 
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
@@ -42,7 +42,7 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
                         starting: BigDecimal, basicStatePension:BigDecimal, additionalStatePension: BigDecimal,
                         graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
                         reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-                        abroadAutoCredits: Boolean) (implicit hc: HeaderCarrier)
+                        abroadAutoCredit: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePension", nino,
     Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
@@ -67,7 +67,7 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "rebateDerivedAmount" -> rebateDerivedAmount.toString(),
       "reducedRateElection" -> reducedRateElection.toString(),
       "reducedRateElectionCurrentWeeklyAmount"->reducedRateElectionCurrentWeeklyAmount.map(_.toString).getOrElse(""),
-      "abroadAutoCredits" -> abroadAutoCredits.toString()
+      "abroadAutoCredit" -> abroadAutoCredit.toString()
     )
 
   )

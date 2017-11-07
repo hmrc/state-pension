@@ -60,7 +60,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
                          reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal] = None,
-                         abroadAutoCredits:Boolean = false,
+                         abroadAutoCredit:Boolean = false,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
@@ -88,7 +88,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
       fullStatePensionAmount,
       reducedRateElection,
       reducedRateElectionCurrentWeeklyAmount,
-      abroadAutoCredits
+      abroadAutoCredit
     )
   }
 
@@ -137,11 +137,11 @@ class StatePensionSpec extends StatePensionUnitSpec {
 
   "overseas auto credits (abroad) customer" should {
       "return false to Non-Abroad Customers" in {
-        createStatePension(abroadAutoCredits = false).abroadAutoCredits shouldBe false
+        createStatePension(abroadAutoCredit = false).abroadAutoCredit shouldBe false
       }
 
       "return true to Abroad Customers" in {
-        createStatePension(abroadAutoCredits = true).abroadAutoCredits shouldBe true
+        createStatePension(abroadAutoCredit = true).abroadAutoCredit shouldBe true
       }
     }
 

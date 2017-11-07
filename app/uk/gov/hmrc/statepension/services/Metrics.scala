@@ -32,7 +32,7 @@ trait Metrics {
               starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
               graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
               reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-              abroadAutoCredits: Boolean): Unit
+              abroadAutoCredit: Boolean): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -90,7 +90,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
                        additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
                        grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
                        reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-                       abroadAutoCredits: Boolean): Unit = {
+                       abroadAutoCredit: Boolean): Unit = {
     startingAmount.update(starting.toInt)
     oldRulesBasicStatePension.update(basicStatePension.toInt)
     oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
@@ -101,7 +101,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
       metrics.defaultRegistry.counter("exclusion-mwrre").inc()
       rreCurrentWeeklyAmount.update(reducedRateElectionCurrentWeeklyAmount.getOrElse[BigDecimal](0).toInt)
     }
-    if(abroadAutoCredits) metrics.defaultRegistry.counter("exclusion-abroad").inc()
+    if(abroadAutoCredit) metrics.defaultRegistry.counter("exclusion-abroad").inc()
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)

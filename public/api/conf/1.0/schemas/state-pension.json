@@ -236,7 +236,7 @@
       "description": "The amount of accrued State Pension to date each week returned only if the customer has \u2018reduced rate election\u2019 and regardless of qualifying years ",
       "example": "133.41"
     },
-    "abroadAutoCredits": {
+    "abroadAutoCredit": {
       "type": "boolean",
       "description": "Whether the customer is male, reached State Pension age before 6 October 2018 and has an overseas address",
       "example": "true"
