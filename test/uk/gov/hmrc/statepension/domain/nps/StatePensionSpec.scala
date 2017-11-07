@@ -60,6 +60,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
                          reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal] = None,
+                         abroadAutoCredits:Boolean = false,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
@@ -86,7 +87,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
       false,
       fullStatePensionAmount,
       reducedRateElection,
-      reducedRateElectionCurrentWeeklyAmount
+      reducedRateElectionCurrentWeeklyAmount,
+      abroadAutoCredits
     )
   }
 
@@ -132,6 +134,17 @@ class StatePensionSpec extends StatePensionUnitSpec {
     }
   }
 
+
+  "overseas auto credits (abroad) customer" should {
+      "return false to Non-Abroad Customers" in {
+        createStatePension(abroadAutoCredits = false).abroadAutoCredits shouldBe false
+      }
+
+      "return true to Abroad Customers" in {
+        createStatePension(abroadAutoCredits = true).abroadAutoCredits shouldBe true
+      }
+    }
+
   "reducedRateElection" should {
     "return false to Non-RRE Customers" in {
       createStatePension(reducedRateElection = false).reducedRateElection shouldBe false
@@ -153,6 +166,7 @@ class StatePensionSpec extends StatePensionUnitSpec {
      sp.reducedRateElectionCurrentWeeklyAmount shouldBe Some(123)
     }
   }
+
   "mqpScenario" should {
 
     "should be an MQP Scenario if they have less than 10 years" in {

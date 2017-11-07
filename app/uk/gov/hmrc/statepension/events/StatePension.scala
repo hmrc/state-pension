@@ -26,12 +26,14 @@ object StatePension{
             pensionDate: LocalDate, finalRelevantYear: String, numberOfQualifyingYears: Int, pensionSharingOrder: Boolean,
             currentFullWeeklyPensionAmount: BigDecimal, starting: BigDecimal, basicStatePension:BigDecimal,
             additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal,
-            rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal])
+            rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
+            abroadAutoCredits: Boolean)
             (implicit hc: HeaderCarrier): StatePension =
 
     new StatePension(nino, earningsIncludedUpTo, amounts, pensionAge, pensionDate, finalRelevantYear, numberOfQualifyingYears,
       pensionSharingOrder, currentFullWeeklyPensionAmount, starting, basicStatePension, additionalStatePension,
-      graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection,reducedRateElectionCurrentWeeklyAmount)
+      graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection,
+      reducedRateElectionCurrentWeeklyAmount, abroadAutoCredits)
 }
 
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
@@ -39,7 +41,8 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
                         pensionSharingOrder: Boolean, currentFullWeeklyPensionAmount: BigDecimal,
                         starting: BigDecimal, basicStatePension:BigDecimal, additionalStatePension: BigDecimal,
                         graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-                        reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal]) (implicit hc: HeaderCarrier)
+                        reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
+                        abroadAutoCredits: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePension", nino,
     Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
@@ -63,7 +66,8 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "grossStatePension" -> grossStatePension.toString(),
       "rebateDerivedAmount" -> rebateDerivedAmount.toString(),
       "reducedRateElection" -> reducedRateElection.toString(),
-      "reducedRateElectionCurrentWeeklyAmount"->reducedRateElectionCurrentWeeklyAmount.map(_.toString).getOrElse("")
+      "reducedRateElectionCurrentWeeklyAmount"->reducedRateElectionCurrentWeeklyAmount.map(_.toString).getOrElse(""),
+      "abroadAutoCredits" -> abroadAutoCredits.toString()
     )
 
   )

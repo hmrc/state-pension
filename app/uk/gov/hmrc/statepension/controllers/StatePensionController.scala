@@ -57,7 +57,7 @@ trait StatePensionController extends BaseController with HeaderValidator with Er
             statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
             statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
             statePension.amounts.newRules.grossStatePension,statePension.amounts.newRules.rebateDerivedAmount,
-            statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount))
+            statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount, statePension.abroadAutoCredits))
 
           Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       })

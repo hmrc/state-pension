@@ -21,7 +21,6 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import uk.gov.hmrc.statepension.controllers.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 import play.api.test.Helpers._
@@ -72,7 +71,8 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     pensionSharingOrder = false,
     155.65,
     false,
-    None
+    None,
+    false
   )
 
   "get" should {
@@ -114,6 +114,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe false
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
+      (json \ "abroadAutoCredits").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
@@ -148,6 +149,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe true
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe Some(155.65)
+      (json \ "abroadAutoCredits").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
