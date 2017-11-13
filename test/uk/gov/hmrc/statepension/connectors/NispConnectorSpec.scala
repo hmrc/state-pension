@@ -122,7 +122,8 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
             |  "pensionSharingOrder": false,
             |  "currentFullWeeklyPensionAmount": 155.65,
             |  "reducedRateElection": false,
-            |  "abroadAutoCredit": false
+            |  "abroadAutoCredit": false,
+            |  "statePensionAgeUnderConsideration": false
             |}
           """.stripMargin
         ))
@@ -152,6 +153,7 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
         155.65,
         false,
         None,
+        false,
         false
       ))
     }

@@ -34,6 +34,6 @@ object StubMetrics extends Metrics with MockitoSugar {
                        starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
                        graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
                        reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-                       abroadAutoCredit: Boolean): Unit = {}
+                       abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean): Unit = {}
   override def exclusion(exclusion: Exclusion): Unit = {}
 }

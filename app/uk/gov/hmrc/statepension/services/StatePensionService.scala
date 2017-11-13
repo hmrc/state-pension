@@ -142,7 +142,8 @@ trait NpsConnection extends StatePensionService {
           reducedRateElection = summary.reducedRateElection,
           reducedRateElectionCurrentWeeklyAmount = if(summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
                                                    else None,
-          abroadAutoCredit = checkOverseasMaleAutoCredits(summary)
+          abroadAutoCredit = checkOverseasMaleAutoCredits(summary),
+          statePensionAgeUnderConsideration = checkStatePensionAgeUnderConsideration(summary.dateOfBirth)
         )
 
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
@@ -152,7 +153,7 @@ trait NpsConnection extends StatePensionService {
           statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
           statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
           statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount,
-          statePension.abroadAutoCredit
+          statePension.abroadAutoCredit, statePension.statePensionAgeUnderConsideration
           )
 
         Right(statePension)
@@ -197,6 +198,16 @@ trait NpsConnection extends StatePensionService {
       true
     else false
   }
+
+  final val CHANGE_SPA_MIN_DATE = new LocalDate(1970, 4, 6)
+  final val CHANGE_SPA_MAX_DATE = new LocalDate(1978, 4, 5)
+
+  private def checkStatePensionAgeUnderConsideration(dateOfBirth: LocalDate): Boolean = {
+    if ( (dateOfBirth.equals(CHANGE_SPA_MIN_DATE) || dateOfBirth.isAfter(CHANGE_SPA_MIN_DATE)) && (dateOfBirth.equals(CHANGE_SPA_MAX_DATE) || dateOfBirth.isBefore(CHANGE_SPA_MAX_DATE)))
+      true
+    else false
+  }
+
 }
 
 object StatePensionServiceViaNisp extends StatePensionService with NispConnection
@@ -256,7 +267,8 @@ object SandboxStatePensionService extends StatePensionService {
     currentFullWeeklyPensionAmount = 155.65,
     reducedRateElection = false,
     reducedRateElectionCurrentWeeklyAmount = None,
-    abroadAutoCredit = false
+    abroadAutoCredit = false,
+    statePensionAgeUnderConsideration = false
   )
   private val defaultResponse = Right(dummyStatement)
 

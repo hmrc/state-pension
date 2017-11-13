@@ -80,7 +80,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     currentFullWeeklyPensionAmount = 155.65,
     reducedRateElection = false,
     reducedRateElectionCurrentWeeklyAmount = None,
-    abroadAutoCredit = false
+    abroadAutoCredit = false,
+    statePensionAgeUnderConsideration = false
   )
 
   "Sandbox" should {
@@ -205,6 +206,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             Matchers.eq[BigDecimal](0),
             Matchers.eq(false),
             Matchers.eq(None),
+            Matchers.eq(false),
             Matchers.eq(false)
           )
         }
@@ -270,6 +272,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         "return reducedRateElection as false" in {
           whenReady(statement) { sp =>
             sp.reducedRateElection shouldBe false
+          }
+        }
+
+        "return statePensionAgeUnderConsideration as false" in {
+          whenReady(statement) { sp =>
+            sp.statePensionAgeUnderConsideration shouldBe false
           }
         }
 
@@ -662,6 +670,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
           Matchers.eq(None),
+          Matchers.eq(false),
           Matchers.eq(false)
         )
       }
@@ -888,6 +897,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
           Matchers.eq(None),
+          Matchers.eq(false),
           Matchers.eq(false)
         )
       }
@@ -1023,7 +1033,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
@@ -1094,7 +1104,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
@@ -1193,6 +1203,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq[BigDecimal](0),
           Matchers.eq(true),
           Matchers.eq(Some(32.61)),
+          Matchers.eq(false),
           Matchers.eq(false)
         )
       }
@@ -1237,7 +1248,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
       "return StatePension object" in {
             whenReady(statePensionF) { statePension =>
-               statePension shouldBe StatePension(new LocalDate("2016-04-05"),StatePensionAmounts(false,StatePensionAmount(None,None,0.00),StatePensionAmount(Some(34),None,151.20),StatePensionAmount(Some(0),Some(2),155.65),StatePensionAmount(None,None,0),StatePensionAmount(None,None,0),OldRules(0,0,0),NewRules(0,0)),61,new LocalDate("2018-01-01"),"2049-50",35,false,155.65,false,None, true)
+               statePension shouldBe StatePension(new LocalDate("2016-04-05"),StatePensionAmounts(false,StatePensionAmount(None,None,0.00),StatePensionAmount(Some(34),None,151.20),StatePensionAmount(Some(0),Some(2),155.65),StatePensionAmount(None,None,0),StatePensionAmount(None,None,0),OldRules(0,0,0),NewRules(0,0)),61,new LocalDate("2018-01-01"),"2049-50",35,false,155.65,false,None, true, false)
             }
       }
 
@@ -1256,7 +1267,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "log a summary metric" in {
         verify(service.metrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
@@ -1327,7 +1338,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
@@ -1391,7 +1402,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
@@ -1455,9 +1466,430 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log a summary metric" in {
         verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
+
+    "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
+      }
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2034, 4, 5),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1970, 4, 5),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 161.18,
+          startingAmount2016 = 161.18,
+          protectedPayment2016 = 5.53,
+          NpsAmountA2016(
+            basicStatePension = 119.3,
+            pre97AP = 17.79,
+            post97AP = 6.03,
+            post02AP = 15.4,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 2.66
+          ),
+          NpsAmountB2016(
+            mainComponent = 155.65,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(qualifyingYears = 36, List())
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "statePension have statePensionAgeUnderConsideration flag as false" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe false
+        }
+      }
+
+      "log a summary metric" in {
+        verify(service.metrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(false)
+        )
+      }
+    }
+
+    "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
+      }
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2034, 4, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1970, 4, 6),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 161.18,
+          startingAmount2016 = 161.18,
+          protectedPayment2016 = 5.53,
+          NpsAmountA2016(
+            basicStatePension = 119.3,
+            pre97AP = 17.79,
+            post97AP = 6.03,
+            post02AP = 15.4,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 2.66
+          ),
+          NpsAmountB2016(
+            mainComponent = 155.65,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(qualifyingYears = 36, List())
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "statePension have statePensionAgeUnderConsideration flag as true" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe true
+        }
+      }
+
+      "log a summary metric" in {
+        verify(service.metrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(true)
+        )
+      }
+    }
+
+    "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
+      }
+
+      val summary = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2038, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1976, 7, 7),
+        dateOfDeath = None,
+        reducedRateElection = true,
+        countryCode = 1,
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 32.61,
+          startingAmount2016 = 35.58,
+          protectedPayment2016 = 0,
+          NpsAmountA2016(
+            basicStatePension = 31.81,
+            pre97AP = 0,
+            post97AP = 0,
+            post02AP = 0,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 0
+          ),
+          NpsAmountB2016(
+            mainComponent = 35.58,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        summary
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(qualifyingYears =9, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      lazy val summaryF: Future[NpsSummary] = service.nps.getSummary(Matchers.any())(Matchers.any())
+
+      "statePension have statePensionAgeUnderConsideration flag as true" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe true
+        }
+      }
+
+      "log a summary metric" in {
+        verify(service.metrics, times(1)).summary(
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.ContinueWorkingMax),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq(28),
+          Matchers.eq(Some(ContinueWorking)),
+          Matchers.eq[BigDecimal](35.58),
+          Matchers.eq[BigDecimal](31.81),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](35.58),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(true),
+          Matchers.eq(Some(32.61)),
+          Matchers.eq(false),
+          Matchers.eq(true)
+        )
+      }
+    }
+
+    "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
+      }
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2042, 4, 5),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1978, 4, 5),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 161.18,
+          startingAmount2016 = 161.18,
+          protectedPayment2016 = 5.53,
+          NpsAmountA2016(
+            basicStatePension = 119.3,
+            pre97AP = 17.79,
+            post97AP = 6.03,
+            post02AP = 15.4,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 2.66
+          ),
+          NpsAmountB2016(
+            mainComponent = 155.65,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(qualifyingYears = 36, List())
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "statePension have statePensionAgeUnderConsideration flag as true" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe true
+        }
+      }
+
+      "log a summary metric" in {
+        verify(service.metrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(true)
+        )
+      }
+    }
+
+    "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
+      val service = new NpsConnection {
+        override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
+        override lazy val metrics: Metrics = mock[Metrics]
+        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+        override lazy val forecastingService: ForecastingService = defaultForecasting
+        override lazy val rateService: RateService = RateServiceBuilder.default
+      }
+
+      val regularStatement = NpsSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2042, 4, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1978, 4, 6),
+        amounts = NpsStatePensionAmounts(
+          pensionEntitlement = 161.18,
+          startingAmount2016 = 161.18,
+          protectedPayment2016 = 5.53,
+          NpsAmountA2016(
+            basicStatePension = 119.3,
+            pre97AP = 17.79,
+            post97AP = 6.03,
+            post02AP = 15.4,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 2.66
+          ),
+          NpsAmountB2016(
+            mainComponent = 155.65,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        regularStatement
+      ))
+
+      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        NpsNIRecord(qualifyingYears = 36, List())
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "statePension have statePensionAgeUnderConsideration flag as false" in {
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe false
+        }
+      }
+
+      "log a summary metric" in {
+        verify(service.metrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(false)
+        )
+      }
+    }
+
   }
 }
 

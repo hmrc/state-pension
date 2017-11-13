@@ -66,7 +66,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
                                                        additionalStatePension= 30.00,
                                                        graduatedRetirementBenefit =10.88),
                          newRules: NewRules = NewRules(grossStatePension = 155.65,
-                                                       rebateDerivedAmount= 0.00)
+                                                       rebateDerivedAmount= 0.00),
+                         statePensionAgeUnderConsideration: Boolean = false
                         ) = {
     StatePension(
       new LocalDate(earningsIncludedUpTo + 1, 4, 5),
@@ -88,7 +89,8 @@ class StatePensionSpec extends StatePensionUnitSpec {
       fullStatePensionAmount,
       reducedRateElection,
       reducedRateElectionCurrentWeeklyAmount,
-      abroadAutoCredit
+      abroadAutoCredit,
+      statePensionAgeUnderConsideration
     )
   }
 
@@ -164,6 +166,16 @@ class StatePensionSpec extends StatePensionUnitSpec {
     "return Some() to RRE Customers" in {
      val sp= createStatePension(reducedRateElection=true,reducedRateElectionCurrentWeeklyAmount = Some(123))
      sp.reducedRateElectionCurrentWeeklyAmount shouldBe Some(123)
+    }
+  }
+
+  "statePensionAgeUnderConsideration" should {
+    "return false to Customers with a date of birth outside the correct range" in {
+      createStatePension(statePensionAgeUnderConsideration = false).statePensionAgeUnderConsideration shouldBe false
+    }
+
+    "return true to Customers with a date of birth in the correct range" in {
+      createStatePension(statePensionAgeUnderConsideration = true).statePensionAgeUnderConsideration shouldBe true
     }
   }
 

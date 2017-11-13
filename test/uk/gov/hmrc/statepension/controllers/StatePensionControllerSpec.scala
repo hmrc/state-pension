@@ -72,6 +72,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     155.65,
     false,
     None,
+    false,
     false
   )
 
@@ -116,6 +117,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
       (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe false
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
 
@@ -151,6 +153,43 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe Some(155.65)
       (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe false
+      (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
+    }
+
+    "return 200 with a Response for Customers with date of birth within the correct range for state pension age under consideration flag" in {
+      val testStatePensionAgeUnderConsideration = testStatePension.copy(statePensionAgeUnderConsideration=true)
+      val response = testStatePensionController(new StatePensionService {
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePensionAgeUnderConsideration)
+      }).get(nino)(emptyRequestWithHeader)
+
+      status(response) shouldBe 200
+      val json = contentAsJson(response)
+      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe new LocalDate(2015, 4, 5)
+      (json \ "amounts" \ "protectedPayment").as[Boolean] shouldBe false
+      (json \ "amounts" \ "maximum" \ "yearsToWork").as[Int] shouldBe 4
+      (json \ "amounts" \ "maximum" \ "gapsToFill").as[Int] shouldBe 1
+      (json \ "amounts" \ "maximum" \ "weeklyAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "amounts" \ "maximum" \ "monthlyAmount").as[BigDecimal] shouldBe 676.80
+      (json \ "amounts" \ "maximum" \ "annualAmount").as[BigDecimal] shouldBe 8121.59
+      (json \ "amounts" \ "starting" \ "weeklyAmount").as[BigDecimal] shouldBe 161.18
+      (json \ "amounts" \ "starting" \ "monthlyAmount").as[BigDecimal] shouldBe 700.85
+      (json \ "amounts" \ "starting" \ "annualAmount").as[BigDecimal] shouldBe 8410.14
+      (json \ "amounts" \ "oldRules" \ "basicStatePension").as[BigDecimal] shouldBe 119.30
+      (json \ "amounts" \ "oldRules" \ "additionalStatePension").as[BigDecimal] shouldBe 39.22
+      (json \ "amounts" \ "oldRules" \ "graduatedRetirementBenefit").as[BigDecimal] shouldBe 2.66
+      (json \ "amounts" \ "newRules" \ "grossStatePension").as[BigDecimal] shouldBe 155.40
+      (json \ "amounts" \ "newRules" \ "rebateDerivedAmount").as[BigDecimal] shouldBe 0.25
+      (json \ "pensionAge").as[Int] shouldBe 67
+      (json \ "pensionDate").as[LocalDate] shouldBe new LocalDate(2019, 7, 1)
+      (json \ "finalRelevantYear").as[String] shouldBe "2018-19"
+      (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
+      (json \ "pensionSharingOrder").as[Boolean] shouldBe false
+      (json \ "reducedRateElection").as[Boolean] shouldBe false
+      (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
+      (json \ "abroadAutoCredit").as[Boolean] shouldBe false
+      (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
+      (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe true
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
     }
 

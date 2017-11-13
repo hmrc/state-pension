@@ -27,13 +27,13 @@ object StatePension{
             currentFullWeeklyPensionAmount: BigDecimal, starting: BigDecimal, basicStatePension:BigDecimal,
             additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal,
             rebateDerivedAmount:BigDecimal, reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-            abroadAutoCredit: Boolean)
+            abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean)
             (implicit hc: HeaderCarrier): StatePension =
 
     new StatePension(nino, earningsIncludedUpTo, amounts, pensionAge, pensionDate, finalRelevantYear, numberOfQualifyingYears,
       pensionSharingOrder, currentFullWeeklyPensionAmount, starting, basicStatePension, additionalStatePension,
       graduatedRetirementBenefit, grossStatePension, rebateDerivedAmount, reducedRateElection,
-      reducedRateElectionCurrentWeeklyAmount, abroadAutoCredit)
+      reducedRateElectionCurrentWeeklyAmount, abroadAutoCredit, statePensionAgeUnderConsideration)
 }
 
 class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePensionAmounts, pensionAge: Int,
@@ -42,7 +42,7 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
                         starting: BigDecimal, basicStatePension:BigDecimal, additionalStatePension: BigDecimal,
                         graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
                         reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-                        abroadAutoCredit: Boolean) (implicit hc: HeaderCarrier)
+                        abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePension", nino,
     Map(
       "earningsIncludedUpTo" -> earningsIncludedUpTo.toString,
@@ -67,7 +67,8 @@ class StatePension(nino: Nino, earningsIncludedUpTo: LocalDate, amounts: StatePe
       "rebateDerivedAmount" -> rebateDerivedAmount.toString(),
       "reducedRateElection" -> reducedRateElection.toString(),
       "reducedRateElectionCurrentWeeklyAmount"->reducedRateElectionCurrentWeeklyAmount.map(_.toString).getOrElse(""),
-      "abroadAutoCredit" -> abroadAutoCredit.toString()
+      "abroadAutoCredit" -> abroadAutoCredit.toString(),
+      "statePensionAgeUnderConsideration" -> statePensionAgeUnderConsideration.toString()
     )
 
   )
