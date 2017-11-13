@@ -203,9 +203,7 @@ trait NpsConnection extends StatePensionService {
   final val CHANGE_SPA_MAX_DATE = new LocalDate(1978, 4, 5)
 
   private def checkStatePensionAgeUnderConsideration(dateOfBirth: LocalDate): Boolean = {
-    if ( (dateOfBirth.equals(CHANGE_SPA_MIN_DATE) || dateOfBirth.isAfter(CHANGE_SPA_MIN_DATE)) && (dateOfBirth.equals(CHANGE_SPA_MAX_DATE) || dateOfBirth.isBefore(CHANGE_SPA_MAX_DATE)))
-      true
-    else false
+    (dateOfBirth.equals(CHANGE_SPA_MIN_DATE) || dateOfBirth.isAfter(CHANGE_SPA_MIN_DATE)) && (dateOfBirth.equals(CHANGE_SPA_MAX_DATE) || dateOfBirth.isBefore(CHANGE_SPA_MAX_DATE))
   }
 
 }
