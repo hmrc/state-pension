@@ -32,7 +32,7 @@ trait Metrics {
               starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
               graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
               reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-              abroadAutoCredit: Boolean): Unit
+              abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean): Unit
 
   def exclusion(exclusion: Exclusion): Unit
 }
@@ -83,6 +83,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
   val newRulesGrossStatePension: Histogram=metrics.defaultRegistry.histogram("newrules-gross-state-pension")
   val newRulesRebateDerivedAmount: Histogram=metrics.defaultRegistry.histogram("oldrules-rebate-derived-amount")
   val rreCurrentWeeklyAmount:Histogram=metrics.defaultRegistry.histogram("reduced-rate-election-current-weekly-amount")
+  val statePensionAgeUnderConsiderationMeter: Counter = metrics.defaultRegistry.counter("state-pension-age-under-consideration")
 
   override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
@@ -90,7 +91,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
                        additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
                        grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
                        reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-                       abroadAutoCredit: Boolean): Unit = {
+                       abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean): Unit = {
     startingAmount.update(starting.toInt)
     oldRulesBasicStatePension.update(basicStatePension.toInt)
     oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
@@ -109,6 +110,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
     mqpScenario.foreach(mqpScenarioMeters(_).inc())
     yearsNeededToContribute.update(yearsToContribute)
     if(contractedOut) contractedOutMeter.inc() else notContractedOutMeter.inc()
+    if(statePensionAgeUnderConsideration) statePensionAgeUnderConsiderationMeter.inc()
   }
 
   val exclusionMeters: Map[Exclusion, Counter] = Map(

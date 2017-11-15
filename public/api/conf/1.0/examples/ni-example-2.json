@@ -49,6 +49,7 @@
   "reducedRateElection": true,
   "reducedRateElectionCurrentWeeklyAmount":133.41,
   "abroadAutoCredit": false,
+  "statePensionAgeUnderConsideration": false,
   "_links" : {
     "self": {
       "href": "/state-pension/ni/QQ123456A"
