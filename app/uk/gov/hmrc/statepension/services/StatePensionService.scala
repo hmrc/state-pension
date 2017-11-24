@@ -22,7 +22,7 @@ import org.joda.time.{DateTimeZone, LocalDate, Period, PeriodType}
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NispConnector, NpsConnector}
+import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.Play.current
@@ -38,14 +38,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 trait StatePensionService {
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
-}
-
-trait NispConnection extends StatePensionService {
-  val nisp = NispConnector
-
-  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
-    nisp.getStatePension(nino)
-  }
 }
 
 trait NpsConnection extends StatePensionService {
@@ -207,8 +199,6 @@ trait NpsConnection extends StatePensionService {
   }
 
 }
-
-object StatePensionServiceViaNisp extends StatePensionService with NispConnection
 
 object StatePensionService extends StatePensionService with NpsConnection {
   override lazy val nps: NpsConnector = NpsConnector
