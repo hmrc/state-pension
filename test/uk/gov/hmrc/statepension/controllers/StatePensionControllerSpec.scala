@@ -204,7 +204,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 
     "return 403 with an error message for an MCI exclusion" in {
       val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.ManualCorrespondenceIndicator), 0, new LocalDate(2050, 1, 1)))
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.ManualCorrespondenceIndicator), 0, new LocalDate(2050, 1, 1), false))
       }).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
@@ -213,7 +213,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 
     "return 403 with an error message for a Dead exclusion" in {
       val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.Dead), 0, new LocalDate(2050, 1, 1)))
+        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.Dead), 0, new LocalDate(2050, 1, 1), false))
       }).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
@@ -226,7 +226,8 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
           Left(StatePensionExclusion(
             List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
             0,
-            new LocalDate(2050, 1, 1)
+            new LocalDate(2050, 1, 1),
+            false
           ))
       }).get(nino)(emptyRequestWithHeader)
 

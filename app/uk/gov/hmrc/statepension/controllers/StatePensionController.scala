@@ -37,17 +37,17 @@ trait StatePensionController extends BaseController with HeaderValidator with Er
 
         case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.Dead) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.Dead),
-            exclusion.pensionAge, exclusion.pensionDate))
+            exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
           Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
 
         case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.ManualCorrespondenceIndicator) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.ManualCorrespondenceIndicator),
-            exclusion.pensionAge, exclusion.pensionDate))
+            exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
           Forbidden(Json.toJson(ErrorResponses.ExclusionManualCorrespondence))
 
         case Left(exclusion) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, exclusion.exclusionReasons,
-            exclusion.pensionAge, exclusion.pensionDate))
+            exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
           Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
 
         case Right(statePension) =>

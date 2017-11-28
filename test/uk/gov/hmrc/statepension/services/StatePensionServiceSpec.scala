@@ -97,7 +97,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         result shouldBe Left(StatePensionExclusion(
           exclusionReasons = List(Exclusion.PostStatePensionAge),
           pensionAge = 66,
-          pensionDate = new LocalDate(2021, 5, 16)
+          pensionDate = new LocalDate(2021, 5, 16),
+          false
         ))
       }
     }
@@ -107,7 +108,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         result shouldBe Left(StatePensionExclusion(
           exclusionReasons = List(Exclusion.Dead),
           pensionAge = 66,
-          pensionDate = new LocalDate(2021, 5, 16)
+          pensionDate = new LocalDate(2021, 5, 16),
+          false
         ))
       }
     }
@@ -117,7 +119,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         result shouldBe Left(StatePensionExclusion(
           exclusionReasons = List(Exclusion.ManualCorrespondenceIndicator),
           pensionAge = 66,
-          pensionDate = new LocalDate(2021, 5, 16)
+          pensionDate = new LocalDate(2021, 5, 16),
+          false
         ))
       }
     }
@@ -546,6 +549,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             statement.get.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
             statement.get.pensionAge shouldBe 65
             statement.get.pensionDate.toString shouldBe "2019-09-06"
+            statement.get.statePensionAgeUnderConsideration.toString shouldBe "false"
           }
 
         }
@@ -1023,6 +1027,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
+      "not have the statePensionAgeUnderConsideration flag enabled" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.statePensionAgeUnderConsideration shouldBe false
+        }
+      }
+
       "log an exclusion metric" in {
         verify(service.metrics, times(1)).exclusion(
           Matchers.eq(Exclusion.Dead)
@@ -1092,6 +1102,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "have a pension date of 2016-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
+        }
+      }
+
+      "not have the statePensionAgeUnderConsideration flag enabled" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.statePensionAgeUnderConsideration shouldBe false
         }
       }
 
@@ -1329,6 +1345,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
+      "not have the statePensionAgeUnderConsideration flag enabled" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.statePensionAgeUnderConsideration shouldBe false
+        }
+      }
+
       "log an exclusion metric" in {
         verify(service.metrics, times(1)).exclusion(
           Matchers.eq(Exclusion.AmountDissonance)
@@ -1393,6 +1415,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
       }
 
+      "not have the statePensionAgeUnderConsideration flag enabled" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.statePensionAgeUnderConsideration shouldBe false
+        }
+      }
+
       "log an exclusion metric" in {
         verify(service.metrics, times(1)).exclusion(
           Matchers.eq(Exclusion.IsleOfMan)
@@ -1454,6 +1482,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "have a pension date of 2018-1-1" in {
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        }
+      }
+
+      "not have the statePensionAgeUnderConsideration flag enabled" in {
+        whenReady(exclusionF) { exclusion =>
+          exclusion.statePensionAgeUnderConsideration shouldBe false
         }
       }
 

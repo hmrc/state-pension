@@ -35,7 +35,8 @@ object Exclusion extends Enumeration {
 
 case class StatePensionExclusion(exclusionReasons: List[Exclusion.Exclusion],
                                  pensionAge: Int,
-                                 pensionDate: LocalDate)
+                                 pensionDate: LocalDate,
+                                 statePensionAgeUnderConsideration: Boolean)
 
 object StatePensionExclusion {
   implicit val formats = Json.format[StatePensionExclusion]
