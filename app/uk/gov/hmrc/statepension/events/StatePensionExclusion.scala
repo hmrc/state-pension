@@ -25,15 +25,17 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 object StatePensionExclusion{
   def apply(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int,
-            pensionDate: LocalDate)(implicit hc: HeaderCarrier): StatePensionExclusion =
-    new StatePensionExclusion(nino, exclusionReasons, pensionAge, pensionDate)
+            pensionDate: LocalDate, statePensionAgeUnderConsideration: Boolean)(implicit hc: HeaderCarrier): StatePensionExclusion =
+    new StatePensionExclusion(nino, exclusionReasons, pensionAge, pensionDate, statePensionAgeUnderConsideration)
 }
 
-class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int, pensionDate: LocalDate) (implicit hc: HeaderCarrier)
+class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int, pensionDate: LocalDate,
+                            statePensionAgeUnderConsideration: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePensionExclusion", nino,
     Map(
       "reasons" -> exclusionReasons.map(_.toString).mkString(","),
       "pensionAge" -> pensionAge.toString,
-      "pensionDate" -> pensionDate.toString
+      "pensionDate" -> pensionDate.toString,
+      "statePensionAgeUnderConsideration" -> statePensionAgeUnderConsideration.toString
     )
   )

@@ -96,7 +96,9 @@ trait NpsConnection extends StatePensionService {
         Left(StatePensionExclusion(
           exclusionReasons = exclusions,
           pensionAge = summary.statePensionAge,
-          pensionDate = summary.statePensionAgeDate
+          pensionDate = summary.statePensionAgeDate,
+          statePensionAgeUnderConsideration = if (exclusions.contains(Exclusion.AmountDissonance) || exclusions.contains(Exclusion.IsleOfMan))
+            checkStatePensionAgeUnderConsideration(summary.dateOfBirth) else false
         ))
       } else {
 

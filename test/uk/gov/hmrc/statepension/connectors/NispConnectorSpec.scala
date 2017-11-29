@@ -52,7 +52,8 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
             |    "Dead"
             |  ],
             |  "pensionAge": 65,
-            |  "pensionDate": "2018-07-05"
+            |  "pensionDate": "2018-07-05",
+            |  "statePensionAgeUnderConsideration": false
             |}
           """.stripMargin
         ))
@@ -64,7 +65,8 @@ class NispConnectorSpec extends StatePensionUnitSpec with MockitoSugar with With
           Exclusion.Dead
         ),
         pensionAge = 65,
-        pensionDate = new LocalDate(2018, 7, 5)
+        pensionDate = new LocalDate(2018, 7, 5),
+        false
       ))
     }
 
