@@ -84,45 +84,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     statePensionAgeUnderConsideration = false
   )
 
-  "Sandbox" should {
-    "return dummy data for non-existent prefix" in {
-      val nino: Nino = generateNinoWithPrefix("ZX")
-      whenReady(SandboxStatePensionService.getStatement(nino)(HeaderCarrier())) { result =>
-        result shouldBe Right(dummyStatement)
-      }
-    }
-
-    "PS prefix should return a Post State Pension Age exclusion" in {
-      whenReady(SandboxStatePensionService.getStatement(generateNinoWithPrefix("PS"))(HeaderCarrier())) { result =>
-        result shouldBe Left(StatePensionExclusion(
-          exclusionReasons = List(Exclusion.PostStatePensionAge),
-          pensionAge = 66,
-          pensionDate = new LocalDate(2021, 5, 16)
-        ))
-      }
-    }
-
-    "EZ prefix should return Dead exclusion" in {
-      whenReady(SandboxStatePensionService.getStatement(generateNinoWithPrefix("EZ"))(HeaderCarrier())) { result =>
-        result shouldBe Left(StatePensionExclusion(
-          exclusionReasons = List(Exclusion.Dead),
-          pensionAge = 66,
-          pensionDate = new LocalDate(2021, 5, 16)
-        ))
-      }
-    }
-
-    "PG prefix should return MCI exclusion" in {
-      whenReady(SandboxStatePensionService.getStatement(generateNinoWithPrefix("PG"))(HeaderCarrier())) { result =>
-        result shouldBe Left(StatePensionExclusion(
-          exclusionReasons = List(Exclusion.ManualCorrespondenceIndicator),
-          pensionAge = 66,
-          pensionDate = new LocalDate(2021, 5, 16)
-        ))
-      }
-    }
-
-  }
 
   "StatePensionService with a HOD Connection" when {
 
