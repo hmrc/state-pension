@@ -36,6 +36,7 @@ uses:
         is: [headers.acceptHeader]
         (annotations.scope): "read:state-pension"
         securedBy: [ sec.oauth_2_0: { scopes: [ "read:state-pension" ] } ]
+        (annotations.sandboxData): !include testdata/get-state-pension.md
 
         responses:
           200:
