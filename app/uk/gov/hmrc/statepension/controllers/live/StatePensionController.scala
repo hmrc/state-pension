@@ -19,11 +19,11 @@ package uk.gov.hmrc.statepension.controllers.live
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
 import uk.gov.hmrc.statepension.controllers.StatePensionController
-import uk.gov.hmrc.statepension.services.{StatePensionService, StatePensionServiceViaNisp}
+import uk.gov.hmrc.statepension.services.StatePensionService
 
 
 object StatePensionController extends StatePensionController {
-  override val statePensionService: StatePensionService = if(AppContext.connectToHOD) StatePensionService else StatePensionServiceViaNisp
+  override val statePensionService: StatePensionService = StatePensionService
   override val app: String = "State-Pension"
   override val context: String = AppContext.apiGatewayContext
   override val customAuditConnector: CustomAuditConnector = CustomAuditConnector
