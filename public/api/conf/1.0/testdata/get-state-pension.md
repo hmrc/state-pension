@@ -106,6 +106,52 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
+            <th colspan="3">State Pension age</th>
+        </tr>
+        <tr>
+            <td><p>Taxpayer who is affected by proposed change to State Pension age</p></td>
+            <td><p><code>ZT860915A</code></p></td>
+            <td><p>200 (OK) Payload as regular example above</p></td>
+        </tr>
+        <tr>
+            <td><p>Taxpayer who is not affected by proposed change to State Pension age</p></td>
+            <td><p><code>AR822514A</code></p></td>
+            <td><p>200 (OK) Payload as regular example above</p></td>
+        </tr>                
+         <tr>
+             <td><p>Taxpayer who is affected by proposed change to State Pension age with COPE</p></td>
+             <td><p><code>ZX000063A</code></p></td>
+             <td><p>200 (OK) Payload as regular example above</p></td>
+         </tr>
+         <tr>
+             <td><p>Taxpayer who is not affected by proposed change to State Pension age with COPE</p></td>
+             <td><p><code>ZX000059A</code></p></td>
+             <td><p>200 (OK) Payload as regular example above</p></td>
+         </tr>  
+        <tr>
+            <th colspan="3">State Pension age exclusion</th>
+        </tr>
+        <tr>
+            <td><p>Taxpayer who has amount dissonance and is affected by proposed change to State Pension age</p></td>
+            <td><p><code>ZC974335B</code></p></td>
+            <td><p>200 (OK) Payload as exclusion example above</p></td>
+        </tr>
+        <tr>
+            <td><p>Taxpayer who has amount dissonance and is not affected by proposed change to State Pension age</p></td>
+            <td><p><code>ZC974325B</code></p></td>
+            <td><p>200 (OK) Payload as exclusion example above</p></td>
+        </tr>                
+         <tr>
+             <td><p>Taxpayer who has Isle of Man liability and is affected by proposed change to State Pension age</p></td>
+             <td><p><code>MA000004A</code></p></td>
+             <td><p>200 (OK) Payload as exclusion example above</p></td>
+         </tr>
+         <tr>
+             <td><p>Taxpayer who has Isle of Man liability and is not affected by proposed change to State Pension age</p></td>
+             <td><p><code>MA000002A</code></p></td>
+             <td><p>200 (OK) Payload as exclusion example above</p></td>
+         </tr>                          
+        <tr>
             <th colspan="3">Exclusions</th>
         </tr>
         <tr>
