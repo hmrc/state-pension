@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -214,6 +214,14 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
       }
     }
 
+    "the rates have changed 2018-19" should {
+      "use the rates from the configuration" in {
+        val service = new ForecastingService {
+          override def rateService: RateService = RateServiceBuilder.twentyEighteenToTwentyNineteen
+        }
+        service.calculateForecastAmount(new LocalDate(2018, 4, 5), 2021, 130, 28) shouldBe Forecast(148.78, 4)
+      }
+    }
   }
 
   "calculatePersonalMaximum" when {
