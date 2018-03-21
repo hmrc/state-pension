@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,25 +104,25 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
 
 
 
-    "return PROTOTYPED if there is no application config" in {
+    "return BETA if there is no application config" in {
 
       val result = getDefinitionResultFromConfig(apiStatus = None)
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("PROTOTYPED"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("BETA"))
     }
 
-    "return PROTOTYPED if the application config says PROTOTYPED" in {
+    "return BETA if the application config says BETA" in {
 
-      val result = getDefinitionResultFromConfig(apiStatus = Some("PROTOTYPED"))
+      val result = getDefinitionResultFromConfig(apiStatus = Some("BETA"))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("PROTOTYPED"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("BETA"))
     }
 
-    "return PUBLISHED if the application config says PUBLISHED" in {
+    "return PUBLISHED if the application config says STABLE" in {
 
-      val result = getDefinitionResultFromConfig(apiStatus = Some("PUBLISHED"))
+      val result = getDefinitionResultFromConfig(apiStatus = Some("STABLE"))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("PUBLISHED"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("STABLE"))
 
     }
 
