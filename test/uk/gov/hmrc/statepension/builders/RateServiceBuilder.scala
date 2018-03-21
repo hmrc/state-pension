@@ -143,5 +143,5 @@ object RateServiceBuilder {
     33 -> 154.96,
     34 -> 159.65,
     35 -> 164.35
-  ), revaluationStartingAmount = 1.055895, revaluationProtectedPayment = 1.03)
+  ), revaluationStartingAmount = 1.055895, revaluationProtectedPayment = 1.0403)
 }
