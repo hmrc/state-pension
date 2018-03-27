@@ -20,16 +20,17 @@ import org.joda.time.LocalDate
 import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, OneAppPerTest}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain.{Exclusion,StatePension, _}
+import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, DesConnector, NpsConnector}
+import uk.gov.hmrc.statepension.domain.{Exclusion, StatePension, _}
 import uk.gov.hmrc.statepension.domain.nps._
 import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
+
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -98,7 +99,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "there is a regular statement (Reached)" should {
 
         val service = new NpsConnection {
+          override val useDes: Boolean = false
           override lazy val nps: NpsConnector = mock[NpsConnector]
+          override lazy val des: DesConnector = mock[DesConnector]
           override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
           override lazy val metrics: Metrics = mock[Metrics]
@@ -445,7 +448,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "there is a regular statement (Reached)" should {
 
         val service = new NpsConnection {
+          override val useDes: Boolean = false
           override lazy val nps: NpsConnector = mock[NpsConnector]
+          override lazy val des: DesConnector = mock[DesConnector]
           override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
           override lazy val metrics: Metrics = mock[Metrics]
@@ -519,7 +524,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     "there is a regular statement (Forecast)" should {
 
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -645,7 +652,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     "there is a regular statement (grossStatePension)" should {
 
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -711,7 +720,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "there is a regular statement (Fill Gaps)" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -872,7 +883,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "there is an mqp user" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -931,7 +944,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     "the customer is dead" should {
 
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1008,7 +1023,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer is over state pension age" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1085,7 +1102,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has married women's reduced rate election" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1186,7 +1205,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has male overseas auto credits (abroad exclusion)" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1248,7 +1269,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has amount dissonance" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1324,7 +1347,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has contributed national insurance in the isle of man" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1394,7 +1419,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has a manual correspondence indicator" should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1464,7 +1491,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1547,7 +1576,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1630,7 +1661,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1718,7 +1751,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
@@ -1801,7 +1836,9 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
       val service = new NpsConnection {
+        override val useDes: Boolean = false
         override lazy val nps: NpsConnector = mock[NpsConnector]
+        override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
         override lazy val metrics: Metrics = mock[Metrics]
