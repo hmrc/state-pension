@@ -19,7 +19,9 @@ package uk.gov.hmrc.statepension.connectors
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito._
+import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
@@ -28,6 +30,9 @@ import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.helpers.StubMetrics
 import uk.gov.hmrc.statepension.services.Metrics
+
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
@@ -348,115 +353,107 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       s"""
          |{
-         |  "years_to_fry": 3,
-         |  "non_qualifying_years": 10,
-         |  "date_of_entry": "1969-08-01",
-         |  "npsLniemply": [],
-         |  "pre_75_cc_count": 250,
-         |  "number_of_qualifying_years": 36,
-         |  "npsErrlist": {
-         |    "count": 0,
-         |    "mgt_check": 0,
-         |    "commit_status": 2,
-         |    "npsErritem": [],
-         |    "bfm_return_code": 0,
-         |    "data_not_found": 0
-         |  },
-         |  "non_qualifying_years_payable": 5,
-         |  "npsLnitaxyr": [
+         |  "yearsToFry": 3,
+         |  "nonQualifyingYears": 10,
+         |  "dateOfEntry": "1969-08-01",
+         |  "employmentDetails": [],
+         |  "pre75CcCount": 250,
+         |  "numberOfQualifyingYears": 36,
+         |  "nonQualifyingYearsPayable": 5,
+         |  "taxYears": [
          |    {
-         |      "class_three_payable_by_penalty": null,
-         |      "class_two_outstanding_weeks": null,
-         |      "class_two_payable": null,
-         |      "qualifying": 1,
-         |      "under_investigation_flag": 0,
-         |      "class_two_payable_by": null,
-         |      "co_class_one_paid": null,
-         |      "class_two_payable_by_penalty": null,
-         |      "co_primary_paid_earnings": null,
-         |      "payable": 0,
-         |      "rattd_tax_year": 1975,
-         |      "ni_earnings": null,
-         |      "amount_needed": null,
-         |      "primary_paid_earnings": "1285.4500",
-         |      "class_three_payable": null,
-         |      "ni_earnings_employed": "70.6700",
-         |      "npsLothcred": [
+         |      "classThreePayableByPenalty": null,
+         |      "classTwoOutstandingWeeks": null,
+         |      "classTwoPayable": null,
+         |      "qualifying": true,
+         |      "underInvestigationFlag": false,
+         |      "classTwoPayableBy": null,
+         |      "coClassOnePaid": null,
+         |      "classTwoPayableByPenalty": null,
+         |      "coPrimaryPaidEarnings": null,
+         |      "payable": false,
+         |      "rattdTaxYear": "1975",
+         |      "niEarnings": null,
+         |      "amountNeeded": null,
+         |      "primaryPaidEarnings": "1285.4500",
+         |      "classThreePayable": null,
+         |      "niEarningsEmployed": "70.6700",
+         |      "otherCredits": [
          |        {
-         |          "credit_source_type": 0,
-         |          "cc_type": 23,
-         |          "no_of_credits_and_conts": 20
+         |          "creditSourceType": 0,
+         |          "ccType": 23,
+         |          "numberOfCredits": 20
          |        },
          |        {
-         |          "credit_source_type": 24,
-         |          "cc_type": 23,
-         |          "no_of_credits_and_conts": 6
+         |          "creditSourceType": 24,
+         |          "ccType": 23,
+         |          "numberOfCredits": 6
          |        }
          |      ],
-         |      "ni_earnings_self_employed": null,
-         |      "class_three_payable_by": null,
-         |      "ni_earnings_voluntary": null
+         |      "niEarningsSelfEmployed": null,
+         |      "classThreePayableBy": null,
+         |      "niEarningsVoluntary": null
          |    },
          |    {
-         |      "class_three_payable_by_penalty": null,
-         |      "class_two_outstanding_weeks": null,
-         |      "class_two_payable": null,
-         |      "qualifying": 1,
-         |      "under_investigation_flag": 0,
-         |      "class_two_payable_by": null,
-         |      "co_class_one_paid": null,
-         |      "class_two_payable_by_penalty": null,
-         |      "co_primary_paid_earnings": null,
-         |      "payable": 0,
-         |      "rattd_tax_year": 1976,
-         |      "ni_earnings": null,
-         |      "amount_needed": null,
-         |      "primary_paid_earnings": "932.1700",
-         |      "class_three_payable": null,
-         |      "ni_earnings_employed": "53.5000",
-         |      "npsLothcred": [
+         |      "classThreePayableByPenalty": null,
+         |      "classTwoOutstandingWeeks": null,
+         |      "classTwoPayable": null,
+         |      "qualifying": true,
+         |      "underInvestigationFlag": false,
+         |      "classTwoPayableBy": null,
+         |      "coClassOnePaid": null,
+         |      "classTwoPayableByPenalty": null,
+         |      "coPrimaryPaidEarnings": null,
+         |      "payable": false,
+         |      "rattdTaxYear": "1976",
+         |      "niEarnings": null,
+         |      "amountNeeded": null,
+         |      "primaryPaidEarnings": "932.1700",
+         |      "classThreePayable": null,
+         |      "niEarningsEmployed": "53.5000",
+         |      "otherCredits": [
          |        {
-         |          "credit_source_type": 0,
-         |          "cc_type": 23,
-         |          "no_of_credits_and_conts": 4
+         |          "creditSourceType": 0,
+         |          "ccType": 23,
+         |          "numberOfCredits": 4
          |        },
          |        {
-         |          "credit_source_type": 24,
-         |          "cc_type": 23,
-         |          "no_of_credits_and_conts": 30
+         |          "creditSourceType": 24,
+         |          "ccType": 23,
+         |          "numberOfCredits": 30
          |        }
          |      ],
-         |      "ni_earnings_self_employed": null,
-         |      "class_three_payable_by": null,
-         |      "ni_earnings_voluntary": null
+         |      "niEarningsSelfEmployed": null,
+         |      "classThreePayableBy": null,
+         |      "niEarningsVoluntary": null
          |    },
          |    {
-         |      "class_three_payable_by_penalty": null,
-         |      "class_two_outstanding_weeks": null,
-         |      "class_two_payable": null,
-         |      "qualifying": 1,
-         |      "under_investigation_flag": 0,
-         |      "class_two_payable_by": null,
-         |      "co_class_one_paid": null,
-         |      "class_two_payable_by_penalty": null,
-         |      "co_primary_paid_earnings": null,
-         |      "payable": 0,
-         |      "rattd_tax_year": 1977,
-         |      "ni_earnings": null,
-         |      "amount_needed": null,
-         |      "primary_paid_earnings": "1433.0400",
-         |      "class_three_payable": null,
-         |      "ni_earnings_employed": "82.1300",
-         |      "npsLothcred": [
+         |      "classThreePayableByPenalty": null,
+         |      "classTwoOutstandingWeeks": null,
+         |      "classTwoPayable": null,
+         |      "qualifying": true,
+         |      "underInvestigationFlag": false,
+         |      "classTwoPayableBy": null,
+         |      "coClassOnePaid": null,
+         |      "classTwoPayableByPenalty": null,
+         |      "coPrimaryPaidEarnings": null,
+         |      "payable": false,
+         |      "rattdTaxYear": "1977",
+         |      "niEarnings": null,
+         |      "amountNeeded": null,
+         |      "primaryPaidEarnings": "1433.0400",
+         |      "classThreePayable": null,
+         |      "niEarningsEmployed": "82.1300",
+         |      "otherCredits": [
          |        {
-         |          "credit_source_type": 24,
-         |          "cc_type": 23,
-         |          "no_of_credits_and_conts": 28
+         |          "creditSourceType": 24,
+         |          "ccType": 23,
+         |          "numberOfCredits": 28
          |        }
          |      ],
-         |      "ni_earnings_self_employed": null,
-         |      "class_three_payable_by": null,
-         |      "ni_earnings_voluntary": null
+         |      "niEarningsSelfEmployed": null,
+         |      "classThreePayableBy": null,
+         |      "niEarningsVoluntary": null
          |    }
          |  ],
          |  "nino": "$nino"
@@ -464,8 +461,8 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
     connector.getNIRecord(nino)
 
-    "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/ni_record" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/ni_record"))(Matchers.any(), Matchers.any(), Matchers.any())
+    "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/ni" in {
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/ni"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" ignore {
@@ -473,18 +470,18 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
-    "parse the json and return a Future[NpsNIRecord]" in {
+    "parse the json and return a Future[DesNIRecord]" in {
       val summary = await(connector.getNIRecord(nino))
-      summary shouldBe NpsNIRecord(
+      summary shouldBe DesNIRecord(
         qualifyingYears = 36,
         List(
-          NpsNITaxYear(1975, qualifying = true, underInvestigation = false, payableFlag = false),
-          NpsNITaxYear(1976, qualifying = true, underInvestigation = false, payableFlag = false),
-          NpsNITaxYear(1977, qualifying = true, underInvestigation = false, payableFlag = false)
+          DesNITaxYear(1975, qualifying = true, underInvestigation = false, payableFlag = false),
+          DesNITaxYear(1976, qualifying = true, underInvestigation = false, payableFlag = false),
+          DesNITaxYear(1977, qualifying = true, underInvestigation = false, payableFlag = false)
         ))
     }
 
-    "return a failed future with a json validation exception when it cannot parse to an NpsNIRecord" in {
+    "return a failed future with a json validation exception when it cannot parse to an DesNIRecord" in {
       val connector = new DesConnector {
 
         override val http = mock[HttpGet]
@@ -500,28 +497,87 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
-           |  "years_to_fry": 3,
-           |  "non_qualifying_years": 10,
-           |  "date_of_entry": "1969-08-01",
-           |  "npsLniemply": [],
-           |  "pre_75_cc_count": 250,
-           |  "number_of_qualifying_years": 36,
-           |  "npsErrlist": {
-           |    "count": 0,
-           |    "mgt_check": 0,
-           |    "commit_status": 2,
-           |    "npsErritem": [],
-           |    "bfm_return_code": 0,
-           |    "data_not_found": 0
-           |  },
-           |  "non_qualifying_years_payable": "5",
+           |  "yearsToFry": 3,
+           |  "nonQualifyingYears": 10,
+           |  "dateOfEntry": "1969-08-01",
+           |  "employmentDetails": [],
+           |  "pre75CcCount": 250,
+           |  "numberOfQualifyingYears": 36,
+           |  "nonQualifyingYearsPayable": "5",
            |  "nino": "$nino"
            |}
       """.stripMargin))))
 
       ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/npsLnitaxyr - error.path.missing"
+        ex.getMessage shouldBe "/taxYears - error.path.missing"
+      }
+    }
+
+
+    "return a failed future with a json validation exception when it cannot parse to an DesNIRecord when taxyear is invalid" in {
+      val connector = new DesConnector {
+
+        override val http = mock[HttpGet]
+
+        override def desBaseUrl: String = "test-url"
+        override def token: String = "token"
+        override def environment: (String, String) = ("environment", "unit test")
+        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+
+        override def metrics: Metrics = StubMetrics
+      }
+
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+          |{
+          |  "yearsToFry": 3,
+          |  "nonQualifyingYears": 10,
+          |  "dateOfEntry": "1969-08-01",
+          |  "employmentDetails": [],
+          |  "pre75CcCount": 250,
+          |  "numberOfQualifyingYears": 36,
+          |  "nonQualifyingYearsPayable": 5,
+          |  "taxYears": [
+          |    {
+          |      "classThreePayableByPenalty": null,
+          |      "classTwoOutstandingWeeks": null,
+          |      "classTwoPayable": null,
+          |      "qualifying": true,
+          |      "underInvestigationFlag": false,
+          |      "classTwoPayableBy": null,
+          |      "coClassOnePaid": null,
+          |      "classTwoPayableByPenalty": null,
+          |      "coPrimaryPaidEarnings": null,
+          |      "payable": false,
+          |      "rattdTaxYear": "not a real year",
+          |      "niEarnings": null,
+          |      "amountNeeded": null,
+          |      "primaryPaidEarnings": "1285.4500",
+          |      "classThreePayable": null,
+          |      "niEarningsEmployed": "70.6700",
+          |      "otherCredits": [
+          |        {
+          |          "creditSourceType": 0,
+          |          "ccType": 23,
+          |          "numberOfCredits": 20
+          |        },
+          |        {
+          |          "creditSourceType": 24,
+          |          "ccType": 23,
+          |          "numberOfCredits": 6
+          |        }
+          |      ],
+          |      "niEarningsSelfEmployed": null,
+          |      "classThreePayableBy": null,
+          |      "niEarningsVoluntary": null
+          |    }]
+          |}
+      """.stripMargin))))
+
+      ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
+        ex shouldBe a[Exception]
+        ex.getMessage shouldBe "/rattdTaxYear is not a valid integer"
       }
     }
   }

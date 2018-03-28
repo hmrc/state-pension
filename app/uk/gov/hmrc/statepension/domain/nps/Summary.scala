@@ -46,15 +46,18 @@ object DesSummary {
   val readNullableInt: JsPath => Reads[Int] =
     jsPath => jsPath.readNullable[Int].map(_.getOrElse(0))
 
+  val readBooleanWithDefault: JsPath => Reads[Boolean] =
+    jsPath => jsPath.readNullable[Boolean].map(_.getOrElse(false))
+
   implicit val reads: Reads[DesSummary] = (
     (JsPath \ "earningsIncludedUpto").read[LocalDate] and
       (JsPath \ "sex").read[String] and
       (JsPath \ "spaDate").read[LocalDate] and
       (JsPath \ "finalRelevantYear").read[Int] and
-      (JsPath \ "pensionShareOrderSerps").read[Boolean] and
+      readBooleanWithDefault(JsPath \ "pensionShareOrderSerps") and
       (JsPath \ "dateOfBirth").read[LocalDate] and
       (JsPath \ "dateOfDeath").readNullable[LocalDate] and
-      (JsPath \ "reducedRateElectionToConsider").read[Boolean] and
+      readBooleanWithDefault(JsPath \ "reducedRateElectionToConsider") and
       readNullableInt(JsPath \ "countryCode") and
       (JsPath \ "statePensionAmount").read[DesStatePensionAmounts]
     ) (DesSummary.apply _)
