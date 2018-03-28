@@ -43,9 +43,9 @@ trait DesConnector {
     connectToDES[DesSummary](urlToRead, APIType.Summary)
   }
 
-  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[NpsLiability]] = {
-    val urlToRead = s"$desBaseUrl/nps-rest-service/services/nps/pensions/${ninoWithoutSuffix(nino)}/liabilities"
-    connectToDES[NpsLiabilities](urlToRead, APIType.Liabilities).map(_.liabilities)
+  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[DesLiability]] = {
+    val urlToRead = s"$desBaseUrl/individuals/${ninoWithoutSuffix(nino)}/pensions/liabilities"
+    connectToDES[DesLiabilities](urlToRead, APIType.Liabilities).map(_.liabilities)
   }
 
   def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NpsNIRecord] = {

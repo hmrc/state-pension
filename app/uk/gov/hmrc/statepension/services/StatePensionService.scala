@@ -64,7 +64,7 @@ trait NpsConnection extends StatePensionService {
         niRecord <- niRecordF;
         manualCorrespondence <- manualCorrespondenceF
       ) yield {
-        val exclusions: List[Exclusion] = new ExclusionService(
+        val exclusions: List[Exclusion] = new DesExclusionService(
           dateOfDeath = summary.dateOfDeath,
           pensionDate = summary.statePensionAgeDate,
           now,

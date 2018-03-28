@@ -20,9 +20,10 @@ import org.joda.time.LocalDate
 import play.Logger
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.{LiabilityType, NpsLiability}
+import uk.gov.hmrc.statepension.domain.nps.{DesLiability, LiabilityType, NpsLiability}
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
+//todo:remove after testing
 class ExclusionService(dateOfDeath: Option[LocalDate],
                        pensionDate: LocalDate,
                        now: LocalDate,
@@ -30,6 +31,56 @@ class ExclusionService(dateOfDeath: Option[LocalDate],
                        startingAmount: BigDecimal,
                        calculatedStartingAmount: BigDecimal,
                        liabilities: List[NpsLiability],
+                       manualCorrespondenceOnly: Boolean) {
+
+  lazy val getExclusions: List[Exclusion] = exclusions(List())
+
+  private val checkDead = (exclusionList: List[Exclusion]) =>
+    dateOfDeath.fold(exclusionList)(_ => Exclusion.Dead :: exclusionList)
+
+  private val checkManualCorrespondence = (exclusionList: List[Exclusion]) =>
+    if (manualCorrespondenceOnly) Exclusion.ManualCorrespondenceIndicator :: exclusionList
+    else exclusionList
+
+  private val checkPostStatePensionAge = (exclusionList: List[Exclusion]) =>
+    if (!now.isBefore(pensionDate.minusDays(1))) {
+      Exclusion.PostStatePensionAge :: exclusionList
+    } else {
+      exclusionList
+    }
+
+  private val checkAmountDissonance = (exclusionList: List[Exclusion]) =>
+    if (startingAmount != calculatedStartingAmount) {
+      Logger.warn(s"Dissonance Found!: Entitlement - $entitlement Starting - $startingAmount Components - $calculatedStartingAmount")
+      Exclusion.AmountDissonance :: exclusionList
+    } else {
+      exclusionList
+    }
+
+  private val checkIsleOfMan = (exclusionList: List[Exclusion]) =>
+    if (liabilities.exists(_.liabilityType == LiabilityType.ISLE_OF_MAN)) Exclusion.IsleOfMan :: exclusionList
+    else exclusionList
+
+  // scalastyle:off magic.number
+  final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
+  // scalastyle:on magic.number
+
+  private val exclusions = FunctionHelper.composeAll(List(
+    checkDead,
+    checkManualCorrespondence,
+    checkPostStatePensionAge,
+    checkAmountDissonance,
+    checkIsleOfMan
+  ))
+}
+
+class DesExclusionService(dateOfDeath: Option[LocalDate],
+                       pensionDate: LocalDate,
+                       now: LocalDate,
+                       entitlement: BigDecimal,
+                       startingAmount: BigDecimal,
+                       calculatedStartingAmount: BigDecimal,
+                       liabilities: List[DesLiability],
                        manualCorrespondenceOnly: Boolean) {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())

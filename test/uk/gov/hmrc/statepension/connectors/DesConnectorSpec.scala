@@ -213,50 +213,42 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       s"""
          |{
-         |  "npsErrlist": {
-         |    "count": 0,
-         |    "mgt_check": 0,
-         |    "commit_status": 2,
-         |    "npsErritem": [],
-         |    "bfm_return_code": 0,
-         |    "data_not_found": 0
-         |  },
-         |  "npsLcdo004d": [
+         |  "liabilities": [
          |    {
-         |      "liability_type_end_date": "1992-11-21",
-         |      "liability_occurrence_no": 1,
-         |      "liability_type_start_date": "1983-11-06",
-         |      "liability_type_end_date_reason": "END DATE HELD",
-         |      "liability_type": 13,
+         |      "liabilityTypeEndDate": "1992-11-21",
+         |      "liabilityOccurrenceNo": 1,
+         |      "liabilityTypeStartDate": "1983-11-06",
+         |      "liabilityTypeEndDateReason": "END DATE HELD",
+         |      "liabilityType": 13,
          |      "nino": "$nino",
-         |      "award_amount": null
+         |      "awardAmount": null
          |    },
          |    {
-         |      "liability_type_end_date": "2006-07-08",
-         |      "liability_occurrence_no": 2,
-         |      "liability_type_start_date": "1995-09-24",
-         |      "liability_type_end_date_reason": "END DATE HELD",
-         |      "liability_type": 13,
+         |      "liabilityTypeEndDate": "2006-07-08",
+         |      "liabilityOccurrenceNo": 2,
+         |      "liabilityTypeStartDate": "1995-09-24",
+         |      "liabilityTypeEndDateReason": "END DATE HELD",
+         |      "liabilityType": 13,
          |      "nino": "$nino",
-         |      "award_amount": null
+         |      "awardAmount": null
          |    },
          |    {
-         |      "liability_type_end_date": "2006-07-15",
-         |      "liability_occurrence_no": 3,
-         |      "liability_type_start_date": "2006-07-09",
-         |      "liability_type_end_date_reason": "END DATE HELD",
-         |      "liability_type": 13,
+         |      "liabilityTypeEndDate": "2006-07-15",
+         |      "liabilityOccurrenceNo": 3,
+         |      "liabilityTypeStartDate": "2006-07-09",
+         |      "liabilityTypeEndDateReason": "END DATE HELD",
+         |      "liabilityType": 13,
          |      "nino": "$nino",
-         |      "award_amount": null
+         |      "awardAmount": null
          |    },
          |    {
-         |      "liability_type_end_date": "2012-01-21",
-         |      "liability_occurrence_no": 4,
-         |      "liability_type_start_date": "2006-09-24",
-         |      "liability_type_end_date_reason": "END DATE HELD",
-         |      "liability_type": 13,
+         |      "liabilityTypeEndDate": "2012-01-21",
+         |      "liabilityOccurrenceNo": 4,
+         |      "liabilityTypeStartDate": "2006-09-24",
+         |      "liabilityTypeEndDateReason": "END DATE HELD",
+         |      "liabilityType": 13,
          |      "nino": "$nino",
-         |      "award_amount": null
+         |      "awardAmount": null
          |    }
          |  ]
          |}
@@ -264,8 +256,8 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
     connector.getLiabilities(nino)
 
-    "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/liabilities" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/nps-rest-service/services/nps/pensions/$ninoWithSuffix/liabilities"))(Matchers.any(), Matchers.any(), Matchers.any())
+    "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/liabilities" in {
+      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/liabilities"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" ignore {
@@ -273,17 +265,17 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
-    "parse the json and return a Future[List[NpsLiability]" in {
+    "parse the json and return a Future[List[DesLiability]" in {
       val summary = await(connector.getLiabilities(nino))
       summary shouldBe List(
-        NpsLiability(13),
-        NpsLiability(13),
-        NpsLiability(13),
-        NpsLiability(13)
+        DesLiability(13),
+        DesLiability(13),
+        DesLiability(13),
+        DesLiability(13)
       )
     }
 
-    "return a failed future with a json validation exception when it cannot parse to an NpsLiabilities" in {
+    "return a failed future with a json validation exception when it cannot parse to an DesLiabilities" in {
       val connector = new DesConnector {
         override val http = mock[HttpGet]
 
@@ -297,47 +289,39 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
-           |  "npsErrlist": {
-           |    "count": 0,
-           |    "mgt_check": 0,
-           |    "commit_status": 2,
-           |    "npsErritem": [],
-           |    "bfm_return_code": 0,
-           |    "data_not_found": 0
-           |  },
-           |  "npsLcdo004d": [
+           |  "liabilities": [
            |    {
-           |      "liability_type_end_date": "1992-11-21",
-           |      "liability_occurrence_no": 1,
-           |      "liability_type_start_date": "1983-11-06",
-           |      "liability_type_end_date_reason": "END DATE HELD",
-           |      "liability_type": false,
+           |      "liabilityTypeEndDate": "1992-11-21",
+           |      "liabilityOccurrenceNo": 1,
+           |      "liabilityTypeStartDate": "1983-11-06",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": false,
            |      "nino": "$nino",
-           |      "award_amount": null
+           |      "awardAmount": null
            |    },
            |    {
-           |      "liability_type_end_date": "2006-07-08",
-           |      "liability_occurrence_no": 2,
-           |      "liability_type_start_date": "1995-09-24",
-           |      "liability_type_end_date_reason": "END DATE HELD",
-           |      "liability_type": 13,
+           |      "liabilityTypeEndDate": "2006-07-08",
+           |      "liabilityOccurrenceNo": 2,
+           |      "liabilityTypeStartDate": "1995-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
            |      "nino": "$nino",
-           |      "award_amount": null
+           |      "awardAmount": null
            |    },
            |    {
-           |      "liability_type_end_date": "2006-07-15",
-           |      "liability_occurrence_no": 3,
+           |      "liabilityTypeEndDate": "2006-07-15",
+           |      "liabilityOccurrenceNo": 3,
            |      "nino": "$nino",
-           |      "award_amount": null
+           |      "awardAmount": null
            |    },
            |    {
-           |      "liability_type_end_date": "2012-01-21",
-           |      "liability_occurrence_no": 4,
-           |      "liability_type_start_date": "2006-09-24",
-           |      "liability_type_end_date_reason": "END DATE HELD",
-           |      "liability_type": 13,
+           |      "liabilityTypeEndDate": "2012-01-21",
+           |      "liabilityOccurrenceNo": 4,
+           |      "liabilityTypeStartDate": "2006-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
            |      "nino": "$nino",
-           |      "award_amount": null
+           |      "awardAmount": null
            |    }
            |  ]
            |}
@@ -345,7 +329,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
       ScalaFutures.whenReady(connector.getLiabilities(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/npsLcdo004d(0)/liability_type - error.expected.jsnumber | /npsLcdo004d(2)/liability_type - error.path.missing"
+        ex.getMessage shouldBe "/liabilities(0)/liabilityType - error.expected.jsnumber | /liabilities(2)/liabilityType - error.path.missing"
       }
     }
   }
