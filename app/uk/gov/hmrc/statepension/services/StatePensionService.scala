@@ -18,23 +18,18 @@ package uk.gov.hmrc.statepension.services
 
 import java.util.TimeZone
 
-import org.joda.time.{DateTimeZone, LocalDate, Period, PeriodType}
-import play.api.Logger
-import play.api.libs.json.Json
+import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import play.api.Play.current
+import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, DesConnector, NpsConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.APIType.CitizenDetails
-import uk.gov.hmrc.statepension.domain.nps.{Country, NpsNIRecord, NpsSummary}
-import uk.gov.hmrc.statepension.events.Forecasting
-import uk.gov.hmrc.statepension.util.EitherReads._
-import uk.gov.hmrc.time.TaxYearResolver
+import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.statepension.domain.nps.{Country, DesSummary, NpsSummary}
+import uk.gov.hmrc.statepension.events.{DesForecasting, Forecasting}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 trait StatePensionService {
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
@@ -42,6 +37,8 @@ trait StatePensionService {
 
 trait NpsConnection extends StatePensionService {
   def nps: NpsConnector
+  def des: DesConnector
+  val useDes:Boolean
 
   def citizenDetailsService: CitizenDetailsService
   def forecastingService: ForecastingService
@@ -55,102 +52,204 @@ trait NpsConnection extends StatePensionService {
 
   override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
-    val summaryF = nps.getSummary(nino)
-    val liablitiesF = nps.getLiabilities(nino)
-    val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)
-    val niRecordF = nps.getNIRecord(nino)
+    if(useDes) {
+      val summaryF =  des.getSummary(nino)
+      val liablitiesF = des.getLiabilities(nino)
+      val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)
+      val niRecordF = des.getNIRecord(nino)
 
-    for (
-      summary <- summaryF;
-      liablities <- liablitiesF;
-      niRecord <- niRecordF;
-      manualCorrespondence <- manualCorrespondenceF
-    ) yield {
-      val exclusions: List[Exclusion] = new ExclusionService(
-        dateOfDeath = summary.dateOfDeath,
-        pensionDate = summary.statePensionAgeDate,
-        now,
-        summary.amounts.pensionEntitlement,
-        summary.amounts.startingAmount2016,
-        forecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
-        liablities,
-        manualCorrespondence
-      ).getExclusions
-
-      val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
-
-      auditNPSSummary(nino, summary, purgedRecord.qualifyingYears, exclusions)
-
-      if (exclusions.nonEmpty) {
-
-        metrics.exclusion(filterExclusions(exclusions))
-
-        Left(StatePensionExclusion(
-          exclusionReasons = exclusions,
-          pensionAge = summary.statePensionAge,
+      for (
+        summary <- summaryF;
+        liablities <- liablitiesF;
+        niRecord <- niRecordF;
+        manualCorrespondence <- manualCorrespondenceF
+      ) yield {
+        val exclusions: List[Exclusion] = new DesExclusionService(
+          dateOfDeath = summary.dateOfDeath,
           pensionDate = summary.statePensionAgeDate,
-          statePensionAgeUnderConsideration = if (exclusions.contains(Exclusion.AmountDissonance) || exclusions.contains(Exclusion.IsleOfMan))
-            checkStatePensionAgeUnderConsideration(summary.dateOfBirth) else false
-        ))
-      } else {
+          now,
+          summary.amounts.pensionEntitlement,
+          summary.amounts.startingAmount2016,
+          forecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
+          liablities,
+          manualCorrespondence
+        ).getExclusions
 
-        val forecast = forecastingService.calculateForecastAmount(
-          summary.earningsIncludedUpTo,
-          summary.finalRelevantStartYear,
-          summary.amounts.pensionEntitlementRounded,
-          purgedRecord.qualifyingYears
-        )
+        val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
 
-        val personalMaximum = forecastingService.calculatePersonalMaximum(
-          summary.earningsIncludedUpTo,
-          summary.finalRelevantStartYear,
-          purgedRecord.qualifyingYearsPre2016,
-          purgedRecord.qualifyingYearsPost2016,
-          payableGapsPre2016 = purgedRecord.payableGapsPre2016,
-          payableGapsPost2016 = purgedRecord.payableGapsPost2016,
-          additionalPension = summary.amounts.amountA2016.totalAP,
-          rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
-        )
+        auditNPSSummary(nino, summary, purgedRecord.qualifyingYears, exclusions)
 
-        val statePension = StatePension(
-          earningsIncludedUpTo = summary.earningsIncludedUpTo,
-          amounts = StatePensionAmounts(
-            summary.amounts.protectedPayment2016 > 0,
-            StatePensionAmount(None, None, forecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlementRounded, purgedRecord.qualifyingYears)),
-            StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
-            StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
-            StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
-            StatePensionAmount(None, None, summary.amounts.startingAmount2016),
-            oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
-                                additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
-                                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit),
-            newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent + summary.amounts.amountB2016.rebateDerivedAmount,
-                                rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount)
-          ),
-          pensionAge = summary.statePensionAge,
-          pensionDate = summary.statePensionAgeDate,
-          finalRelevantYear = summary.finalRelevantYear,
-          numberOfQualifyingYears = purgedRecord.qualifyingYears,
-          pensionSharingOrder = summary.pensionSharingOrderSERPS,
-          currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
-          reducedRateElection = summary.reducedRateElection,
-          reducedRateElectionCurrentWeeklyAmount = if(summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
-                                                   else None,
-          abroadAutoCredit = checkOverseasMaleAutoCredits(summary),
-          statePensionAgeUnderConsideration = checkStatePensionAgeUnderConsideration(summary.dateOfBirth)
-        )
+        if (exclusions.nonEmpty) {
 
-        metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
-          statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
-          statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
-          statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
-          statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
-          statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
-          statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount,
-          statePension.abroadAutoCredit, statePension.statePensionAgeUnderConsideration
+          metrics.exclusion(filterExclusions(exclusions))
+
+          Left(StatePensionExclusion(
+            exclusionReasons = exclusions,
+            pensionAge = summary.statePensionAge,
+            pensionDate = summary.statePensionAgeDate,
+            statePensionAgeUnderConsideration = if (exclusions.contains(Exclusion.AmountDissonance) || exclusions.contains(Exclusion.IsleOfMan))
+              checkStatePensionAgeUnderConsideration(summary.dateOfBirth) else false
+          ))
+        } else {
+
+          val forecast = forecastingService.calculateForecastAmount(
+            summary.earningsIncludedUpTo,
+            summary.finalRelevantStartYear,
+            summary.amounts.pensionEntitlementRounded,
+            purgedRecord.qualifyingYears
           )
 
-        Right(statePension)
+          val personalMaximum = forecastingService.calculatePersonalMaximum(
+            summary.earningsIncludedUpTo,
+            summary.finalRelevantStartYear,
+            purgedRecord.qualifyingYearsPre2016,
+            purgedRecord.qualifyingYearsPost2016,
+            payableGapsPre2016 = purgedRecord.payableGapsPre2016,
+            payableGapsPost2016 = purgedRecord.payableGapsPost2016,
+            additionalPension = summary.amounts.amountA2016.totalAP,
+            rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
+          )
+
+          val statePension = StatePension(
+            earningsIncludedUpTo = summary.earningsIncludedUpTo,
+            amounts = StatePensionAmounts(
+              summary.amounts.protectedPayment2016 > 0,
+              StatePensionAmount(None, None, forecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlementRounded, purgedRecord.qualifyingYears)),
+              StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
+              StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
+              StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
+              StatePensionAmount(None, None, summary.amounts.startingAmount2016),
+              oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
+                additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
+                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit),
+              newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent + summary.amounts.amountB2016.rebateDerivedAmount,
+                rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount)
+            ),
+            pensionAge = summary.statePensionAge,
+            pensionDate = summary.statePensionAgeDate,
+            finalRelevantYear = summary.finalRelevantYear,
+            numberOfQualifyingYears = purgedRecord.qualifyingYears,
+            pensionSharingOrder = summary.pensionSharingOrderSERPS,
+            currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
+            reducedRateElection = summary.reducedRateElection,
+            reducedRateElectionCurrentWeeklyAmount = if (summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
+            else None,
+            abroadAutoCredit = checkOverseasMaleAutoCredits(summary),
+            statePensionAgeUnderConsideration = checkStatePensionAgeUnderConsideration(summary.dateOfBirth)
+          )
+
+          metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
+            statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
+            statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
+            statePension.amounts.starting.weeklyAmount, statePension.amounts.oldRules.basicStatePension,
+            statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
+            statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
+            statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount,
+            statePension.abroadAutoCredit, statePension.statePensionAgeUnderConsideration
+          )
+
+          Right(statePension)
+        }
+      }
+    }else{
+
+      val summaryF =  nps.getSummary(nino)
+      val liablitiesF = nps.getLiabilities(nino)
+      val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)
+      val niRecordF = nps.getNIRecord(nino)
+
+      for (
+        summary <- summaryF;
+        liablities <- liablitiesF;
+        niRecord <- niRecordF;
+        manualCorrespondence <- manualCorrespondenceF
+      ) yield {
+        val exclusions: List[Exclusion] = new ExclusionService(
+          dateOfDeath = summary.dateOfDeath,
+          pensionDate = summary.statePensionAgeDate,
+          now,
+          summary.amounts.pensionEntitlement,
+          summary.amounts.startingAmount2016,
+          forecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
+          liablities,
+          manualCorrespondence
+        ).getExclusions
+
+        val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
+
+        auditNPSSummary(nino, summary, purgedRecord.qualifyingYears, exclusions)
+
+        if (exclusions.nonEmpty) {
+
+          metrics.exclusion(filterExclusions(exclusions))
+
+          Left(StatePensionExclusion(
+            exclusionReasons = exclusions,
+            pensionAge = summary.statePensionAge,
+            pensionDate = summary.statePensionAgeDate,
+            statePensionAgeUnderConsideration = if (exclusions.contains(Exclusion.AmountDissonance) || exclusions.contains(Exclusion.IsleOfMan))
+              checkStatePensionAgeUnderConsideration(summary.dateOfBirth) else false
+          ))
+        } else {
+
+          val forecast = forecastingService.calculateForecastAmount(
+            summary.earningsIncludedUpTo,
+            summary.finalRelevantStartYear,
+            summary.amounts.pensionEntitlementRounded,
+            purgedRecord.qualifyingYears
+          )
+
+          val personalMaximum = forecastingService.calculatePersonalMaximum(
+            summary.earningsIncludedUpTo,
+            summary.finalRelevantStartYear,
+            purgedRecord.qualifyingYearsPre2016,
+            purgedRecord.qualifyingYearsPost2016,
+            payableGapsPre2016 = purgedRecord.payableGapsPre2016,
+            payableGapsPost2016 = purgedRecord.payableGapsPost2016,
+            additionalPension = summary.amounts.amountA2016.totalAP,
+            rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount
+          )
+
+          val statePension = StatePension(
+            earningsIncludedUpTo = summary.earningsIncludedUpTo,
+            amounts = StatePensionAmounts(
+              summary.amounts.protectedPayment2016 > 0,
+              StatePensionAmount(None, None, forecastingService.sanitiseCurrentAmount(summary.amounts.pensionEntitlementRounded, purgedRecord.qualifyingYears)),
+              StatePensionAmount(Some(forecast.yearsToWork), None, forecast.amount),
+              StatePensionAmount(Some(personalMaximum.yearsToWork), Some(personalMaximum.gapsToFill), personalMaximum.amount),
+              StatePensionAmount(None, None, summary.amounts.amountB2016.rebateDerivedAmount),
+              StatePensionAmount(None, None, summary.amounts.startingAmount2016),
+              oldRules = OldRules(basicStatePension = summary.amounts.amountA2016.basicStatePension,
+                additionalStatePension = summary.amounts.amountA2016.additionalStatePension,
+                graduatedRetirementBenefit = summary.amounts.amountA2016.graduatedRetirementBenefit),
+              newRules = NewRules(grossStatePension = summary.amounts.amountB2016.mainComponent + summary.amounts.amountB2016.rebateDerivedAmount,
+                rebateDerivedAmount = summary.amounts.amountB2016.rebateDerivedAmount)
+            ),
+            pensionAge = summary.statePensionAge,
+            pensionDate = summary.statePensionAgeDate,
+            finalRelevantYear = summary.finalRelevantYear,
+            numberOfQualifyingYears = purgedRecord.qualifyingYears,
+            pensionSharingOrder = summary.pensionSharingOrderSERPS,
+            currentFullWeeklyPensionAmount = rateService.MAX_AMOUNT,
+            reducedRateElection = summary.reducedRateElection,
+            reducedRateElectionCurrentWeeklyAmount = if (summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
+            else None,
+            abroadAutoCredit = checkOverseasMaleAutoCredits(summary),
+            statePensionAgeUnderConsideration = checkStatePensionAgeUnderConsideration(summary.dateOfBirth)
+          )
+
+          metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
+            statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
+            statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
+            statePension.amounts.starting.weeklyAmount, statePension.amounts.oldRules.basicStatePension,
+            statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
+            statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
+            statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount,
+            statePension.abroadAutoCredit, statePension.statePensionAgeUnderConsideration
+          )
+
+          Right(statePension)
+        }
       }
     }
 
@@ -172,6 +271,7 @@ trait NpsConnection extends StatePensionService {
     }
   }
 
+  //todo:remove after test
   private[services] def auditNPSSummary(nino: Nino, summary: NpsSummary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit = {
     //Audit NPS Data used in calculation
     customAuditConnector.sendEvent(Forecasting(
@@ -185,9 +285,29 @@ trait NpsConnection extends StatePensionService {
     ))
   }
 
+  private[services] def auditNPSSummary(nino: Nino, summary: DesSummary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit = {
+    //Audit NPS Data used in calculation
+    customAuditConnector.sendEvent(DesForecasting(
+      nino,
+      summary.earningsIncludedUpTo,
+      qualifyingYears,
+      summary.amounts.amountA2016,
+      summary.amounts.amountB2016,
+      summary.finalRelevantStartYear,
+      exclusions
+    ))
+  }
+
   final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
 
+  //todo:remove after tests
   private def checkOverseasMaleAutoCredits(summary: NpsSummary): Boolean = {
+    if ( summary.sex.equalsIgnoreCase("M") && Country.isAbroad(summary.countryCode) && summary.statePensionAgeDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE))
+      true
+    else false
+  }
+
+  private def checkOverseasMaleAutoCredits(summary: DesSummary): Boolean = {
     if ( summary.sex.equalsIgnoreCase("M") && Country.isAbroad(summary.countryCode) && summary.statePensionAgeDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE))
       true
     else false
@@ -203,7 +323,9 @@ trait NpsConnection extends StatePensionService {
 }
 
 object StatePensionService extends StatePensionService with NpsConnection {
+  override val useDes:Boolean = AppContext.connectToDES
   override lazy val nps: NpsConnector = NpsConnector
+  override lazy val des: DesConnector = DesConnector
   override lazy val citizenDetailsService: CitizenDetailsService = CitizenDetailsService
   override lazy val forecastingService: ForecastingService = ForecastingService
   override lazy val rateService: RateService = RateService
