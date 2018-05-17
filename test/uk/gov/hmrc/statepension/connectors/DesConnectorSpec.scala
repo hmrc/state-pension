@@ -361,8 +361,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       """.stripMargin))))
 
     ScalaFutures.whenReady(connector.getLiabilities(nino)) { ldl =>
-      ldl.length shouldBe 1
-      ldl(0) shouldBe DesLiability(None)
+      ldl.length shouldBe 0
     }
   }
 

@@ -59,6 +59,30 @@ class DesLiabilitySpec extends UnitSpec {
 
       Json.parse(jsonPayload).as[DesLiabilities] shouldBe testData
     }
+
+    "give an emptyList for empty json object" in {
+      val jsonPayload =
+        """
+          |{
+          |    "liabilities": [
+          |        {
+          |            "awardAmount": 123.49,
+          |            "liabilityOccurrenceNo": 89,
+          |            "liabilityTypeEndDate": "2014-08-25",
+          |            "liabilityTypeEndDateReason": "END DATE HELD",
+          |            "liabilityTypeStartDate": "2014-08-25",
+          |            "nino":"SK196234"
+          |        }
+          |    ]
+          |}
+        """.stripMargin
+
+      val testData = DesLiabilities(
+        List()
+      )
+
+      Json.parse(jsonPayload).as[DesLiabilities] shouldBe testData
+    }
   }
 
 }
