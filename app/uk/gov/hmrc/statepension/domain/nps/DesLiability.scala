@@ -18,16 +18,23 @@ package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.libs.json._
 
-case class DesLiability(liabilityType: Int)
+case class DesLiability(liabilityType: Option[Int])
 
 object DesLiability {
-  implicit val reads: Reads[DesLiability] = (__ \ "liabilityType").read[Int].map(DesLiability.apply)
+  implicit val reads: Reads[DesLiability] = (__ \ "liabilityType").readNullable[Int].map(DesLiability.apply)
 }
 
 case class DesLiabilities(liabilities: List[DesLiability])
 
 object DesLiabilities {
-  implicit val reads: Reads[DesLiabilities] = {
-    (__ \ "liabilities").read[List[DesLiability]].map(DesLiabilities.apply)
-  }
+
+  val readNullableList:JsPath => Reads[List[DesLiability]] =
+    jsPath => jsPath.readNullable[List[DesLiability]].map(_.getOrElse(List.empty).filter(_.liabilityType.isDefined))
+
+  implicit val reads: Reads[DesLiabilities] =
+    readNullableList(__ \ "liabilities").map(DesLiabilities.apply)
+
+//  implicit val reads: Reads[DesLiabilities] = {
+//    (__ \ "liabilities").read[List[DesLiability]].map(DesLiabilities.apply)
+  //}
 }

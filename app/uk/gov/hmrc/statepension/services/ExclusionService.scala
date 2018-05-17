@@ -108,7 +108,7 @@ class DesExclusionService(dateOfDeath: Option[LocalDate],
     }
 
   private val checkIsleOfMan = (exclusionList: List[Exclusion]) =>
-    if (liabilities.exists(_.liabilityType == LiabilityType.ISLE_OF_MAN)) Exclusion.IsleOfMan :: exclusionList
+    if (liabilities.exists(_.liabilityType.contains( LiabilityType.ISLE_OF_MAN))) Exclusion.IsleOfMan :: exclusionList
     else exclusionList
 
   // scalastyle:off magic.number
