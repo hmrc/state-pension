@@ -273,10 +273,10 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     "parse the json and return a Future[List[DesLiability]" in {
       val summary = await(connector.getLiabilities(nino))
       summary shouldBe List(
-        DesLiability(13),
-        DesLiability(13),
-        DesLiability(13),
-        DesLiability(13)
+        DesLiability(Some(13)),
+        DesLiability(Some(13)),
+        DesLiability(Some(13)),
+        DesLiability(Some(13))
       )
     }
 
@@ -334,12 +334,40 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
       ScalaFutures.whenReady(connector.getLiabilities(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/liabilities(0)/liabilityType - error.expected.jsnumber | /liabilities(2)/liabilityType - error.path.missing"
+        ex.getMessage shouldBe "/liabilities(0)/liabilityType - error.expected.jsnumber"
       }
     }
   }
 
-  "getNIRecord" should {
+  "return a future with a json list for empty DesLiability" in {
+    val connector = new DesConnector {
+      override val http = mock[HttpGet]
+
+      override def desBaseUrl: String = "test-url"
+      override def token: String = "token"
+      override def environment: (String, String) = ("environment", "unit test")
+      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+      override val metrics: Metrics = StubMetrics
+    }
+
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      s"""
+         |{
+         |  "liabilities": [
+         |    {
+         |      }
+         |      ]
+         |}
+      """.stripMargin))))
+
+    ScalaFutures.whenReady(connector.getLiabilities(nino)) { ldl =>
+      ldl.length shouldBe 1
+      ldl(0) shouldBe DesLiability(None)
+    }
+  }
+
+
+"getNIRecord" should {
     val connector = new DesConnector {
       override val http = mock[HttpGet]
 

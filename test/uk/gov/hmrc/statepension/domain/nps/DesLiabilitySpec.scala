@@ -52,8 +52,8 @@ class DesLiabilitySpec extends UnitSpec {
 
       val testData = DesLiabilities(
         List(
-          DesLiability(liabilityType = 45),
-          DesLiability(liabilityType = 45)
+          DesLiability(liabilityType = Some(45)),
+          DesLiability(liabilityType = Some(45))
         )
       )
 
