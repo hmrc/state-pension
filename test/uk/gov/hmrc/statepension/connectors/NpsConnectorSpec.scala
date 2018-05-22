@@ -221,11 +221,6 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         ex.getMessage shouldBe "Unable to deserialise Summary: /earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring\n" + depersonalise(Json.parse(npsJson))
         ex.getMessage.contains(s""""nino" : "$nino"""") shouldBe false
       }
-
-//      ScalaFutures.whenReady(connector.getSummary(nino).failed) { ex =>
-//        ex shouldBe a[connector.JsonValidationException]
-//        ex.getMessage shouldBe "/earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring"
-//      }
     }
   }
 
