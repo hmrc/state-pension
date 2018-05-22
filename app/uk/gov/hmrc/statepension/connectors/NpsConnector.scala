@@ -24,10 +24,12 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.Metrics
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpReads, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
+import uk.gov.hmrc.statepension.util.JsonDepersonaliser
 
 trait NpsConnector {
   def http: HttpGet
@@ -57,7 +59,16 @@ trait NpsConnector {
     responseF.map { httpResponse =>
       timerContext.stop()
       Try(httpResponse.json.validate[A]).flatMap( jsResult =>
-        jsResult.fold(errs => Failure(new JsonValidationException(formatJsonErrors(errs))), valid => Success(valid))
+        jsResult.fold(
+          errs => {
+            val json = JsonDepersonaliser.depersonalise(httpResponse.json) match {
+              case Success(s) => s"Depersonalised JSON\n$s"
+              case Failure(e) => s"JSON could not be depersonalised\n${e.toString}"
+            }
+            Failure(new JsonValidationException(s"Unable to deserialise $api: ${formatJsonErrors(errs)}\n$json"))
+          },
+          valid => Success(valid)
+        )
       )
     } recover {
       // http-verbs throws exceptions, convert to Try

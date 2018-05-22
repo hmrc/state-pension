@@ -21,15 +21,25 @@ import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.helpers.StubMetrics
 import uk.gov.hmrc.statepension.services.Metrics
-import uk.gov.hmrc.http.{ HttpGet, HttpResponse }
+import uk.gov.hmrc.http.{HttpGet, HttpResponse}
+import uk.gov.hmrc.statepension.util.JsonDepersonaliser
+
+import scala.util.{Failure, Success}
 
 class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
+
+  def depersonalise(jsValue:JsValue) = {
+    JsonDepersonaliser.depersonalise(jsValue) match {
+      case Success(s) => s"Depersonalised JSON\n$s"
+      case Failure(e) => s"JSON could not be depersonalised\n${e.toString}"
+    }
+  }
 
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
@@ -150,65 +160,72 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
+      val npsJson = """
+                      |{
+                      |  "contracted_out_flag": 0,
+                      |  "sensitive_flag": 0,
+                      |  "spa_date": "2019-09-06",
+                      |  "final_relevant_year": 2018,
+                      |  "account_not_maintained_flag": null,
+                      |  "npsPenfor": {
+                      |    "forecast_amount": 160.19,
+                      |    "nsp_max": 155.65,
+                      |    "qualifying_years_at_spa": 40,
+                      |    "forecast_amount_2016": 160.19
+                      |  },
+                      |  "pension_share_order_coeg": 0,
+                      |  "date_of_death": null,
+                      |  "sex": "M",
+                      |  "npsSpnam": {
+                      |    "nsp_entitlement": 161.18,
+                      |    "ap_amount": 2.36,
+                      |    "npsAmnbpr16": {
+                      |      "main_component": 155.65,
+                      |      "rebate_derived_amount": 0.0
+                      |    },
+                      |    "npsAmnapr16": {
+                      |      "ltb_post97_ap_cash_value": 6.03,
+                      |      "ltb_cat_a_cash_value": 119.3,
+                      |      "ltb_post88_cod_cash_value": false,
+                      |      "ltb_pre97_ap_cash_value": 17.79,
+                      |      "ltb_pre88_cod_cash_value": null,
+                      |      "grb_cash": 2.66,
+                      |      "ltb_pst88_gmp_cash_value": null,
+                      |      "pre88_gmp": null,
+                      |      "ltb_post02_ap_cash_value": 15.4
+                      |    },
+                      |    "protected_payment_2016": 5.53,
+                      |    "starting_amount": 161.18
+                      |  },
+                      |  "npsErrlist": {
+                      |    "count": 0,
+                      |    "mgt_check": 0,
+                      |    "commit_status": 2,
+                      |    "npsErritem": [],
+                      |    "bfm_return_code": 0,
+                      |    "data_not_found": 0
+                      |  },
+                      |  "date_of_birth": "1954-03-09",
+                      |  "nsp_qualifying_years": 36,
+                      |  "country_code": 1,
+                      |  "nsp_requisite_years": 35,
+                      |  "minimum_qualifying_period": 1,
+                      |  "address_postcode": "WS9 8LL"
+                      |}
+                    """.stripMargin
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        """
-          |{
-          |  "contracted_out_flag": 0,
-          |  "sensitive_flag": 0,
-          |  "spa_date": "2019-09-06",
-          |  "final_relevant_year": 2018,
-          |  "account_not_maintained_flag": null,
-          |  "npsPenfor": {
-          |    "forecast_amount": 160.19,
-          |    "nsp_max": 155.65,
-          |    "qualifying_years_at_spa": 40,
-          |    "forecast_amount_2016": 160.19
-          |  },
-          |  "pension_share_order_coeg": 0,
-          |  "date_of_death": null,
-          |  "sex": "M",
-          |  "npsSpnam": {
-          |    "nsp_entitlement": 161.18,
-          |    "ap_amount": 2.36,
-          |    "npsAmnbpr16": {
-          |      "main_component": 155.65,
-          |      "rebate_derived_amount": 0.0
-          |    },
-          |    "npsAmnapr16": {
-          |      "ltb_post97_ap_cash_value": 6.03,
-          |      "ltb_cat_a_cash_value": 119.3,
-          |      "ltb_post88_cod_cash_value": false,
-          |      "ltb_pre97_ap_cash_value": 17.79,
-          |      "ltb_pre88_cod_cash_value": null,
-          |      "grb_cash": 2.66,
-          |      "ltb_pst88_gmp_cash_value": null,
-          |      "pre88_gmp": null,
-          |      "ltb_post02_ap_cash_value": 15.4
-          |    },
-          |    "protected_payment_2016": 5.53,
-          |    "starting_amount": 161.18
-          |  },
-          |  "npsErrlist": {
-          |    "count": 0,
-          |    "mgt_check": 0,
-          |    "commit_status": 2,
-          |    "npsErritem": [],
-          |    "bfm_return_code": 0,
-          |    "data_not_found": 0
-          |  },
-          |  "date_of_birth": "1954-03-09",
-          |  "nsp_qualifying_years": 36,
-          |  "country_code": 1,
-          |  "nsp_requisite_years": 35,
-          |  "minimum_qualifying_period": 1,
-          |  "address_postcode": "WS9 8LL"
-          |}
-        """.stripMargin))))
+        npsJson))))
 
       ScalaFutures.whenReady(connector.getSummary(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring"
+        ex.getMessage shouldBe "Unable to deserialise Summary: /earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring\n" + depersonalise(Json.parse(npsJson))
+        ex.getMessage.contains(s""""nino" : "$nino"""") shouldBe false
       }
+
+//      ScalaFutures.whenReady(connector.getSummary(nino).failed) { ex =>
+//        ex shouldBe a[connector.JsonValidationException]
+//        ex.getMessage shouldBe "/earnings_included_upto - error.path.missing | /npsSpnam/npsAmnapr16/ltb_post88_cod_cash_value - error.expected.jsnumberorjsstring"
+//      }
     }
   }
 
@@ -305,59 +322,63 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override val metrics: Metrics = StubMetrics
       }
 
+      val npsJson = s"""
+                       |{
+                       |  "npsErrlist": {
+                       |    "count": 0,
+                       |    "mgt_check": 0,
+                       |    "commit_status": 2,
+                       |    "npsErritem": [],
+                       |    "bfm_return_code": 0,
+                       |    "data_not_found": 0
+                       |  },
+                       |  "npsLcdo004d": [
+                       |    {
+                       |      "liability_type_end_date": "1992-11-21",
+                       |      "liability_occurrence_no": 1,
+                       |      "liability_type_start_date": "1983-11-06",
+                       |      "liability_type_end_date_reason": "END DATE HELD",
+                       |      "liability_type": false,
+                       |      "nino": "$nino",
+                       |      "award_amount": null
+                       |    },
+                       |    {
+                       |      "liability_type_end_date": "2006-07-08",
+                       |      "liability_occurrence_no": 2,
+                       |      "liability_type_start_date": "1995-09-24",
+                       |      "liability_type_end_date_reason": "END DATE HELD",
+                       |      "liability_type": 13,
+                       |      "nino": "$nino",
+                       |      "award_amount": null
+                       |    },
+                       |    {
+                       |      "liability_type_end_date": "2006-07-15",
+                       |      "liability_occurrence_no": 3,
+                       |      "nino": "$nino",
+                       |      "award_amount": null
+                       |    },
+                       |    {
+                       |      "liability_type_end_date": "2012-01-21",
+                       |      "liability_occurrence_no": 4,
+                       |      "liability_type_start_date": "2006-09-24",
+                       |      "liability_type_end_date_reason": "END DATE HELD",
+                       |      "liability_type": 13,
+                       |      "nino": "$nino",
+                       |      "award_amount": null
+                       |    }
+                       |  ]
+                       |}
+      """.stripMargin
+
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        s"""
-           |{
-           |  "npsErrlist": {
-           |    "count": 0,
-           |    "mgt_check": 0,
-           |    "commit_status": 2,
-           |    "npsErritem": [],
-           |    "bfm_return_code": 0,
-           |    "data_not_found": 0
-           |  },
-           |  "npsLcdo004d": [
-           |    {
-           |      "liability_type_end_date": "1992-11-21",
-           |      "liability_occurrence_no": 1,
-           |      "liability_type_start_date": "1983-11-06",
-           |      "liability_type_end_date_reason": "END DATE HELD",
-           |      "liability_type": false,
-           |      "nino": "$nino",
-           |      "award_amount": null
-           |    },
-           |    {
-           |      "liability_type_end_date": "2006-07-08",
-           |      "liability_occurrence_no": 2,
-           |      "liability_type_start_date": "1995-09-24",
-           |      "liability_type_end_date_reason": "END DATE HELD",
-           |      "liability_type": 13,
-           |      "nino": "$nino",
-           |      "award_amount": null
-           |    },
-           |    {
-           |      "liability_type_end_date": "2006-07-15",
-           |      "liability_occurrence_no": 3,
-           |      "nino": "$nino",
-           |      "award_amount": null
-           |    },
-           |    {
-           |      "liability_type_end_date": "2012-01-21",
-           |      "liability_occurrence_no": 4,
-           |      "liability_type_start_date": "2006-09-24",
-           |      "liability_type_end_date_reason": "END DATE HELD",
-           |      "liability_type": 13,
-           |      "nino": "$nino",
-           |      "award_amount": null
-           |    }
-           |  ]
-           |}
-      """.stripMargin))))
+        npsJson))))
 
       ScalaFutures.whenReady(connector.getLiabilities(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/npsLcdo004d(0)/liability_type - error.expected.jsnumber | /npsLcdo004d(2)/liability_type - error.path.missing"
+        ex.getMessage shouldBe "Unable to deserialise Liabilities: /npsLcdo004d(0)/liability_type - error.expected.jsnumber | /npsLcdo004d(2)/liability_type - error.path.missing\n" + depersonalise(Json.parse(npsJson))
+        ex.getMessage.contains(s""""nino" : "$nino"""") shouldBe false
       }
+
     }
   }
 
@@ -522,31 +543,34 @@ class NpsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override def metrics: Metrics = StubMetrics
       }
 
+      val npsJson = s"""
+                       |{
+                       |  "years_to_fry": 3,
+                       |  "non_qualifying_years": 10,
+                       |  "date_of_entry": "1969-08-01",
+                       |  "npsLniemply": [],
+                       |  "pre_75_cc_count": 250,
+                       |  "number_of_qualifying_years": 36,
+                       |  "npsErrlist": {
+                       |    "count": 0,
+                       |    "mgt_check": 0,
+                       |    "commit_status": 2,
+                       |    "npsErritem": [],
+                       |    "bfm_return_code": 0,
+                       |    "data_not_found": 0
+                       |  },
+                       |  "non_qualifying_years_payable": "5",
+                       |  "nino": "$nino"
+                       |}
+      """.stripMargin
+
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        s"""
-           |{
-           |  "years_to_fry": 3,
-           |  "non_qualifying_years": 10,
-           |  "date_of_entry": "1969-08-01",
-           |  "npsLniemply": [],
-           |  "pre_75_cc_count": 250,
-           |  "number_of_qualifying_years": 36,
-           |  "npsErrlist": {
-           |    "count": 0,
-           |    "mgt_check": 0,
-           |    "commit_status": 2,
-           |    "npsErritem": [],
-           |    "bfm_return_code": 0,
-           |    "data_not_found": 0
-           |  },
-           |  "non_qualifying_years_payable": "5",
-           |  "nino": "$nino"
-           |}
-      """.stripMargin))))
+        npsJson))))
 
       ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
         ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/npsLnitaxyr - error.path.missing"
+        ex.getMessage shouldBe "Unable to deserialise NIRecord: /npsLnitaxyr - error.path.missing\n" + depersonalise(Json.parse(npsJson))
+        ex.getMessage.contains(s""""nino" : "$nino"""") shouldBe false
       }
     }
   }
