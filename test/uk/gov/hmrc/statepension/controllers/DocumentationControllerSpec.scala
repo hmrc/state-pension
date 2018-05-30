@@ -17,14 +17,12 @@
 package uk.gov.hmrc.statepension.controllers
 
 import org.scalatestplus.play.OneAppPerSuite
-import play.api.{Application, Configuration}
+import play.api.Configuration
 import play.api.http.LazyHttpErrorHandler
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.test.WithApplication
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
 
@@ -43,7 +41,6 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
       override def access: Option[Configuration] = apiConfig
       override def status: Option[String] = apiStatus
       override def connectToHOD: Boolean = false
-      override def connectToDES: Boolean = false
       override def rates: Configuration = Configuration()
       override def revaluation: Option[Configuration] = None
     }
@@ -103,8 +100,6 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
 
   "/definition status" should {
 
-
-
     "return BETA if there is no application config" in {
 
       val result = getDefinitionResultFromConfig(apiStatus = None)
@@ -124,8 +119,6 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
       val result = getDefinitionResultFromConfig(apiStatus = Some("STABLE"))
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("STABLE"))
-
     }
-
   }
 }

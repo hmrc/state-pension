@@ -29,8 +29,8 @@ class CitizenDetailsServiceSpec extends StatePensionServiceSpec {
 
   val nino: Nino = generateNino()
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-  implicit val hc = HeaderCarrier()
-  val citizenDetailsService = new CitizenDetailsService {
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val citizenDetailsService: CitizenDetailsService = new CitizenDetailsService {
     override val citizenDetailsConnector: CitizenDetailsConnector = mockCitizenDetailsConnector
   }
 

@@ -19,15 +19,14 @@ package uk.gov.hmrc.statepension.connectors
 import play.api.data.validation.ValidationError
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.Metrics
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpReads, HttpResponse }
 
 trait NpsConnector {
   def http: HttpGet

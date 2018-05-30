@@ -17,22 +17,20 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import org.mockito.Mockito._
 import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneAppPerSuite, OneAppPerTest}
-import uk.gov.hmrc.domain.Nino
+import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, DesConnector, NpsConnector}
-import uk.gov.hmrc.statepension.domain.{Exclusion, StatePension, _}
-import uk.gov.hmrc.statepension.domain.nps._
-import org.mockito.Mockito._
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
+import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, DesConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
+import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.domain.{Exclusion, StatePension, _}
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite with ScalaFutures with MockitoSugar {
 
@@ -85,7 +83,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     statePensionAgeUnderConsideration = false
   )
 
-
   "StatePensionService with a HOD Connection" when {
 
     val mockCitizenDetails = mock[CitizenDetailsService]
@@ -98,9 +95,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     "there are no exclusions" when {
       "there is a regular statement (Reached)" should {
 
-        val service = new NpsConnection {
-          override val useDes: Boolean = false
-          override lazy val nps: NpsConnector = mock[NpsConnector]
+        val service: DesConnection = new DesConnection {
           override lazy val des: DesConnector = mock[DesConnector]
           override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -110,18 +105,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           override lazy val rateService: RateService = RateServiceBuilder.default
         }
 
-        val regularStatement = NpsSummary(
+        val regularStatement = DesSummary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
           sex = "F",
           statePensionAgeDate = new LocalDate(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
           dateOfBirth = new LocalDate(1954, 3, 9),
-          amounts = NpsStatePensionAmounts(
+          amounts = DesStatePensionAmounts(
             pensionEntitlement = 161.18,
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
-            NpsAmountA2016(
+            DesAmountA2016(
               basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
@@ -132,23 +127,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               post88COD = 0,
               graduatedRetirementBenefit = 2.66
             ),
-            NpsAmountB2016(
+            DesAmountB2016(
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
           )
         )
 
-        when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
-        when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           List()
         ))
 
-        when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          NpsNIRecord(qualifyingYears = 36, List())
+        when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          DesNIRecord(qualifyingYears = 36, List())
         ))
 
         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -252,14 +247,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a pensionSharingOrder return true" in {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = true)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
         }
 
         "when there is no pensionSharingOrder return false" in {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = false)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
@@ -278,21 +273,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a protected payment of some value return true" in {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
         }
 
         "when there is a protected payment of 0 return false" in {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
         }
 
         "when there is a rebate derived amount of 12.34 it" should {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
           ))
 
@@ -324,7 +319,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a rebate derived amount of 0 it" should {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
           ))
 
@@ -345,12 +340,12 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
         "when there is all amounts of 0 it" should {
 
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(
               pensionEntitlement = 0,
               startingAmount2016 = 0,
               protectedPayment2016 = 0,
-              NpsAmountA2016(
+              DesAmountA2016(
                 basicStatePension = 0,
                 pre97AP = 0,
                 post97AP = 0,
@@ -361,7 +356,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
                 post88COD = 0,
                 graduatedRetirementBenefit = 0
               ),
-              NpsAmountB2016(
+              DesAmountB2016(
                 mainComponent = 0,
                 rebateDerivedAmount = 0
               )
@@ -384,7 +379,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 161.18 it" should {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
           ))
 
@@ -422,8 +417,8 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 0 it" should {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            regularStatement.copy(amounts = NpsStatePensionAmounts())
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement.copy(amounts = DesStatePensionAmounts())
           ))
 
           val statement = service.getStatement(generateNino()).right.get
@@ -447,9 +442,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     "there are exclusions" when {
       "there is a regular statement (Reached)" should {
 
-        val service = new NpsConnection {
-          override val useDes: Boolean = false
-          override lazy val nps: NpsConnector = mock[NpsConnector]
+        val service: DesConnection = new DesConnection {
           override lazy val des: DesConnector = mock[DesConnector]
           override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
           override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -459,18 +452,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           override lazy val rateService: RateService = RateServiceBuilder.default
         }
 
-        val regularStatement = NpsSummary(
+        val regularStatement = DesSummary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
           sex = "F",
           statePensionAgeDate = new LocalDate(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
           dateOfBirth = new LocalDate(1954, 3, 9),
-          amounts = NpsStatePensionAmounts(
+          amounts = DesStatePensionAmounts(
             pensionEntitlement = 161.18,
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
-            NpsAmountA2016(
+            DesAmountA2016(
               basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
@@ -481,29 +474,29 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
               post88COD = 0,
               graduatedRetirementBenefit = 2.66
             ),
-            NpsAmountB2016(
+            DesAmountB2016(
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
           )
         )
 
-        when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
-        when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           List()
         ))
 
-        when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          NpsNIRecord(qualifyingYears = 36, List())
+        when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          DesNIRecord(qualifyingYears = 36, List())
         ))
 
         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
         "when there is a starting amount of 0 it" should {
-          when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(startingAmount2016 = 0))
           ))
 
@@ -523,9 +516,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "there is a regular statement (Forecast)" should {
 
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -535,18 +526,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -557,23 +548,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 20, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 20, List())
       ))
 
       val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -651,9 +642,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "there is a regular statement (grossStatePension)" should {
 
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -663,18 +652,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -685,23 +674,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 66.37, // Net SP
             rebateDerivedAmount = 18.13
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 20, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 20, List())
       ))
 
       val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -719,9 +708,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "there is a regular statement (Fill Gaps)" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -731,18 +718,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 121.4123,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -753,26 +740,26 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 20, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 20, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
-      lazy val summaryF: Future[NpsSummary] = service.nps.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
       lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "the personal maximum amount" should {
@@ -878,13 +865,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       "not log an exclusion metric" in {
         verify(service.metrics, never).exclusion(Matchers.any())
       }
-
     }
 
     "there is an mqp user" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -894,18 +878,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 40.53,
           startingAmount2016 = 40.53,
           protectedPayment2016 = 0,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 35.79,
             pre97AP = 0,
             post97AP = 0,
@@ -916,23 +900,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 0
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 40.02,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 9, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 9, List())
       ))
 
       "return 0 for the current amount" in {
@@ -943,9 +927,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "the customer is dead" should {
 
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -955,7 +937,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2050, 7, 7),
@@ -965,18 +947,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfDeath = Some(new LocalDate(2000, 9, 13)),
         reducedRateElection = false,
         countryCode = 1,
-        NpsStatePensionAmounts()
+        DesStatePensionAmounts()
       )
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
@@ -1022,9 +1004,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer is over state pension age" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1034,7 +1014,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(1954, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2016, 1, 1),
@@ -1044,20 +1024,20 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfDeath = None,
         reducedRateElection = false,
         countryCode = 1,
-        NpsStatePensionAmounts()
+        DesStatePensionAmounts()
       )
 
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1101,9 +1081,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has married women's reduced rate election" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1113,7 +1091,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
@@ -1123,11 +1101,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 32.61,
           startingAmount2016 = 35.58,
           protectedPayment2016 = 0,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 31.81,
             pre97AP = 0,
             post97AP = 0,
@@ -1138,28 +1116,28 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 0
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears =9, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears =9, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      lazy val summaryF: Future[NpsSummary] = service.nps.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
 
       "summary have RRE flag as true" in {
         whenReady(summaryF) { summary =>
@@ -1200,13 +1178,10 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           Matchers.eq(false)
         )
       }
-
     }
 
     "the customer has male overseas auto credits (abroad exclusion)" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1216,7 +1191,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "M",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
@@ -1226,17 +1201,17 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfDeath = None,
         reducedRateElection = false,
         countryCode = 200,
-        NpsStatePensionAmounts()
+        DesStatePensionAmounts()
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1268,9 +1243,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has amount dissonance" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1280,30 +1253,30 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "M",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1956, 7, 7),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 155.65,
           startingAmount2016 = 155.65,
-          amountB2016 = NpsAmountB2016(
+          amountB2016 = DesAmountB2016(
             mainComponent = 155.64
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1346,9 +1319,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has contributed national insurance in the isle of man" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1358,7 +1329,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "M",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
@@ -1367,16 +1338,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        List(NpsLiability(5))
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List(DesLiability(Some(5)))
       ))
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
-
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
 
@@ -1418,9 +1388,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has a manual correspondence indicator" should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
@@ -1430,7 +1398,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "M",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
@@ -1439,15 +1407,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
       when(service.citizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 35, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1490,9 +1458,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1502,18 +1468,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2034, 4, 5),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1970, 4, 5),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 161.18,
           startingAmount2016 = 161.18,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 119.3,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -1524,23 +1490,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 155.65,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 36, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1575,9 +1541,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1587,18 +1551,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2034, 4, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1970, 4, 6),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 161.18,
           startingAmount2016 = 161.18,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 119.3,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -1609,23 +1573,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 155.65,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 36, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1660,9 +1624,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1672,7 +1634,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val summary = NpsSummary(
+      val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2038, 1, 1),
@@ -1682,11 +1644,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 32.61,
           startingAmount2016 = 35.58,
           protectedPayment2016 = 0,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 31.81,
             pre97AP = 0,
             post97AP = 0,
@@ -1697,28 +1659,28 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 0
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears =9, List(NpsNITaxYear(2000, false, false, true), NpsNITaxYear(2001, false, false, true)))
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears =9, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      lazy val summaryF: Future[NpsSummary] = service.nps.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
         whenReady(statePensionF) { statePension =>
@@ -1750,9 +1712,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection = new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1762,18 +1722,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2042, 4, 5),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1978, 4, 5),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 161.18,
           startingAmount2016 = 161.18,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 119.3,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -1784,23 +1744,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 155.65,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 36, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1835,9 +1795,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
-      val service = new NpsConnection {
-        override val useDes: Boolean = false
-        override lazy val nps: NpsConnector = mock[NpsConnector]
+      val service: DesConnection= new DesConnection {
         override lazy val des: DesConnector = mock[DesConnector]
         override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
         override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
@@ -1847,18 +1805,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         override lazy val rateService: RateService = RateServiceBuilder.default
       }
 
-      val regularStatement = NpsSummary(
+      val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         sex = "F",
         statePensionAgeDate = new LocalDate(2042, 4, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1978, 4, 6),
-        amounts = NpsStatePensionAmounts(
+        amounts = DesStatePensionAmounts(
           pensionEntitlement = 161.18,
           startingAmount2016 = 161.18,
           protectedPayment2016 = 5.53,
-          NpsAmountA2016(
+          DesAmountA2016(
             basicStatePension = 119.3,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -1869,23 +1827,23 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          NpsAmountB2016(
+          DesAmountB2016(
             mainComponent = 155.65,
             rebateDerivedAmount = 0
           )
         )
       )
 
-      when(service.nps.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.nps.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.nps.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        NpsNIRecord(qualifyingYears = 36, List())
+      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1918,6 +1876,5 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       }
     }
-
   }
 }
