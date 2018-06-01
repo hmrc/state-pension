@@ -39,6 +39,128 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
 
+  val jsonWithNoTaxYears =
+    s"""
+       |{
+       |  "yearsToFry": 3,
+       |  "nonQualifyingYears": 10,
+       |  "dateOfEntry": "1969-08-01",
+       |  "employmentDetails": [],
+       |  "pre75CcCount": 250,
+       |  "numberOfQualifyingYears": 36,
+       |  "nonQualifyingYearsPayable": 5,
+       |  "nino": "$nino"
+       |}""".stripMargin
+
+  val jsonNiRecord =
+    s"""
+       |{
+       |  "yearsToFry": 3,
+       |  "nonQualifyingYears": 10,
+       |  "dateOfEntry": "1969-08-01",
+       |  "employmentDetails": [],
+       |  "pre75CcCount": 250,
+       |  "numberOfQualifyingYears": 36,
+       |  "nonQualifyingYearsPayable": 5,
+       |  "taxYears": [
+       |    {
+       |      "classThreePayableByPenalty": null,
+       |      "classTwoOutstandingWeeks": null,
+       |      "classTwoPayable": null,
+       |      "qualifying": true,
+       |      "underInvestigationFlag": false,
+       |      "classTwoPayableBy": null,
+       |      "coClassOnePaid": null,
+       |      "classTwoPayableByPenalty": null,
+       |      "coPrimaryPaidEarnings": null,
+       |      "payable": false,
+       |      "rattdTaxYear": "1975",
+       |      "niEarnings": null,
+       |      "amountNeeded": null,
+       |      "primaryPaidEarnings": "1285.4500",
+       |      "classThreePayable": null,
+       |      "niEarningsEmployed": "70.6700",
+       |      "otherCredits": [
+       |        {
+       |          "creditSourceType": 0,
+       |          "ccType": 23,
+       |          "numberOfCredits": 20
+       |        },
+       |        {
+       |          "creditSourceType": 24,
+       |          "ccType": 23,
+       |          "numberOfCredits": 6
+       |        }
+       |      ],
+       |      "niEarningsSelfEmployed": null,
+       |      "classThreePayableBy": null,
+       |      "niEarningsVoluntary": null
+       |    },
+       |    {
+       |      "classThreePayableByPenalty": null,
+       |      "classTwoOutstandingWeeks": null,
+       |      "classTwoPayable": null,
+       |      "qualifying": true,
+       |      "underInvestigationFlag": false,
+       |      "classTwoPayableBy": null,
+       |      "coClassOnePaid": null,
+       |      "classTwoPayableByPenalty": null,
+       |      "coPrimaryPaidEarnings": null,
+       |      "payable": false,
+       |      "rattdTaxYear": "1976",
+       |      "niEarnings": null,
+       |      "amountNeeded": null,
+       |      "primaryPaidEarnings": "932.1700",
+       |      "classThreePayable": null,
+       |      "niEarningsEmployed": "53.5000",
+       |      "otherCredits": [
+       |        {
+       |          "creditSourceType": 0,
+       |          "ccType": 23,
+       |          "numberOfCredits": 4
+       |        },
+       |        {
+       |          "creditSourceType": 24,
+       |          "ccType": 23,
+       |          "numberOfCredits": 30
+       |        }
+       |      ],
+       |      "niEarningsSelfEmployed": null,
+       |      "classThreePayableBy": null,
+       |      "niEarningsVoluntary": null
+       |    },
+       |    {
+       |      "classThreePayableByPenalty": null,
+       |      "classTwoOutstandingWeeks": null,
+       |      "classTwoPayable": null,
+       |      "qualifying": true,
+       |      "underInvestigationFlag": false,
+       |      "classTwoPayableBy": null,
+       |      "coClassOnePaid": null,
+       |      "classTwoPayableByPenalty": null,
+       |      "coPrimaryPaidEarnings": null,
+       |      "payable": false,
+       |      "rattdTaxYear": "1977",
+       |      "niEarnings": null,
+       |      "amountNeeded": null,
+       |      "primaryPaidEarnings": "1433.0400",
+       |      "classThreePayable": null,
+       |      "niEarningsEmployed": "82.1300",
+       |      "otherCredits": [
+       |        {
+       |          "creditSourceType": 24,
+       |          "ccType": 23,
+       |          "numberOfCredits": 28
+       |        }
+       |      ],
+       |      "niEarningsSelfEmployed": null,
+       |      "classThreePayableBy": null,
+       |      "niEarningsVoluntary": null
+       |    }
+       |  ],
+       |  "nino": "$nino"
+       |}""".stripMargin
+
   "getSummary" should {
     val connector = new DesConnector {
       override val http = mock[HttpGet]
@@ -49,6 +171,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override val metrics: Metrics = StubMetrics
 
       override def token: String = "token"
+
       override def environment: (String, String) = ("environment", "unit test")
     }
 
@@ -209,8 +332,11 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override val http = mock[HttpGet]
 
       override def desBaseUrl: String = "test-url"
+
       override def token: String = "token"
+
       override def environment: (String, String) = ("environment", "unit test")
+
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
       override val metrics: Metrics = StubMetrics
     }
@@ -285,8 +411,11 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override val http = mock[HttpGet]
 
         override def desBaseUrl: String = "test-url"
+
         override def token: String = "token"
+
         override def environment: (String, String) = ("environment", "unit test")
+
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
         override val metrics: Metrics = StubMetrics
       }
@@ -344,8 +473,11 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override val http = mock[HttpGet]
 
       override def desBaseUrl: String = "test-url"
+
       override def token: String = "token"
+
       override def environment: (String, String) = ("environment", "unit test")
+
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
       override val metrics: Metrics = StubMetrics
     }
@@ -366,127 +498,24 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
   }
 
 
-"getNIRecord" should {
+  "getNIRecord" should {
+    val mockHttpGet = mock[HttpGet]
     val connector = new DesConnector {
-      override val http = mock[HttpGet]
+      override val http = mockHttpGet
 
       override def desBaseUrl: String = "test-url"
+
       override def token: String = "token"
+
       override def environment: (String, String) = ("environment", "unit test")
+
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
       override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-      s"""
-         |{
-         |  "yearsToFry": 3,
-         |  "nonQualifyingYears": 10,
-         |  "dateOfEntry": "1969-08-01",
-         |  "employmentDetails": [],
-         |  "pre75CcCount": 250,
-         |  "numberOfQualifyingYears": 36,
-         |  "nonQualifyingYearsPayable": 5,
-         |  "taxYears": [
-         |    {
-         |      "classThreePayableByPenalty": null,
-         |      "classTwoOutstandingWeeks": null,
-         |      "classTwoPayable": null,
-         |      "qualifying": true,
-         |      "underInvestigationFlag": false,
-         |      "classTwoPayableBy": null,
-         |      "coClassOnePaid": null,
-         |      "classTwoPayableByPenalty": null,
-         |      "coPrimaryPaidEarnings": null,
-         |      "payable": false,
-         |      "rattdTaxYear": "1975",
-         |      "niEarnings": null,
-         |      "amountNeeded": null,
-         |      "primaryPaidEarnings": "1285.4500",
-         |      "classThreePayable": null,
-         |      "niEarningsEmployed": "70.6700",
-         |      "otherCredits": [
-         |        {
-         |          "creditSourceType": 0,
-         |          "ccType": 23,
-         |          "numberOfCredits": 20
-         |        },
-         |        {
-         |          "creditSourceType": 24,
-         |          "ccType": 23,
-         |          "numberOfCredits": 6
-         |        }
-         |      ],
-         |      "niEarningsSelfEmployed": null,
-         |      "classThreePayableBy": null,
-         |      "niEarningsVoluntary": null
-         |    },
-         |    {
-         |      "classThreePayableByPenalty": null,
-         |      "classTwoOutstandingWeeks": null,
-         |      "classTwoPayable": null,
-         |      "qualifying": true,
-         |      "underInvestigationFlag": false,
-         |      "classTwoPayableBy": null,
-         |      "coClassOnePaid": null,
-         |      "classTwoPayableByPenalty": null,
-         |      "coPrimaryPaidEarnings": null,
-         |      "payable": false,
-         |      "rattdTaxYear": "1976",
-         |      "niEarnings": null,
-         |      "amountNeeded": null,
-         |      "primaryPaidEarnings": "932.1700",
-         |      "classThreePayable": null,
-         |      "niEarningsEmployed": "53.5000",
-         |      "otherCredits": [
-         |        {
-         |          "creditSourceType": 0,
-         |          "ccType": 23,
-         |          "numberOfCredits": 4
-         |        },
-         |        {
-         |          "creditSourceType": 24,
-         |          "ccType": 23,
-         |          "numberOfCredits": 30
-         |        }
-         |      ],
-         |      "niEarningsSelfEmployed": null,
-         |      "classThreePayableBy": null,
-         |      "niEarningsVoluntary": null
-         |    },
-         |    {
-         |      "classThreePayableByPenalty": null,
-         |      "classTwoOutstandingWeeks": null,
-         |      "classTwoPayable": null,
-         |      "qualifying": true,
-         |      "underInvestigationFlag": false,
-         |      "classTwoPayableBy": null,
-         |      "coClassOnePaid": null,
-         |      "classTwoPayableByPenalty": null,
-         |      "coPrimaryPaidEarnings": null,
-         |      "payable": false,
-         |      "rattdTaxYear": "1977",
-         |      "niEarnings": null,
-         |      "amountNeeded": null,
-         |      "primaryPaidEarnings": "1433.0400",
-         |      "classThreePayable": null,
-         |      "niEarningsEmployed": "82.1300",
-         |      "otherCredits": [
-         |        {
-         |          "creditSourceType": 24,
-         |          "ccType": 23,
-         |          "numberOfCredits": 28
-         |        }
-         |      ],
-         |      "niEarningsSelfEmployed": null,
-         |      "classThreePayableBy": null,
-         |      "niEarningsVoluntary": null
-         |    }
-         |  ],
-         |  "nino": "$nino"
-         |}""".stripMargin))))
-
+    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
     connector.getNIRecord(nino)
+
 
     "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/ni" in {
       verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/ni"))(Matchers.any(), Matchers.any(), Matchers.any())
@@ -494,6 +523,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
     "add the originator id to the header" ignore {
       val header = headerCarrier
+      connector.getNIRecord(nino)
       verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
@@ -508,14 +538,62 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         ))
     }
 
+    "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
+      val optJson = Some(Json.parse(jsonWithNoTaxYears))
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, optJson))
+
+      val summary = await(connector.getNIRecord(nino))
+      summary shouldBe DesNIRecord(qualifyingYears = 36, List.empty)
+    }
+
     "return a failed future with a json validation exception when it cannot parse to an DesNIRecord" in {
       val connector = new DesConnector {
 
         override val http = mock[HttpGet]
 
         override def desBaseUrl: String = "test-url"
+
         override def token: String = "token"
+
         override def environment: (String, String) = ("environment", "unit test")
+
+        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
+
+        override def metrics: Metrics = StubMetrics
+      }
+
+      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+           |{
+           |  "yearsToFry": 3,
+           |  "nonQualifyingYears": 10,
+           |  "dateOfEntry": "1969-08-01",
+           |  "employmentDetails": [],
+           |  "pre75CcCount": 250,
+           |  "numberOfQualifyingYears": "36",
+           |  "nonQualifyingYearsPayable": "5",
+           |  "nino": "$nino"
+           |}
+      """.stripMargin))))
+
+      ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
+        ex shouldBe a[connector.JsonValidationException]
+        ex.getMessage shouldBe "/numberOfQualifyingYears - error.expected.jsnumber"
+      }
+    }
+
+
+    "return a failed future with a json validation exception when it cannot parse to an DesNIRecord when taxyear is invalid" in {
+      val connector = new DesConnector {
+
+        override val http = mock[HttpGet]
+
+        override def desBaseUrl: String = "test-url"
+
+        override def token: String = "token"
+
+        override def environment: (String, String) = ("environment", "unit test")
+
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
 
         override def metrics: Metrics = StubMetrics
@@ -530,76 +608,42 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
            |  "employmentDetails": [],
            |  "pre75CcCount": 250,
            |  "numberOfQualifyingYears": 36,
-           |  "nonQualifyingYearsPayable": "5",
-           |  "nino": "$nino"
+           |  "nonQualifyingYearsPayable": 5,
+           |  "taxYears": [
+           |    {
+           |      "classThreePayableByPenalty": null,
+           |      "classTwoOutstandingWeeks": null,
+           |      "classTwoPayable": null,
+           |      "qualifying": true,
+           |      "underInvestigationFlag": false,
+           |      "classTwoPayableBy": null,
+           |      "coClassOnePaid": null,
+           |      "classTwoPayableByPenalty": null,
+           |      "coPrimaryPaidEarnings": null,
+           |      "payable": false,
+           |      "rattdTaxYear": "not a real year",
+           |      "niEarnings": null,
+           |      "amountNeeded": null,
+           |      "primaryPaidEarnings": "1285.4500",
+           |      "classThreePayable": null,
+           |      "niEarningsEmployed": "70.6700",
+           |      "otherCredits": [
+           |        {
+           |          "creditSourceType": 0,
+           |          "ccType": 23,
+           |          "numberOfCredits": 20
+           |        },
+           |        {
+           |          "creditSourceType": 24,
+           |          "ccType": 23,
+           |          "numberOfCredits": 6
+           |        }
+           |      ],
+           |      "niEarningsSelfEmployed": null,
+           |      "classThreePayableBy": null,
+           |      "niEarningsVoluntary": null
+           |    }]
            |}
-      """.stripMargin))))
-
-      ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
-        ex shouldBe a[connector.JsonValidationException]
-        ex.getMessage shouldBe "/taxYears - error.path.missing"
-      }
-    }
-
-
-    "return a failed future with a json validation exception when it cannot parse to an DesNIRecord when taxyear is invalid" in {
-      val connector = new DesConnector {
-
-        override val http = mock[HttpGet]
-
-        override def desBaseUrl: String = "test-url"
-        override def token: String = "token"
-        override def environment: (String, String) = ("environment", "unit test")
-        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-
-        override def metrics: Metrics = StubMetrics
-      }
-
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        s"""
-          |{
-          |  "yearsToFry": 3,
-          |  "nonQualifyingYears": 10,
-          |  "dateOfEntry": "1969-08-01",
-          |  "employmentDetails": [],
-          |  "pre75CcCount": 250,
-          |  "numberOfQualifyingYears": 36,
-          |  "nonQualifyingYearsPayable": 5,
-          |  "taxYears": [
-          |    {
-          |      "classThreePayableByPenalty": null,
-          |      "classTwoOutstandingWeeks": null,
-          |      "classTwoPayable": null,
-          |      "qualifying": true,
-          |      "underInvestigationFlag": false,
-          |      "classTwoPayableBy": null,
-          |      "coClassOnePaid": null,
-          |      "classTwoPayableByPenalty": null,
-          |      "coPrimaryPaidEarnings": null,
-          |      "payable": false,
-          |      "rattdTaxYear": "not a real year",
-          |      "niEarnings": null,
-          |      "amountNeeded": null,
-          |      "primaryPaidEarnings": "1285.4500",
-          |      "classThreePayable": null,
-          |      "niEarningsEmployed": "70.6700",
-          |      "otherCredits": [
-          |        {
-          |          "creditSourceType": 0,
-          |          "ccType": 23,
-          |          "numberOfCredits": 20
-          |        },
-          |        {
-          |          "creditSourceType": 24,
-          |          "ccType": 23,
-          |          "numberOfCredits": 6
-          |        }
-          |      ],
-          |      "niEarningsSelfEmployed": null,
-          |      "classThreePayableBy": null,
-          |      "niEarningsVoluntary": null
-          |    }]
-          |}
       """.stripMargin))))
 
       ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
@@ -608,4 +652,11 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       }
     }
   }
+
+
+
+
+
+
+
 }

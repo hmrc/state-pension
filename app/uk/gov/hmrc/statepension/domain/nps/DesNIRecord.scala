@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.Logger
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{JsPath, Reads, __}
 import play.api.libs.functional.syntax._
 
 case class DesNIRecord(qualifyingYears: Int, taxYears: List[DesNITaxYear]) {
@@ -39,8 +39,12 @@ case class DesNIRecord(qualifyingYears: Int, taxYears: List[DesNITaxYear]) {
 }
 
 object DesNIRecord {
+
+  val readNullableList:JsPath => Reads[List[DesNITaxYear]] =
+    jsPath => jsPath.readNullable[List[DesNITaxYear]].map(_.getOrElse(List.empty))
+
   implicit val reads: Reads[DesNIRecord] = (
     (__ \ "numberOfQualifyingYears").read[Int] and
-      (__ \ "taxYears").read[List[DesNITaxYear]]
+      readNullableList(__ \ "taxYears")
     ) (DesNIRecord.apply _)
 }
