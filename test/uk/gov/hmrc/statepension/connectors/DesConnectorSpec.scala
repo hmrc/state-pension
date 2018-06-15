@@ -532,9 +532,9 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       summary shouldBe DesNIRecord(
         qualifyingYears = 36,
         List(
-          DesNITaxYear(1975, qualifying = true, underInvestigation = false, payableFlag = false),
-          DesNITaxYear(1976, qualifying = true, underInvestigation = false, payableFlag = false),
-          DesNITaxYear(1977, qualifying = true, underInvestigation = false, payableFlag = false)
+          DesNITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+          DesNITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+          DesNITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
         ))
     }
 
