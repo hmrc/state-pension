@@ -114,16 +114,16 @@ class DesNIRecordSpec extends UnitSpec{
         qualifyingYears = 31,
         taxYears =  List(
           DesNITaxYear(
-            startTaxYear = 2016,
-            qualifying = true,
-            underInvestigation = false,
-            payableFlag = true
+            startTaxYear = Some(2016),
+            qualifying = Some(true),
+            underInvestigation = Some(false),
+            payableFlag = Some(true)
           ),
           DesNITaxYear(
-            startTaxYear = 2015,
-            qualifying = true,
-            underInvestigation = true,
-            payableFlag = true
+            startTaxYear = Some(2015),
+            qualifying = Some(true),
+            underInvestigation = Some(true),
+            payableFlag = Some(true)
           )
         )
       )
@@ -131,6 +131,54 @@ class DesNIRecordSpec extends UnitSpec{
       Json.parse(jsonPayload).as[DesNIRecord] shouldBe testData
 
     }
+  }
+
+
+  "return a valid NiRecord with empty tax year records" in {
+    val jsonPayload = """|{
+                         |  "yearsToFry": 2,
+                         |  "nonQualifyingYears": 11,
+                         |  "dateOfEntry": null,
+                         |  "employmentDetails": [],
+                         |  "pre75CcCount": 250,
+                         |  "numberOfQualifyingYears": 36,
+                         |  "nonQualifyingYearsPayable": 6,
+                         |  "taxYears": [
+                         |    {
+                         |    }
+                         |  ],
+                         |  "nino": "YN315615"
+                         |}""".stripMargin
+
+    val testData = DesNIRecord(
+      qualifyingYears = 36,
+      taxYears =  List.empty
+    )
+
+    Json.parse(jsonPayload).as[DesNIRecord] shouldBe testData
+  }
+
+  "return a valid NiRecord with empty qualifying years" in {
+    val jsonPayload = """|{
+                         |  "yearsToFry": 2,
+                         |  "nonQualifyingYears": 11,
+                         |  "dateOfEntry": null,
+                         |  "employmentDetails": [],
+                         |  "pre75CcCount": 250,
+                         |  "nonQualifyingYearsPayable": 6,
+                         |  "taxYears": [
+                         |    {
+                         |    }
+                         |  ],
+                         |  "nino": "YN315615"
+                         |}""".stripMargin
+
+    val testData = DesNIRecord(
+      qualifyingYears = 0,
+      taxYears =  List.empty
+    )
+
+    Json.parse(jsonPayload).as[DesNIRecord] shouldBe testData
   }
 
 

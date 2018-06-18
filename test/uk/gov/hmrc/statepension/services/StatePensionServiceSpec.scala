@@ -756,7 +756,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 20, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 20, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
@@ -951,7 +951,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       )
 
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
@@ -1037,7 +1037,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1132,7 +1132,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears =9, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1211,7 +1211,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         List()
       ))
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1276,7 +1276,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         List()
       ))
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1345,7 +1345,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         List(DesLiability(Some(5)))
       ))
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1415,7 +1415,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
       when(service.citizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
@@ -1675,7 +1675,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       ))
 
       when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears =9, List(DesNITaxYear(2000, false, false, true), DesNITaxYear(2001, false, false, true)))
+        DesNIRecord(qualifyingYears =9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get

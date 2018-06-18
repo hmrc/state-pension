@@ -16,26 +16,25 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads, _}
 
 import scala.util.Try
 
-case class DesNITaxYear(startTaxYear: Int, qualifying: Boolean, underInvestigation: Boolean, payableFlag: Boolean) {
-  lazy val payable: Boolean = payableFlag && !qualifying && !underInvestigation //payableFlag from NPS Response is incorrect
+case class DesNITaxYear(startTaxYear: Option[Int], qualifying: Option[Boolean], underInvestigation: Option[Boolean], payableFlag: Option[Boolean]) {
+  lazy val payable: Boolean = payableFlag.get && !qualifying.get && !underInvestigation.get //payableFlag from NPS Response is incorrect
 }
 
 object DesNITaxYear {
   val readBooleanFromInt: JsPath => Reads[Boolean] = jsPath => jsPath.read[Int].map(_.equals(1))
 
-  val readNullableIntFromString: JsPath => Reads[Int] =
-    jsPath => jsPath.read[String].map(s => Try(s.toInt).toOption.getOrElse(throw new Exception(s"${jsPath.path.head} is not a valid integer")))
+  val readNullableIntFromString: JsPath => Reads[Option[Int]] =
+    jsPath => jsPath.readNullable[String].map(s => s.map(st => Try(st.toInt).toOption.getOrElse(throw new Exception(s"${jsPath.path.head} is not a valid integer"))))
 
   implicit val reads: Reads[DesNITaxYear] = (
     readNullableIntFromString(__ \ "rattdTaxYear") and
-      (__ \ "qualifying").read[Boolean] and
-      (__ \ "underInvestigationFlag").read[Boolean] and
-      (__ \ "payable").read[Boolean]
+      (__ \ "qualifying").readNullable[Boolean] and
+      (__ \ "underInvestigationFlag").readNullable[Boolean] and
+      (__ \ "payable").readNullable[Boolean]
     ) (DesNITaxYear.apply _)
 }
