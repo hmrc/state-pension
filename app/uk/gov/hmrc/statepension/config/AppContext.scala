@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.statepension.config
 
-import play.api.Configuration
+import play.api.{Configuration, Play}
+import play.api.Mode.Mode
 import play.api.Play._
 import uk.gov.hmrc.play.config.ServicesConfig
 
@@ -39,4 +40,6 @@ object AppContext extends AppContext with ServicesConfig {
   lazy val connectToHOD = current.configuration.getBoolean("feature.connectToHOD").getOrElse(false)
   override lazy val rates: Configuration = current.configuration.getConfig("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
   override lazy val revaluation: Option[Configuration] = current.configuration.getConfig("rates.revaluation")
+  override protected def mode: Mode = Play.current.mode
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

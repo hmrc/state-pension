@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.Mode.Mode
+import play.api.{Configuration, Play}
 import play.api.data.validation.ValidationError
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
@@ -90,10 +94,16 @@ trait DesConnector {
 }
 
 object DesConnector extends DesConnector with ServicesConfig {
-  override val http: HttpGet = new HttpGet with WSHttp
+  override val http: HttpGet = new HttpGet with WSHttp {
+    override protected def actorSystem: ActorSystem = Play.current.actorSystem
+    override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
+    override protected def appNameConfiguration: Configuration = Play.current.configuration
+  }
   override val desBaseUrl: String = baseUrl("des-hod")
   override val serviceOriginatorId: (String, String) = (getConfString("des-hod.originatoridkey", ""), getConfString("des-hod.originatoridvalue", ""))
   override val environment: (String, String) = ("Environment", getConfString("des-hod.environment", ""))
   override val token: String = getConfString("des-hod.token", "")
   override val metrics: Metrics = Metrics
+  override protected def mode: Mode = Play.current.mode
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

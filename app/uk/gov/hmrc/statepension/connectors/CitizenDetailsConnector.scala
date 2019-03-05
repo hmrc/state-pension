@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import akka.actor.ActorSystem
+import com.typesafe.config.Config
+import play.api.Mode.Mode
+import play.api.{Configuration, Play}
 import uk.gov.hmrc.domain.Nino
 import play.api.http.Status.LOCKED
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -26,7 +30,7 @@ import uk.gov.hmrc.statepension.services.Metrics
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpResponse, Upstream4xxResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, Upstream4xxResponse}
 
 trait CitizenDetailsConnector {
   def http: HttpGet
@@ -58,7 +62,13 @@ trait CitizenDetailsConnector {
 }
 
 object CitizenDetailsConnector extends CitizenDetailsConnector with ServicesConfig {
-  override val http: HttpGet = new HttpGet with WSHttp
+  override val http: HttpGet = new HttpGet with WSHttp {
+    override protected def actorSystem: ActorSystem = Play.current.actorSystem
+    override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
+    override protected def appNameConfiguration: Configuration = Play.current.configuration
+  }
   override val serviceUrl: String = baseUrl("citizen-details")
   override val metrics: Metrics = Metrics
+  override protected def mode: Mode = Play.current.mode
+  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }
