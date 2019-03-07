@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,13 +91,15 @@ class RateServiceSpec extends StatePensionUnitSpec {
   }
 
   "max amount" should {
-    val service = RateServiceBuilder(Map(
-      1 -> 10,
-      2 -> 20,
-      5 -> 50,
-      3 -> 30
-    ))
-    service.MAX_AMOUNT shouldBe 50
+    "be the highest key in the ratesTable even when it's not at the end of the map" in {
+      val service = RateServiceBuilder(Map(
+        1 -> 10,
+        2 -> 20,
+        5 -> 50,
+        3 -> 30
+      ))
+      service.MAX_AMOUNT shouldBe 50
+    }
   }
 
   "getSPAmount called" should {

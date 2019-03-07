@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import services.TaxYearResolver
 import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
-import uk.gov.hmrc.time.TaxYearResolver
 
-import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
 trait ForecastingService {

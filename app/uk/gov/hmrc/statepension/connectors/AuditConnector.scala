@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import play.api.{Configuration, Play}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.config.AppName
@@ -37,4 +38,5 @@ trait CustomAuditConnector {
 
 object StatePensionAuditConnector extends AuditConnector with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
+  override protected def appNameConfiguration: Configuration = Play.current.configuration
 }
