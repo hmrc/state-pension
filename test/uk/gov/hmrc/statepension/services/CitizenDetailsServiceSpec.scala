@@ -25,6 +25,7 @@ import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
+//TODO change to proper extensions
 class CitizenDetailsServiceSpec extends StatePensionServiceSpec {
 
   val nino: Nino = generateNino()

@@ -19,19 +19,17 @@ package uk.gov.hmrc.statepension.controllers
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.services.StatePensionService
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
+import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
+import uk.gov.hmrc.statepension.services.StatePensionService
 
 import scala.concurrent.Future
 import scala.util.Random
-import uk.gov.hmrc.http.{ BadRequestException, HeaderCarrier }
 
 class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 
@@ -40,9 +38,10 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  def testStatePensionController(spService: StatePensionService): StatePensionController = new StatePensionController {
-    override val statePensionService: StatePensionService = spService
+  def testStatePensionController(spService: StatePensionService): StatePensionController = new StatePensionController(StatePensionService,
+                                                                                                                      CustomAuditConnector) {
 
+    override val statePensionService: StatePensionService = spService
     override val app: String = "Test State Pension"
     override val context: String = "test"
     override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector

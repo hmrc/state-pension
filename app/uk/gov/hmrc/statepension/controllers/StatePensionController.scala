@@ -16,22 +16,31 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.services.StatePensionService
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 
-trait StatePensionController extends BaseController with HeaderValidator with ErrorHandling with HalSupport with Links {
-  val statePensionService: StatePensionService
-  val customAuditConnector: CustomAuditConnector
+class StatePensionController @Inject()(val statePensionService: StatePensionService,
+                                       val customAuditConnector: CustomAuditConnector)
+  extends BaseController
+    with HeaderValidator
+    with ErrorHandling
+    with HalSupport
+    with Links {
 
-	def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
+  override val app: String = "State-Pension"
+  override val context: String = AppContext.apiGatewayContext
+
+  def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>
       errorWrapper(statePensionService.getStatement(nino).map {
 
@@ -54,10 +63,10 @@ trait StatePensionController extends BaseController with HeaderValidator with Er
           customAuditConnector.sendEvent(StatePension(nino, statePension.earningsIncludedUpTo, statePension.amounts,
             statePension.pensionAge, statePension.pensionDate, statePension.finalRelevantYear, statePension.numberOfQualifyingYears,
             statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount,
-            statePension.amounts.starting.weeklyAmount,statePension.amounts.oldRules.basicStatePension,
+            statePension.amounts.starting.weeklyAmount, statePension.amounts.oldRules.basicStatePension,
             statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
-            statePension.amounts.newRules.grossStatePension,statePension.amounts.newRules.rebateDerivedAmount,
-            statePension.reducedRateElection,statePension.reducedRateElectionCurrentWeeklyAmount, statePension.abroadAutoCredit,
+            statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
+            statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount, statePension.abroadAutoCredit,
             statePension.statePensionAgeUnderConsideration))
 
           Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))

@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers.live
+package uk.gov.hmrc.statepension.config
 
-import uk.gov.hmrc.statepension.config.AppContext
+import play.api.inject.{Binding, Module}
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
-import uk.gov.hmrc.statepension.controllers.StatePensionController
 import uk.gov.hmrc.statepension.services.StatePensionService
 
-
-object StatePensionController extends StatePensionController {
-  override val statePensionService: StatePensionService = StatePensionService
-  override val app: String = "State-Pension"
-  override val context: String = AppContext.apiGatewayContext
-  override val customAuditConnector: CustomAuditConnector = CustomAuditConnector
-}
+class StatePensionModule extends Module{
+    override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+      bind[StatePensionService].toInstance(StatePensionService),
+      bind[CustomAuditConnector].toInstance(CustomAuditConnector)
+    )
+  }
