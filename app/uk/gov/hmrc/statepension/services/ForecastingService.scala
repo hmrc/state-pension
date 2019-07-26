@@ -20,18 +20,11 @@ import com.google.inject.Inject
 import org.joda.time.LocalDate
 import services.TaxYearResolver
 import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
+import uk.gov.hmrc.statepension.domain.PolicyDecisions.MINIMUM_QUALIFYING_YEARS
 
 import scala.math.BigDecimal.RoundingMode
-//
-//object ForecastingService extends ForecastingService {
-//  override lazy val rateService: RateService = RateService
-//}
 
-class ForecastingService @Inject()(rateService: RateService) {
-
-//  def rateService: RateService
-
-  final val MINIMUM_QUALIFYING_YEARS = 10
+class ForecastingService @Inject()(val rateService: RateService) {
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
     amountA2016.max(amountB2016)

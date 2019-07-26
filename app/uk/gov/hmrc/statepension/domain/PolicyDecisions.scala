@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.config
+package uk.gov.hmrc.statepension.domain
 
-import play.api.inject.{Binding, Module}
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
-import uk.gov.hmrc.statepension.services.{RateService, StatePensionService}
+object PolicyDecisions {
 
-class StatePensionModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[StatePensionService].toInstance(StatePensionService),
-    bind[CustomAuditConnector].toInstance(CustomAuditConnector),
-    bind[RateService].to(RateService)
-  )
+  final val MINIMUM_QUALIFYING_YEARS = 10
+
 }
