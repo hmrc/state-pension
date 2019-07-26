@@ -88,9 +88,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     val mockCitizenDetails = mock[CitizenDetailsService]
     when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
 
-    val defaultForecasting = new ForecastingService {
-      override lazy val rateService: RateService = RateServiceBuilder.default
-    }
+    val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
     "there are no exclusions" when {
       "there is a regular statement (Reached)" should {

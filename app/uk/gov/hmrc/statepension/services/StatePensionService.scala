@@ -198,7 +198,7 @@ trait DesConnection extends StatePensionService {
 object StatePensionService extends StatePensionService with DesConnection {
   override lazy val des: DesConnector = DesConnector
   override lazy val citizenDetailsService: CitizenDetailsService = new CitizenDetailsService(citizenDetailsConnector = CitizenDetailsConnector)
-  override lazy val forecastingService: ForecastingService = ForecastingService
+  override lazy val forecastingService: ForecastingService = new ForecastingService(RateService)
   override lazy val rateService: RateService = RateService
   override lazy val metrics: Metrics = Metrics
   override val customAuditConnector: CustomAuditConnector = CustomAuditConnector

@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.domain
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, JsPath, Json, Writes}
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.statepension.services.ForecastingService
+import uk.gov.hmrc.statepension.services.{ForecastingService, RateService}
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -106,7 +106,7 @@ case class StatePension(earningsIncludedUpTo: LocalDate,
   }
 
   lazy val mqpScenario: Option[MQPScenario] = {
-    if (amounts.current.weeklyAmount > 0 && numberOfQualifyingYears >= ForecastingService.MINIMUM_QUALIFYING_YEARS) {
+    if (amounts.current.weeklyAmount > 0 && numberOfQualifyingYears >=  new ForecastingService(RateService).MINIMUM_QUALIFYING_YEARS) {
       None
     } else {
       if (amounts.forecast.weeklyAmount > 0) {

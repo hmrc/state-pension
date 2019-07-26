@@ -16,15 +16,20 @@
 
 package uk.gov.hmrc.statepension.services
 
+import com.google.inject.Inject
 import org.joda.time.LocalDate
 import services.TaxYearResolver
 import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
 
 import scala.math.BigDecimal.RoundingMode
+//
+//object ForecastingService extends ForecastingService {
+//  override lazy val rateService: RateService = RateService
+//}
 
-trait ForecastingService {
+class ForecastingService @Inject()(rateService: RateService) {
 
-  def rateService: RateService
+//  def rateService: RateService
 
   final val MINIMUM_QUALIFYING_YEARS = 10
 
@@ -97,8 +102,4 @@ trait ForecastingService {
 
   def sanitiseCurrentAmount(current: BigDecimal, qualifyingYears: Int): BigDecimal = if (qualifyingYears < MINIMUM_QUALIFYING_YEARS) 0 else current
 
-}
-
-object ForecastingService extends ForecastingService {
-  override lazy val rateService: RateService = RateService
 }

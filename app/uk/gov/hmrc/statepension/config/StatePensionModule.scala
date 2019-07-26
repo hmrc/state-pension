@@ -19,12 +19,11 @@ package uk.gov.hmrc.statepension.config
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
-import uk.gov.hmrc.statepension.services.{CitizenDetailsService, StatePensionService}
+import uk.gov.hmrc.statepension.services.StatePensionService
 
 class StatePensionModule extends Module{
     override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
       bind[StatePensionService].toInstance(StatePensionService),
       bind[CustomAuditConnector].toInstance(CustomAuditConnector)
-//      bind[CitizenDetailsService].toInstance(CitizenDetailsService)
     )
   }
