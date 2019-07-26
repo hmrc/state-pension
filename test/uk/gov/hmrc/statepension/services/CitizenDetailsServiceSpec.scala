@@ -31,9 +31,7 @@ class CitizenDetailsServiceSpec extends StatePensionServiceSpec {
   val nino: Nino = generateNino()
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val citizenDetailsService: CitizenDetailsService = new CitizenDetailsService {
-    override val citizenDetailsConnector: CitizenDetailsConnector = mockCitizenDetailsConnector
-  }
+  lazy val citizenDetailsService: CitizenDetailsService = new CitizenDetailsService(citizenDetailsConnector = mockCitizenDetailsConnector)
 
   "CitizenDetailsService" should {
     "return ManualCorrespondenceIndicator status is false when Response is 200" in {

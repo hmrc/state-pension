@@ -17,11 +17,12 @@
 package uk.gov.hmrc.statepension.services
 
 import java.util.TimeZone
+
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, DesConnector}
+import uk.gov.hmrc.statepension.connectors.{CitizenDetailsConnector, CustomAuditConnector, DesConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps.{Country, DesSummary}
@@ -196,7 +197,7 @@ trait DesConnection extends StatePensionService {
 
 object StatePensionService extends StatePensionService with DesConnection {
   override lazy val des: DesConnector = DesConnector
-  override lazy val citizenDetailsService: CitizenDetailsService = CitizenDetailsService
+  override lazy val citizenDetailsService: CitizenDetailsService = new CitizenDetailsService(citizenDetailsConnector = CitizenDetailsConnector)
   override lazy val forecastingService: ForecastingService = ForecastingService
   override lazy val rateService: RateService = RateService
   override lazy val metrics: Metrics = Metrics
