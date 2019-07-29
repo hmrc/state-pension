@@ -19,20 +19,24 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import org.mockito.Mockito._
 import org.mockito.{Matchers, Mockito}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{CustomAuditConnector, DesConnector}
+import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Exclusion, StatePension, _}
-import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 
 import scala.concurrent.Future
 
-class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite with ScalaFutures with MockitoSugar {
+class StatePensionServiceSpec extends StatePensionUnitSpec
+  with OneAppPerSuite
+  with ScalaFutures
+  with MockitoSugar
+  with BeforeAndAfterEach {
 
   private val dummyStatement: StatePension = StatePension(
     // scalastyle:off magic.number
@@ -65,11 +69,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         160.18
       ),
       OldRules(basicStatePension = 119.30,
-               additionalStatePension = 38.90,
-               graduatedRetirementBenefit = 10.00
+        additionalStatePension = 38.90,
+        graduatedRetirementBenefit = 10.00
       ),
       NewRules(grossStatePension = 155.65,
-        rebateDerivedAmount= 0.00)
+        rebateDerivedAmount = 0.00)
     ),
     pensionAge = 64,
     pensionDate = new LocalDate(2018, 7, 6),
@@ -83,25 +87,32 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     statePensionAgeUnderConsideration = false
   )
 
+  val mockDesConnector: DesConnector = mock[DesConnector]
+  val mockMetrics: Metrics = mock[Metrics]
+  val mockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
+  val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
+
+  val service: StatePensionService = new StatePensionService(mockDesConnector,
+    mockCitizenDetails,
+    defaultForecasting,
+    RateServiceBuilder.default,
+    mockMetrics,
+    mock[StatePensionAuditConnector]) {
+    override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+  }
+
+//  override def beforeEach: Unit = {
+//    Mockito.reset(mockDesConnector, mockMetrics, mockCitizenDetails)
+//  }
+
+
+
   "StatePensionService with a HOD Connection" when {
 
-    val mockCitizenDetails = mock[CitizenDetailsService]
     when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
-
-    val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
     "there are no exclusions" when {
       "there is a regular statement (Reached)" should {
-
-        val service: DesConnection = new DesConnection {
-          override lazy val des: DesConnector = mock[DesConnector]
-          override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-          override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-          override lazy val metrics: Metrics = mock[Metrics]
-          override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-          override lazy val forecastingService: ForecastingService = defaultForecasting
-          override lazy val rateService: RateService = RateServiceBuilder.default
-        }
 
         val regularStatement = DesSummary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -132,22 +143,22 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           )
         )
 
-        when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
-        when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           List()
         ))
 
-        when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           DesNIRecord(qualifyingYears = 36, List())
         ))
 
         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
         "log a summary metric" in {
-          verify(service.metrics, Mockito.atLeastOnce()).summary(
+          verify(mockMetrics, Mockito.atLeastOnce()).summary(
             Matchers.eq[BigDecimal](161.18),
             Matchers.eq[BigDecimal](161.18),
             Matchers.eq(false),
@@ -169,7 +180,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "not log an exclusion metric" in {
-          verify(service.metrics, never).exclusion(Matchers.any())
+          verify(mockMetrics, never).exclusion(Matchers.any())
         }
 
         "return earningsIncludedUpTo of 2016-4-5" in {
@@ -192,7 +203,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
         "return oldRules additionalStatePension as 39.22" in {
           whenReady(statement) { sp =>
-            sp.amounts.oldRules.additionalStatePension  shouldBe 39.22
+            sp.amounts.oldRules.additionalStatePension shouldBe 39.22
           }
         }
 
@@ -210,7 +221,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
         "return newRules grossStatePension as 155.65" in {
           whenReady(statement) { sp =>
-            sp.amounts.newRules.grossStatePension  shouldBe 155.65
+            sp.amounts.newRules.grossStatePension shouldBe 155.65
           }
         }
 
@@ -245,14 +256,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a pensionSharingOrder return true" in {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = true)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
         }
 
         "when there is no pensionSharingOrder return false" in {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(pensionSharingOrderSERPS = false)
           ))
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
@@ -271,21 +282,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a protected payment of some value return true" in {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
         }
 
         "when there is a protected payment of 0 return false" in {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
           ))
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
         }
 
         "when there is a rebate derived amount of 12.34 it" should {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
           ))
 
@@ -317,7 +328,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is a rebate derived amount of 0 it" should {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
           ))
 
@@ -338,7 +349,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
         "when there is all amounts of 0 it" should {
 
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(
               pensionEntitlement = 0,
               startingAmount2016 = 0,
@@ -377,7 +388,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 161.18 it" should {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
           ))
 
@@ -415,7 +426,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         }
 
         "when there is an entitlement of 0 it" should {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = DesStatePensionAmounts())
           ))
 
@@ -439,16 +450,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
 
     "there are exclusions" when {
       "there is a regular statement (Reached)" should {
-
-        val service: DesConnection = new DesConnection {
-          override lazy val des: DesConnector = mock[DesConnector]
-          override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-          override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-          override lazy val metrics: Metrics = mock[Metrics]
-          override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-          override lazy val forecastingService: ForecastingService = defaultForecasting
-          override lazy val rateService: RateService = RateServiceBuilder.default
-        }
 
         val regularStatement = DesSummary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -479,22 +480,22 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
           )
         )
 
-        when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
-        when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           List()
         ))
 
-        when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           DesNIRecord(qualifyingYears = 36, List())
         ))
 
         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
         "when there is a starting amount of 0 it" should {
-          when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
             regularStatement.copy(amounts = regularStatement.amounts.copy(startingAmount2016 = 0))
           ))
 
@@ -513,16 +514,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "there is a regular statement (Forecast)" should {
-
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -553,15 +544,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 20, List())
       ))
 
@@ -612,7 +603,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, times(1)).summary(
+        verify(mockMetrics, times(1)).summary(
           Matchers.eq[BigDecimal](134.75),
           Matchers.eq[BigDecimal](121.41),
           Matchers.eq(false),
@@ -634,21 +625,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "not log an exclusion metric" in {
-        verify(service.metrics, never).exclusion(Matchers.any())
+        verify(mockMetrics, never).exclusion(Matchers.any())
       }
     }
 
     "there is a regular statement (grossStatePension)" should {
-
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -679,15 +660,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 20, List())
       ))
 
@@ -706,15 +687,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "there is a regular statement (Fill Gaps)" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -745,19 +717,19 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 20, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
-      lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
       lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "the personal maximum amount" should {
@@ -839,7 +811,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, times(1)).summary(
+        verify(mockMetrics, times(1)).summary(
           Matchers.eq[BigDecimal](134.75),
           Matchers.eq[BigDecimal](121.41),
           Matchers.eq(false),
@@ -861,20 +833,11 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "not log an exclusion metric" in {
-        verify(service.metrics, never).exclusion(Matchers.any())
+        verify(mockMetrics, never).exclusion(Matchers.any())
       }
     }
 
     "there is an mqp user" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -905,15 +868,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 9, List())
       ))
 
@@ -924,16 +887,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer is dead" should {
-
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -948,15 +901,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         DesStatePensionAmounts()
       )
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
@@ -987,30 +940,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
+        verify(mockMetrics, times(1)).exclusion(
           Matchers.eq(Exclusion.Dead)
         )
       }
 
       "not log a summary metric" in {
-        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
+        verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
 
     "the customer is over state pension age" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(1954, 4, 5),
@@ -1025,16 +969,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         DesStatePensionAmounts()
       )
 
-
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
@@ -1065,29 +1008,20 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
+        verify(mockMetrics, times(1)).exclusion(
           Matchers.eq(Exclusion.PostStatePensionAge)
         )
       }
 
       "not log a summary metric" in {
-        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
 
     "the customer has married women's reduced rate election" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1121,21 +1055,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
       "summary have RRE flag as true" in {
         whenReady(summaryF) { summary =>
@@ -1156,7 +1090,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, times(1)).summary(
+        verify(mockMetrics, times(1)).summary(
           Matchers.eq[BigDecimal](155.65),
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
@@ -1179,15 +1113,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has male overseas auto credits (abroad exclusion)" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1202,22 +1127,22 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         DesStatePensionAmounts()
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "return StatePension object" in {
-            whenReady(statePensionF) { statePension =>
-               statePension shouldBe StatePension(new LocalDate("2016-04-05"),StatePensionAmounts(false,StatePensionAmount(None,None,0.00),StatePensionAmount(Some(34),None,151.20),StatePensionAmount(Some(0),Some(2),155.65),StatePensionAmount(None,None,0),StatePensionAmount(None,None,0),OldRules(0,0,0),NewRules(0,0)),61,new LocalDate("2018-01-01"),"2049-50",35,false,155.65,false,None, true, false)
-            }
+        whenReady(statePensionF) { statePension =>
+          statePension shouldBe StatePension(new LocalDate("2016-04-05"), StatePensionAmounts(false, StatePensionAmount(None, None, 0.00), StatePensionAmount(Some(34), None, 151.20), StatePensionAmount(Some(0), Some(2), 155.65), StatePensionAmount(None, None, 0), StatePensionAmount(None, None, 0), OldRules(0, 0, 0), NewRules(0, 0)), 61, new LocalDate("2018-01-01"), "2049-50", 35, false, 155.65, false, None, true, false)
+        }
       }
 
       "have a pension age of 61" in {
@@ -1233,23 +1158,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockMetrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
 
     "the customer has amount dissonance" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1267,13 +1183,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
@@ -1304,28 +1220,19 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
+        verify(mockMetrics, times(1)).exclusion(
           Matchers.eq(Exclusion.AmountDissonance)
         )
       }
 
       "not log a summary metric" in {
-        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
     "the customer has contributed national insurance in the isle of man" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1336,13 +1243,13 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List(DesLiability(Some(5)))
       ))
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
@@ -1373,28 +1280,19 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
+        verify(mockMetrics, times(1)).exclusion(
           Matchers.eq(Exclusion.IsleOfMan)
         )
       }
 
       "not log a summary metric" in {
-        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
     "the customer has a manual correspondence indicator" should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1405,14 +1303,14 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         dateOfBirth = new LocalDate(1956, 7, 7)
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
-      when(service.citizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 35, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
@@ -1443,28 +1341,19 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log an exclusion metric" in {
-        verify(service.metrics, times(1)).exclusion(
+        verify(mockMetrics, times(1)).exclusion(
           Matchers.eq(Exclusion.ManualCorrespondenceIndicator)
         )
       }
 
       "not log a summary metric" in {
-        verify(service.metrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
     "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1495,15 +1384,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 36, List())
       ))
 
@@ -1516,7 +1405,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, Mockito.atLeastOnce()).summary(
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq(false),
@@ -1539,15 +1428,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1578,15 +1458,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 36, List())
       ))
 
@@ -1599,7 +1479,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, Mockito.atLeastOnce()).summary(
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq(false),
@@ -1622,15 +1502,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1664,21 +1535,21 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         summary
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears =9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      lazy val summaryF: Future[DesSummary] = service.des.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
         whenReady(statePensionF) { statePension =>
@@ -1687,7 +1558,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, times(1)).summary(
+        verify(mockMetrics, times(1)).summary(
           Matchers.eq[BigDecimal](155.65),
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
@@ -1710,15 +1581,6 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
-      val service: DesConnection = new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1749,15 +1611,15 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 36, List())
       ))
 
@@ -1770,7 +1632,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, Mockito.atLeastOnce()).summary(
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq(false),
@@ -1793,15 +1655,20 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
     }
 
     "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
-      val service: DesConnection= new DesConnection {
-        override lazy val des: DesConnector = mock[DesConnector]
-        override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
-        override lazy val citizenDetailsService: CitizenDetailsService = mockCitizenDetails
-        override lazy val metrics: Metrics = mock[Metrics]
-        override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
-        override lazy val forecastingService: ForecastingService = defaultForecasting
-        override lazy val rateService: RateService = RateServiceBuilder.default
-      }
+
+        val NEWmockDesConnector: DesConnector = mock[DesConnector]
+  val NEWmockMetrics: Metrics = mock[Metrics]
+  val NEWmockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
+  val NEWdefaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
+
+  val NEWService: StatePensionService = new StatePensionService(NEWmockDesConnector,
+    NEWmockCitizenDetails,
+    NEWdefaultForecasting,
+    RateServiceBuilder.default,
+    NEWmockMetrics,
+    mock[StatePensionAuditConnector]) {
+    override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+  }
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
@@ -1832,19 +1699,19 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
         )
       )
 
-      when(service.des.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        regularStatement
-      ))
+      when(NEWmockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(regularStatement))
 
-      when(service.des.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        List()
-      ))
+      when(NEWmockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(List()))
 
-      when(service.des.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 36, List())
-      ))
+      when(NEWmockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      when(NEWmockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(false))
+
+      lazy val statePensionF: Future[StatePension] = NEWService.getStatement(generateNino()).right.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
         whenReady(statePensionF) { statePension =>
@@ -1853,7 +1720,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec with OneAppPerSuite w
       }
 
       "log a summary metric" in {
-        verify(service.metrics, Mockito.atLeastOnce()).summary(
+        verify(NEWmockMetrics, Mockito.atLeastOnce()).summary(
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq[BigDecimal](161.18),
           Matchers.eq(false),

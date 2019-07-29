@@ -18,11 +18,12 @@ package uk.gov.hmrc.statepension.services
 
 import java.util.TimeZone
 
+import com.google.inject.Inject
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.statepension.connectors.{CitizenDetailsConnector, CustomAuditConnector, DesConnector}
+import uk.gov.hmrc.statepension.connectors.{StatePensionAuditConnector, CitizenDetailsConnector, DesConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps.{Country, DesSummary}
@@ -30,24 +31,16 @@ import uk.gov.hmrc.statepension.events.DesForecasting
 
 import scala.concurrent.Future
 
-trait StatePensionService {
-  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
-}
+class StatePensionService @Inject()(des: DesConnector,
+                                    citizenDetailsService: CitizenDetailsService,
+                                    forecastingService: ForecastingService,
+                                    rateService: RateService,
+                                    metrics: Metrics,
+                                    customAuditConnector: StatePensionAuditConnector) {
 
-trait DesConnection extends StatePensionService {
-  def des: DesConnector
+  def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
 
-  def citizenDetailsService: CitizenDetailsService
-  def forecastingService: ForecastingService
-  def rateService: RateService
-
-  def now: LocalDate
-
-  def metrics: Metrics
-
-  def customAuditConnector: CustomAuditConnector
-
-  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
+  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
     val summaryF =  des.getSummary(nino)
     val liablitiesF = des.getLiabilities(nino)
@@ -193,14 +186,4 @@ trait DesConnection extends StatePensionService {
     !dateOfBirth.isBefore(CHANGE_SPA_MIN_DATE)  && !dateOfBirth.isAfter(CHANGE_SPA_MAX_DATE)
   }
 
-}
-
-object StatePensionService extends StatePensionService with DesConnection {
-  override lazy val des: DesConnector = DesConnector
-  override lazy val citizenDetailsService: CitizenDetailsService = new CitizenDetailsService(citizenDetailsConnector = CitizenDetailsConnector)
-  override lazy val forecastingService: ForecastingService = new ForecastingService(RateService)
-  override lazy val rateService: RateService = RateService
-  override lazy val metrics: Metrics = Metrics
-  override val customAuditConnector: CustomAuditConnector = CustomAuditConnector
-  override def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
 }

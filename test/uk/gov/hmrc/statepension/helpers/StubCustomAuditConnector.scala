@@ -18,10 +18,10 @@ package uk.gov.hmrc.statepension.helpers
 
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
+import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
-object StubCustomAuditConnector extends CustomAuditConnector {
-  override lazy val auditConnector: AuditConnector = ???
-  override def sendEvent(event: DataEvent)(implicit hc: HeaderCarrier): Unit = {}
-}
+//object StubCustomAuditConnector extends StatePensionAuditConnector{
+//  override lazy val auditConnector: StatePensionAuditConnector = ???
+//  override def sendEvent(event: DataEvent)(implicit hc: HeaderCarrier): Unit = {}
+//}

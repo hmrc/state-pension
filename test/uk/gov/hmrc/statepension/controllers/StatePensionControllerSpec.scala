@@ -17,34 +17,33 @@
 package uk.gov.hmrc.statepension.controllers
 
 import org.joda.time.LocalDate
+import org.mockito.Matchers.any
+import org.mockito.Mockito._
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
+import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.helpers.StubCustomAuditConnector
 import uk.gov.hmrc.statepension.services.StatePensionService
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
+class StatePensionControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
 
   val nino: Nino = new Generator(new Random()).nextNino
 
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  def testStatePensionController(spService: StatePensionService): StatePensionController = new StatePensionController(StatePensionService,
-                                                                                                                      CustomAuditConnector) {
-
-    override val statePensionService: StatePensionService = spService
-    override val app: String = "Test State Pension"
-    override val context: String = "test"
-    override val customAuditConnector: CustomAuditConnector = StubCustomAuditConnector
+  def testStatePensionController(spService: StatePensionService): StatePensionController =
+    new StatePensionController(spService, mock[StatePensionAuditConnector]) {
+      override val app: String = "Test State Pension"
+      override val context: String = "test"
   }
 
   val testStatePension = StatePension(
@@ -77,18 +76,24 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
 
   "get" should {
     "return status code 406 when the headers are invalid" in {
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = ???
-      }).get(nino)(emptyRequest)
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(???)
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequest)
 
       status(response) shouldBe 406
       contentAsJson(response) shouldBe Json.parse("""{"code":"ACCEPT_HEADER_INVALID","message":"The accept header is missing or invalid"}""")
     }
 
     "return 200 with a Response" in {
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePension)
-      }).get(nino)(emptyRequestWithHeader)
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Right(testStatePension))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
@@ -121,10 +126,14 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "return 200 with a Response for RRE" in {
+      val mockStatePensionService = mock[StatePensionService]
+
       val testStatePensionRRE = testStatePension.copy(reducedRateElection=true, reducedRateElectionCurrentWeeklyAmount=Some(155.65))
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePensionRRE)
-      }).get(nino)(emptyRequestWithHeader)
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Right(testStatePensionRRE))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
@@ -157,10 +166,14 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "return 200 with a Response for Customers with date of birth within the correct range for state pension age under consideration flag" in {
+      val mockStatePensionService = mock[StatePensionService]
+
       val testStatePensionAgeUnderConsideration = testStatePension.copy(statePensionAgeUnderConsideration=true)
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Right(testStatePensionAgeUnderConsideration)
-      }).get(nino)(emptyRequestWithHeader)
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Right(testStatePensionAgeUnderConsideration))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
@@ -193,42 +206,64 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "return BadRequest and message for Upstream BadRequest" in {
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Future.failed(new BadRequestException("Upstream 400"))
-      }).get(nino)(emptyRequestWithHeader)
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Future.failed(new BadRequestException("Upstream 400")))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 400
       contentAsJson(response) shouldBe Json.parse("""{"code":"BAD_REQUEST","message":"Upstream Bad Request. Is this customer below State Pension Age?"}""")
     }
 
     "return 403 with an error message for an MCI exclusion" in {
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.ManualCorrespondenceIndicator), 0, new LocalDate(2050, 1, 1), false))
-      }).get(nino)(emptyRequestWithHeader)
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Left(
+          StatePensionExclusion(List(Exclusion.ManualCorrespondenceIndicator),
+            0,
+            new LocalDate(2050, 1, 1),
+            false)
+        ))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_MANUAL_CORRESPONDENCE","message":"The customer cannot access the service, they should contact HMRC"}""")
     }
 
     "return 403 with an error message for a Dead exclusion" in {
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = Left(StatePensionExclusion(List(Exclusion.Dead), 0, new LocalDate(2050, 1, 1), false))
-      }).get(nino)(emptyRequestWithHeader)
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Left(
+          StatePensionExclusion(List(Exclusion.Dead),
+            0,
+            new LocalDate(2050, 1, 1),
+            false)
+        ))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")
     }
 
     "return 403 with the dead error message if user is Dead and has MCI" in {
-      val response = testStatePensionController(new StatePensionService {
-        override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] =
-          Left(StatePensionExclusion(
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any()))
+        .thenReturn(Left(StatePensionExclusion(
             List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
             0,
             new LocalDate(2050, 1, 1),
             false
-          ))
-      }).get(nino)(emptyRequestWithHeader)
+          )
+        ))
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")

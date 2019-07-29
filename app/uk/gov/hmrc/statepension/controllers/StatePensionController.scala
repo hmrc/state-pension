@@ -24,13 +24,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
+import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.services.StatePensionService
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 
 class StatePensionController @Inject()(val statePensionService: StatePensionService,
-                                       val customAuditConnector: CustomAuditConnector)
+                                       val customAuditConnector: StatePensionAuditConnector)
   extends BaseController
     with HeaderValidator
     with ErrorHandling
