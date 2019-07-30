@@ -151,11 +151,6 @@ class StatePensionServiceSpecAgeUnderConsideration extends StatePensionUnitSpec
         DesNIRecord(qualifyingYears = 36, List())
       ))
 
-      //TODO - Go through getStatement to find where dropping out and compare to master.
-      //AmountDissonance error being thrown
-
-      print("%%%%%%%%%%%%%%%%%%%%%%%% -- " + service.getStatement(generateNino()).left)
-
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {

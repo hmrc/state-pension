@@ -127,7 +127,6 @@ class StatePensionService @Inject()(des: DesConnector,
           abroadAutoCredit = checkOverseasMaleAutoCredits(summary),
           statePensionAgeUnderConsideration = checkStatePensionAgeUnderConsideration(summary.dateOfBirth)
         )
-
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
           statePension.contractedOut, statePension.forecastScenario, statePension.amounts.maximum.weeklyAmount,
           statePension.amounts.forecast.yearsToWork.getOrElse(0), statePension.mqpScenario,
