@@ -89,6 +89,114 @@ class StatePensionServiceSpecOne extends StatePensionUnitSpec
     )
   }
 
+  "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
+
+      val statePensionAgeDate = new LocalDate(2034, 4, 5)
+      val dateOfBirth = new LocalDate(1970, 4, 5)
+      val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
+
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
+      ))
+
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 36, List())
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "statePension have statePensionAgeUnderConsideration flag as false" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          regularStatement
+        ))
+
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe false
+        }
+      }
+
+      "log a summary metric" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          regularStatement
+        ))
+
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(false)
+        )
+      }
+    }
+
+
+  "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
+
+    val statePensionAgeDate = new LocalDate(2034, 4, 6)
+    val dateOfBirth = new LocalDate(1970, 4, 6)
+    val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
+
+    when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      List()
+    ))
+
+    when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      DesNIRecord(qualifyingYears = 36, List())
+    ))
+
+    lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+    "statePension have statePensionAgeUnderConsideration flag as true" in {
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement
+      ))
+
+      whenReady(statePensionF) { statePension =>
+        statePension.statePensionAgeUnderConsideration shouldBe true
+      }
+    }
+
+    "log a summary metric" in {
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            regularStatement
+      ))
+
+      verify(mockMetrics, Mockito.atLeastOnce()).summary(
+        Matchers.eq[BigDecimal](161.18),
+        Matchers.eq[BigDecimal](161.18),
+        Matchers.eq(false),
+        Matchers.eq(Scenario.Reached),
+        Matchers.eq[BigDecimal](161.18),
+        Matchers.eq(0),
+        Matchers.eq(None),
+        Matchers.eq[BigDecimal](161.18),
+        Matchers.eq[BigDecimal](119.3),
+        Matchers.eq[BigDecimal](39.22),
+        Matchers.eq[BigDecimal](2.66),
+        Matchers.eq[BigDecimal](155.65),
+        Matchers.eq[BigDecimal](0),
+        Matchers.eq(false),
+        Matchers.eq(None),
+        Matchers.eq(false),
+        Matchers.eq(true)
+      )
+    }
+  }
+
+
   "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
 
     val summary = DesSummary(
