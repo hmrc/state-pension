@@ -95,7 +95,7 @@ class StatePensionServiceSpecAgeUnderConsideration extends StatePensionUnitSpec
     "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
 
       val mockDesConnector: DesConnector = mock[DesConnector]
-      val mockMetrics: Metrics = mock[Metrics]
+      val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
       val mockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
       val mockDefaultForecasting = mock[ForecastingService]
 

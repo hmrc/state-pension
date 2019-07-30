@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -40,7 +40,7 @@ trait DesConnector {
   def token:String
   def environment: (String, String)
   def serviceOriginatorId: (String, String)
-  def metrics: Metrics
+  def metrics: ApplicationMetrics
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[DesSummary] = {
     val urlToRead = s"$desBaseUrl/individuals/${ninoWithoutSuffix(nino)}/pensions/summary"
@@ -103,7 +103,7 @@ object DesConnector extends DesConnector with ServicesConfig {
   override val serviceOriginatorId: (String, String) = (getConfString("des-hod.originatoridkey", ""), getConfString("des-hod.originatoridvalue", ""))
   override val environment: (String, String) = ("Environment", getConfString("des-hod.environment", ""))
   override val token: String = getConfString("des-hod.token", "")
-  override val metrics: Metrics = Metrics
+  override val metrics: ApplicationMetrics = Play.current.injector.instanceOf[ApplicationMetrics]
   override protected def mode: Mode = Play.current.mode
   override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

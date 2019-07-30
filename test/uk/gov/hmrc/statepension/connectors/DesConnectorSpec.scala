@@ -19,22 +19,21 @@ package uk.gov.hmrc.statepension.connectors
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito._
-import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.helpers.StubMetrics
-import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.statepension.helpers.StubApplicationMetrics$
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
+class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAppPerSuite {
 
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
@@ -168,7 +167,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override def desBaseUrl: String = "test-url"
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
+      override val metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
 
       override def token: String = "token"
 
@@ -338,7 +337,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override def environment: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
+      override val metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
     }
 
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -417,7 +416,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
         override def environment: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-        override val metrics: Metrics = StubMetrics
+        override val metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
       }
 
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -479,7 +478,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override def environment: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
+      override val metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
     }
 
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -510,7 +509,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
       override def environment: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
+      override val metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
     }
 
     when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
@@ -559,7 +558,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
 
-        override def metrics: Metrics = StubMetrics
+        override def metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
       }
 
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
@@ -596,7 +595,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
 
-        override def metrics: Metrics = StubMetrics
+        override def metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
       }
 
       when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(

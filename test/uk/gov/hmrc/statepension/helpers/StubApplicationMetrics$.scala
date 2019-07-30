@@ -18,14 +18,16 @@ package uk.gov.hmrc.statepension.helpers
 
 import com.codahale.metrics.Timer
 import com.codahale.metrics.Timer.Context
+import com.google.inject.Inject
+import com.kenshoo.play.metrics.Metrics
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.{MQPScenario, Scenario}
-import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 
-object StubMetrics extends Metrics with MockitoSugar {
+class StubApplicationMetrics$ @Inject()(metrics: Metrics) extends ApplicationMetrics(metrics) with MockitoSugar {
   val stubTimerContext: Context = mock[Timer.Context]
   override def startTimer(api: APIType): Context = mock[Timer.Context]
   override def incrementFailedCounter(api: APIType): Unit = {}

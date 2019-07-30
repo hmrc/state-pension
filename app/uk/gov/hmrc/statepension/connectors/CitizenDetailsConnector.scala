@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps.APIType
-import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -35,7 +35,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, Upstream4xxRespon
 trait CitizenDetailsConnector {
   def http: HttpGet
   def serviceUrl: String
-  def metrics: Metrics
+  def metrics: ApplicationMetrics
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
@@ -68,7 +68,7 @@ object CitizenDetailsConnector extends CitizenDetailsConnector with ServicesConf
     override protected def appNameConfiguration: Configuration = Play.current.configuration
   }
   override val serviceUrl: String = baseUrl("citizen-details")
-  override val metrics: Metrics = Metrics
+  override val metrics: ApplicationMetrics = Play.current.injector.instanceOf[ApplicationMetrics]
   override protected def mode: Mode = Play.current.mode
   override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

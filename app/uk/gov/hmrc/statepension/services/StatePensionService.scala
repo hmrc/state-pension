@@ -35,7 +35,7 @@ class StatePensionService @Inject()(des: DesConnector,
                                     citizenDetailsService: CitizenDetailsService,
                                     forecastingService: ForecastingService,
                                     rateService: RateService,
-                                    metrics: Metrics,
+                                    metrics: ApplicationMetrics,
                                     customAuditConnector: StatePensionAuditConnector) {
 
   def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
@@ -53,6 +53,7 @@ class StatePensionService @Inject()(des: DesConnector,
       niRecord <- niRecordF
       manualCorrespondence <- manualCorrespondenceF
     } yield {
+
       val exclusions: List[Exclusion] = new DesExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,

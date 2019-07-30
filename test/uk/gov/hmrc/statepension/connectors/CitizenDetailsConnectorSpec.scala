@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps.APIType
-import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpResponse, InternalServerException, NotFoundException, Upstream4xxResponse }
@@ -38,7 +38,7 @@ class CitizenDetailsConnectorSpec extends StatePensionUnitSpec with MockitoSugar
   val citizenDetailsConnector = new CitizenDetailsConnector {
     override val serviceUrl: String = "/"
     override val http: HttpGet = mock[HttpGet]
-    override val metrics: Metrics = mock[Metrics]
+    override val metrics: ApplicationMetrics = mock[ApplicationMetrics]
   }
 
   val context = mock[Timer.Context]

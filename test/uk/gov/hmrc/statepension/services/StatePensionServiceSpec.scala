@@ -88,7 +88,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec
   )
 
   val mockDesConnector: DesConnector = mock[DesConnector]
-  val mockMetrics: Metrics = mock[Metrics]
+  val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
   val mockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
@@ -1611,15 +1611,18 @@ class StatePensionServiceSpec extends StatePensionUnitSpec
         )
       )
 
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(
         regularStatement
       ))
 
-      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(
         List()
       ))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+        .thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 36, List())
       ))
 
@@ -1657,7 +1660,7 @@ class StatePensionServiceSpec extends StatePensionUnitSpec
     "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
 
         val NEWmockDesConnector: DesConnector = mock[DesConnector]
-  val NEWmockMetrics: Metrics = mock[Metrics]
+  val NEWmockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
   val NEWmockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
   val NEWdefaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
