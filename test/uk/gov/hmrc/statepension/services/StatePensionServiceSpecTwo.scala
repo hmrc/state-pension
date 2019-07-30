@@ -26,8 +26,10 @@ import org.scalatestplus.play.{OneAppPerSuite, OneAppPerTest}
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
-import uk.gov.hmrc.statepension.domain.{Exclusion, NewRules, OldRules, StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
-import uk.gov.hmrc.statepension.domain.nps.{DesAmountB2016, DesLiability, DesNIRecord, DesNITaxYear, DesStatePensionAmounts, DesSummary}
+import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
+import uk.gov.hmrc.statepension.domain.{Exclusion, NewRules, OldRules, Scenario, StatePension, StatePensionAmount, StatePensionAmounts, StatePensionExclusion}
+import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016, DesLiability, DesNIRecord, DesNITaxYear, DesStatePensionAmounts, DesSummary}
+
 import scala.concurrent.Future
 
 class StatePensionServiceSpecTwo extends StatePensionUnitSpec
@@ -83,6 +85,102 @@ class StatePensionServiceSpecTwo extends StatePensionUnitSpec
 
 
   "StatePensionService with a HOD Connection" when {
+
+    "the customer has married women's reduced rate election" should {
+
+      val summary1 = DesSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1956, 7, 7),
+        dateOfDeath = None,
+        reducedRateElection = true,
+        countryCode = 1,
+        amounts = DesStatePensionAmounts(
+          pensionEntitlement = 32.61,
+          startingAmount2016 = 35.58,
+          protectedPayment2016 = 0,
+          DesAmountA2016(
+            basicStatePension = 31.81,
+            pre97AP = 0,
+            post97AP = 0,
+            post02AP = 0,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 0
+          ),
+          DesAmountB2016(
+            mainComponent = 35.58,
+            rebateDerivedAmount = 0
+          )
+        )
+      )
+
+      "summary have RRE flag as true" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          summary1
+        ))
+        lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        whenReady(summaryF) { summary =>
+          summary.reducedRateElection shouldBe true
+        }
+      }
+
+      "statePension have RRE flag as true" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          summary1
+        ))
+        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+        whenReady(statePensionF) { statePension =>
+          statePension.reducedRateElection shouldBe true
+        }
+      }
+
+      "statePension" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          summary1
+        ))
+        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+        whenReady(statePensionF) { statePension =>
+          statePension.reducedRateElectionCurrentWeeklyAmount shouldBe Some(32.61)
+        }
+      }
+
+      "log a summary metric" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(summary1))
+
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+        ))
+        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+        whenReady(statePensionF) { _ =>
+          verify(mockMetrics, times(1)).summary(
+            Matchers.eq[BigDecimal](155.65),
+            Matchers.eq[BigDecimal](0),
+            Matchers.eq(false),
+            Matchers.eq(Scenario.ContinueWorkingMax),
+            Matchers.eq[BigDecimal](155.65),
+            Matchers.eq(28),
+            Matchers.eq(Some(ContinueWorking)),
+            Matchers.eq[BigDecimal](35.58),
+            Matchers.eq[BigDecimal](31.81),
+            Matchers.eq[BigDecimal](0),
+            Matchers.eq[BigDecimal](0),
+            Matchers.eq[BigDecimal](35.58),
+            Matchers.eq[BigDecimal](0),
+            Matchers.eq(true),
+            Matchers.eq(Some(32.61)),
+            Matchers.eq(false),
+            Matchers.eq(false)
+          )
+        }
+      }
+    }
 
 
     "the customer has male overseas auto credits (abroad exclusion)" should {
