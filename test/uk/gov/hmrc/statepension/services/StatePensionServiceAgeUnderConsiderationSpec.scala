@@ -31,7 +31,7 @@ import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016, DesN
 
 import scala.concurrent.Future
 
-class StatePensionServiceSpecOne extends StatePensionUnitSpec
+class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
   with OneAppPerSuite
   with ScalaFutures
   with MockitoSugar {
@@ -144,7 +144,6 @@ class StatePensionServiceSpecOne extends StatePensionUnitSpec
       }
     }
 
-
     "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
 
       val statePensionAgeDate = new LocalDate(2034, 4, 6)
@@ -197,7 +196,6 @@ class StatePensionServiceSpecOne extends StatePensionUnitSpec
         )
       }
     }
-
 
     "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
 
@@ -283,7 +281,6 @@ class StatePensionServiceSpecOne extends StatePensionUnitSpec
         )
       }
     }
-
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
 

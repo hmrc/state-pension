@@ -32,12 +32,11 @@ import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016, DesN
 
 import scala.concurrent.Future
 
-class StatePensionServiceSpecThree extends StatePensionUnitSpec
+class StatePensionServiceStatementSpec extends StatePensionUnitSpec
   with OneAppPerSuite
   with ScalaFutures
   with MockitoSugar
   with BeforeAndAfterEach {
-
 
   val mockDesConnector: DesConnector = mock[DesConnector]
   val mockStatePensionAuditConnector = mock[StatePensionAuditConnector]
@@ -54,8 +53,6 @@ class StatePensionServiceSpecThree extends StatePensionUnitSpec
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
   }
 
-//  val summary = ???
-
   override def beforeEach: Unit = {
     Mockito.reset(mockDesConnector, mockMetrics, mockCitizenDetails, mockStatePensionAuditConnector)
 
@@ -68,8 +65,8 @@ class StatePensionServiceSpecThree extends StatePensionUnitSpec
     when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
       .thenReturn(Future.successful(
         DesNIRecord(qualifyingYears = 20, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)),
-        DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
-    ))
+          DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+      ))
 
   }
 
@@ -368,8 +365,8 @@ class StatePensionServiceSpecThree extends StatePensionUnitSpec
         "when there is a protected payment of some value return true" in {
           when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
             .thenReturn(Future.successful(
-            regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
-          ))
+              regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
+            ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
             .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
@@ -380,8 +377,8 @@ class StatePensionServiceSpecThree extends StatePensionUnitSpec
         "when there is a protected payment of 0 return false" in {
           when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
             .thenReturn(Future.successful(
-            regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
-          ))
+              regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
+            ))
 
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
@@ -1065,7 +1062,6 @@ class StatePensionServiceSpecThree extends StatePensionUnitSpec
       )
 
 
-
       "the NewRules amounts" should {
         "return grossStatePension amount of 84.50" in {
           when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
@@ -1310,51 +1306,49 @@ class StatePensionServiceSpecThree extends StatePensionUnitSpec
       }
     }
 
+    "there is an mqp user" should {
 
-  "there is an mqp user" should {
-
-    val regularStatement = DesSummary(
-      earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-      sex = "F",
-      statePensionAgeDate = new LocalDate(2019, 9, 6),
-      finalRelevantStartYear = 2018,
-      pensionSharingOrderSERPS = false,
-      dateOfBirth = new LocalDate(1954, 3, 9),
-      amounts = DesStatePensionAmounts(
-        pensionEntitlement = 40.53,
-        startingAmount2016 = 40.53,
-        protectedPayment2016 = 0,
-        DesAmountA2016(
-          basicStatePension = 35.79,
-          pre97AP = 0,
-          post97AP = 0,
-          post02AP = 4.74,
-          pre88GMP = 0,
-          post88GMP = 0,
-          pre88COD = 0,
-          post88COD = 0,
-          graduatedRetirementBenefit = 0
-        ),
-        DesAmountB2016(
-          mainComponent = 40.02,
-          rebateDerivedAmount = 0
+      val regularStatement = DesSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1954, 3, 9),
+        amounts = DesStatePensionAmounts(
+          pensionEntitlement = 40.53,
+          startingAmount2016 = 40.53,
+          protectedPayment2016 = 0,
+          DesAmountA2016(
+            basicStatePension = 35.79,
+            pre97AP = 0,
+            post97AP = 0,
+            post02AP = 4.74,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 0
+          ),
+          DesAmountB2016(
+            mainComponent = 40.02,
+            rebateDerivedAmount = 0
+          )
         )
       )
-    )
 
-    "return 0 for the current amount" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(regularStatement))
+      "return 0 for the current amount" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(regularStatement))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 9, List())))
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 9, List())))
 
-      lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
-      whenReady(statement) { statement =>
-        statement.amounts.current.weeklyAmount shouldBe 0
+        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        whenReady(statement) { statement =>
+          statement.amounts.current.weeklyAmount shouldBe 0
+        }
       }
     }
   }
-}
-
 }

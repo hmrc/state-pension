@@ -32,7 +32,7 @@ import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016, DesL
 
 import scala.concurrent.Future
 
-class StatePensionServiceSpecTwo extends StatePensionUnitSpec
+class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
   with OneAppPerSuite
   with ScalaFutures
   with MockitoSugar
@@ -83,7 +83,6 @@ class StatePensionServiceSpecTwo extends StatePensionUnitSpec
 
   }
 
-
   "StatePensionService with a HOD Connection" when {
 
     "the customer is dead" should {
@@ -100,9 +99,6 @@ class StatePensionServiceSpecTwo extends StatePensionUnitSpec
         countryCode = 1,
         DesStatePensionAmounts()
       )
-
-
-
 
 
       "return dead exclusion" in {
@@ -341,7 +337,6 @@ class StatePensionServiceSpecTwo extends StatePensionUnitSpec
         }
       }
     }
-
 
     "the customer has male overseas auto credits (abroad exclusion)" should {
 
