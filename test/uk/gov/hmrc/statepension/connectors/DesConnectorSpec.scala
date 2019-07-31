@@ -240,6 +240,58 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     }
 
     "parse the json and return a Future[DesSummary]" in {
+
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        """
+          |{
+          |  "contractedOutFlag": 0,
+          |  "sensitiveCaseFlag": 0,
+          |  "spaDate": "2019-09-06",
+          |  "finalRelevantYear": 2018,
+          |  "accountNotMaintainedFlag": null,
+          |  "penForecast": {
+          |    "forecastAmount": 160.19,
+          |    "nspMax": 155.65,
+          |    "qualifyingYearsAtSpa": 40,
+          |    "forecastAmount2016": 160.19
+          |  },
+          |  "pensionShareOrderCoeg": false,
+          |  "dateOfDeath": null,
+          |  "sex": "M",
+          |  "statePensionAmount": {
+          |    "nspEntitlement": 161.18,
+          |    "apAmount": 2.36,
+          |    "amountB2016": {
+          |      "mainComponent": 155.65,
+          |      "rebateDerivedAmount": 0.0
+          |    },
+          |    "amountA2016": {
+          |      "ltbPost97ApCashValue": 6.03,
+          |      "ltbCatACashValue": 119.3,
+          |      "ltbPost88CodCashValue": null,
+          |      "ltbPre97ApCashValue": 17.79,
+          |      "ltbPre88CodCashValue": null,
+          |      "grbCash": 2.66,
+          |      "ltbPst88GmpCashValue": null,
+          |      "pre88Gmp": null,
+          |      "ltbPost02ApCashValue": 15.4
+          |    },
+          |    "protectedPayment2016": 5.53,
+          |    "startingAmount": 161.18
+          |  },
+          |  "dateOfBirth": "1954-03-09",
+          |  "nspQualifyingYears": 36,
+          |  "countryCode": 1,
+          |  "nspRequisiteYears": 35,
+          |  "minimumQualifyingPeriod": 1,
+          |  "addressPostcode": "WS9 8LL",
+          |  "reducedRateElectionToConsider": false,
+          |  "pensionShareOrderSerps": true,
+          |  "nino": "QQ123456A",
+          |  "earningsIncludedUpto": "2016-04-05"
+          |}
+      """.stripMargin))))
+
       val summary = await(connector.getSummary(nino))
 
       summary shouldBe DesSummary(
@@ -398,6 +450,51 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     }
 
     "parse the json and return a Future[List[DesLiability]" in {
+
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+           |{
+           |  "liabilities": [
+           |    {
+           |      "liabilityTypeEndDate": "1992-11-21",
+           |      "liabilityOccurrenceNo": 1,
+           |      "liabilityTypeStartDate": "1983-11-06",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-08",
+           |      "liabilityOccurrenceNo": 2,
+           |      "liabilityTypeStartDate": "1995-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-15",
+           |      "liabilityOccurrenceNo": 3,
+           |      "liabilityTypeStartDate": "2006-07-09",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2012-01-21",
+           |      "liabilityOccurrenceNo": 4,
+           |      "liabilityTypeStartDate": "2006-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    }
+           |  ]
+           |}
+      """.stripMargin))))
+
       val summary = await(connector.getLiabilities(nino))
       summary shouldBe List(
         DesLiability(Some(13)),
@@ -523,6 +620,10 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     }
 
     "parse the json and return a Future[DesNIRecord]" in {
+
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
+      connector.getNIRecord(nino)
+
       val summary = await(connector.getNIRecord(nino))
       summary shouldBe DesNIRecord(
         qualifyingYears = 36,

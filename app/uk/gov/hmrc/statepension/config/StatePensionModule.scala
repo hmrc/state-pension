@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.config
 
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.http.HttpGet
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.connectors.{CitizenDetailsConnector, DesConnector}
 import uk.gov.hmrc.statepension.services.RateService
