@@ -21,16 +21,17 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
-import uk.gov.hmrc.statepension.services.StatePensionService
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
+import uk.gov.hmrc.statepension.services.StatePensionService
 
-class StatePensionController @Inject()(val statePensionService: StatePensionService,
-                                       val customAuditConnector: StatePensionAuditConnector)
+class StatePensionController @Inject()(appContext: AppContext,
+                                       statePensionService: StatePensionService,
+                                       customAuditConnector: StatePensionAuditConnector)
   extends BaseController
     with HeaderValidator
     with ErrorHandling
@@ -38,7 +39,7 @@ class StatePensionController @Inject()(val statePensionService: StatePensionServ
     with Links {
 
   override val app: String = "State-Pension"
-  override val context: String = AppContext.apiGatewayContext
+  override val context: String = appContext.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = validateAccept(acceptHeaderValidationRules).async {
     implicit request =>

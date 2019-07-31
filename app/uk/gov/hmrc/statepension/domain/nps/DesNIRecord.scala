@@ -17,8 +17,8 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.Logger
-import play.api.libs.json.{JsPath, Reads, __}
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Reads, __}
 
 case class DesNIRecord(qualifyingYears: Int = 0, taxYears: List[DesNITaxYear]) {
   val payableGapsPre2016: Int = taxYears.filter(_.startTaxYear.exists(_ < 2016)).count(_.payable)

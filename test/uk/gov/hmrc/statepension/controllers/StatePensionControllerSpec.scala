@@ -20,12 +20,14 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.BadRequestException
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
@@ -33,15 +35,17 @@ import uk.gov.hmrc.statepension.services.StatePensionService
 import scala.concurrent.Future
 import scala.util.Random
 
-class StatePensionControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
+class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSugar {
 
   val nino: Nino = new Generator(new Random()).nextNino
 
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
+  val appContext = app.injector.instanceOf[AppContext]
+
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController(spService, mock[StatePensionAuditConnector]) {
+    new StatePensionController(appContext, spService, mock[StatePensionAuditConnector]) {
       override val app: String = "Test State Pension"
       override val context: String = "test"
   }

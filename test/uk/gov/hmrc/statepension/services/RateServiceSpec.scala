@@ -16,12 +16,8 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.scalatestplus.play.OneAppPerSuite
-import play.api.Configuration
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-
-import scala.math.BigDecimal.RoundingMode
 
 class RateServiceSpec extends StatePensionUnitSpec {
 

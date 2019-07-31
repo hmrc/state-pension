@@ -17,11 +17,11 @@
 package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.Inject
+import play.api.http.HttpErrorHandler
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppContext}
 import uk.gov.hmrc.statepension.domain.APIAccess
 import uk.gov.hmrc.statepension.views._
-import play.api.http.{HttpErrorHandler, LazyHttpErrorHandler}
 
 class DocumentationController @Inject()(errorHandler: HttpErrorHandler, appContext: AppContext)
   extends uk.gov.hmrc.api.controllers.DocumentationController(errorHandler = errorHandler) {

@@ -22,8 +22,8 @@ import com.google.inject.Inject
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.statepension.connectors.{StatePensionAuditConnector, CitizenDetailsConnector, DesConnector}
+import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps.{Country, DesSummary}
@@ -54,7 +54,7 @@ class StatePensionService @Inject()(des: DesConnector,
       manualCorrespondence <- manualCorrespondenceF
     } yield {
 
-      val exclusions: List[Exclusion] = new DesExclusionService(
+      val exclusions: List[Exclusion] = DesExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
         now,

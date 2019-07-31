@@ -18,11 +18,11 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
+import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 class CitizenDetailsService @Inject()(citizenDetailsConnector: CitizenDetailsConnector) {
 

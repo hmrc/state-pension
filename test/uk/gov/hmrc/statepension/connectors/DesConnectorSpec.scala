@@ -23,14 +23,14 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
-import play.api.{Configuration, Environment}
 import play.api.libs.json.Json
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpGet, HttpResponse}
-import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.helpers.StubApplicationMetrics$
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
+import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 
 import scala.language.postfixOps
 

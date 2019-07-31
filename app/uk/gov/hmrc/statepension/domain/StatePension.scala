@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Format, JsPath, Json, Writes}
 import uk.gov.hmrc.statepension.domain.PolicyDecisions.MINIMUM_QUALIFYING_YEARS
+
 import scala.math.BigDecimal.RoundingMode
 
 case class StatePensionAmount(yearsToWork: Option[Int],

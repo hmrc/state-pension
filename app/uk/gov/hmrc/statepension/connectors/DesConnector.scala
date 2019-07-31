@@ -16,16 +16,14 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import akka.actor.ActorSystem
 import com.google.inject.Inject
-import com.typesafe.config.Config
 import play.api.Mode.Mode
 import play.api.data.validation.ValidationError
 import play.api.libs.json.{JsPath, Reads}
-import play.api.{Configuration, Environment, Play}
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._

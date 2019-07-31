@@ -34,7 +34,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               calculatedStartingAmount: BigDecimal = 0,
                               liabilities: List[DesLiability] = List(),
                               manualCorrespondenceOnly: Boolean = false) =
-    new DesExclusionService(dateOfDeath, pensionDate, now, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
+    DesExclusionService(dateOfDeath, pensionDate, now, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
   "getExclusions" when {
     "there is no exclusions" should {

@@ -18,9 +18,7 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
 import play.api.Configuration
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.config.AppName
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 

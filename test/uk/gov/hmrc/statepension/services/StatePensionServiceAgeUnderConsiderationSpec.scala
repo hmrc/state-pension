@@ -17,8 +17,8 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import org.mockito.{Matchers, Mockito}
 import org.mockito.Mockito.{times, verify, when}
+import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
@@ -26,8 +26,8 @@ import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
+import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
-import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016, DesNIRecord, DesNITaxYear, DesStatePensionAmounts, DesSummary}
 
 import scala.concurrent.Future
 

@@ -18,8 +18,8 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
 import uk.gov.hmrc.statepension.domain.PolicyDecisions.MINIMUM_QUALIFYING_YEARS
+import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
 
 import scala.math.BigDecimal.RoundingMode
 
