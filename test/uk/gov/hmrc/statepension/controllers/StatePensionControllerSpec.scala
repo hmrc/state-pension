@@ -79,7 +79,7 @@ class StatePensionControllerSpec extends UnitSpec with WithFakeApplication with 
       val mockStatePensionService = mock[StatePensionService]
 
       when(mockStatePensionService.getStatement(any())(any()))
-        .thenReturn(???)
+        .thenReturn(Right(testStatePension))
 
       val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequest)
 

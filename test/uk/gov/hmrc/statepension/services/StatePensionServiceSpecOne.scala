@@ -89,7 +89,9 @@ class StatePensionServiceSpecOne extends StatePensionUnitSpec
     )
   }
 
-  "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
+  "StatePensionService with a HOD Connection" when {
+
+    "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
 
       val statePensionAgeDate = new LocalDate(2034, 4, 5)
       val dateOfBirth = new LocalDate(1970, 4, 5)
@@ -143,253 +145,254 @@ class StatePensionServiceSpecOne extends StatePensionUnitSpec
     }
 
 
-  "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
+    "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
 
-    val statePensionAgeDate = new LocalDate(2034, 4, 6)
-    val dateOfBirth = new LocalDate(1970, 4, 6)
-    val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
+      val statePensionAgeDate = new LocalDate(2034, 4, 6)
+      val dateOfBirth = new LocalDate(1970, 4, 6)
+      val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-    when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-      List()
-    ))
-
-    when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-      DesNIRecord(qualifyingYears = 36, List())
-    ))
-
-    lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-    "statePension have statePensionAgeUnderConsideration flag as true" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            regularStatement
+      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        List()
       ))
 
-      whenReady(statePensionF) { statePension =>
-        statePension.statePensionAgeUnderConsideration shouldBe true
+      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        DesNIRecord(qualifyingYears = 36, List())
+      ))
+
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+
+      "statePension have statePensionAgeUnderConsideration flag as true" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          regularStatement
+        ))
+
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe true
+        }
+      }
+
+      "log a summary metric" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          regularStatement
+        ))
+
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(true)
+        )
       }
     }
 
-    "log a summary metric" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            regularStatement
-      ))
 
-      verify(mockMetrics, Mockito.atLeastOnce()).summary(
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq(false),
-        Matchers.eq(Scenario.Reached),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq(0),
-        Matchers.eq(None),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq[BigDecimal](119.3),
-        Matchers.eq[BigDecimal](39.22),
-        Matchers.eq[BigDecimal](2.66),
-        Matchers.eq[BigDecimal](155.65),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq(false),
-        Matchers.eq(None),
-        Matchers.eq(false),
-        Matchers.eq(true)
-      )
-    }
-  }
+    "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
 
-
-  "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
-
-    val summary = DesSummary(
-      earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-      sex = "F",
-      statePensionAgeDate = new LocalDate(2038, 1, 1),
-      finalRelevantStartYear = 2049,
-      pensionSharingOrderSERPS = false,
-      dateOfBirth = new LocalDate(1976, 7, 7),
-      dateOfDeath = None,
-      reducedRateElection = true,
-      countryCode = 1,
-      amounts = DesStatePensionAmounts(
-        pensionEntitlement = 32.61,
-        startingAmount2016 = 35.58,
-        protectedPayment2016 = 0,
-        DesAmountA2016(
-          basicStatePension = 31.81,
-          pre97AP = 0,
-          post97AP = 0,
-          post02AP = 0,
-          pre88GMP = 0,
-          post88GMP = 0,
-          pre88COD = 0,
-          post88COD = 0,
-          graduatedRetirementBenefit = 0
-        ),
-        DesAmountB2016(
-          mainComponent = 35.58,
-          rebateDerivedAmount = 0
+      val summary = DesSummary(
+        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+        sex = "F",
+        statePensionAgeDate = new LocalDate(2038, 1, 1),
+        finalRelevantStartYear = 2049,
+        pensionSharingOrderSERPS = false,
+        dateOfBirth = new LocalDate(1976, 7, 7),
+        dateOfDeath = None,
+        reducedRateElection = true,
+        countryCode = 1,
+        amounts = DesStatePensionAmounts(
+          pensionEntitlement = 32.61,
+          startingAmount2016 = 35.58,
+          protectedPayment2016 = 0,
+          DesAmountA2016(
+            basicStatePension = 31.81,
+            pre97AP = 0,
+            post97AP = 0,
+            post02AP = 0,
+            pre88GMP = 0,
+            post88GMP = 0,
+            pre88COD = 0,
+            post88COD = 0,
+            graduatedRetirementBenefit = 0
+          ),
+          DesAmountB2016(
+            mainComponent = 35.58,
+            rebateDerivedAmount = 0
+          )
         )
       )
-    )
 
-    lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-    lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
-    "statePension have statePensionAgeUnderConsideration flag as true" in {
+      "statePension have statePensionAgeUnderConsideration flag as true" in {
 
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        summary
-      ))
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          summary
+        ))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
-      ))
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+        ))
 
-      whenReady(statePensionF) { statePension =>
-        statePension.statePensionAgeUnderConsideration shouldBe true
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe true
+        }
+      }
+
+      "log a summary metric" in {
+
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          summary
+        ))
+
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+        ))
+
+        verify(mockMetrics, times(1)).summary(
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.ContinueWorkingMax),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq(28),
+          Matchers.eq(Some(ContinueWorking)),
+          Matchers.eq[BigDecimal](35.58),
+          Matchers.eq[BigDecimal](31.81),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq[BigDecimal](35.58),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(true),
+          Matchers.eq(Some(32.61)),
+          Matchers.eq(false),
+          Matchers.eq(true)
+        )
       }
     }
 
-    "log a summary metric" in {
 
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        summary
-      ))
+    "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
-      ))
+      val dateOfBirth = new LocalDate(1978, 4, 5)
 
-      verify(mockMetrics, times(1)).summary(
-        Matchers.eq[BigDecimal](155.65),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq(false),
-        Matchers.eq(Scenario.ContinueWorkingMax),
-        Matchers.eq[BigDecimal](155.65),
-        Matchers.eq(28),
-        Matchers.eq(Some(ContinueWorking)),
-        Matchers.eq[BigDecimal](35.58),
-        Matchers.eq[BigDecimal](31.81),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq[BigDecimal](35.58),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq(true),
-        Matchers.eq(Some(32.61)),
-        Matchers.eq(false),
-        Matchers.eq(true)
-      )
-    }
-  }
+      val statePensionAgeDate = new LocalDate(2042, 4, 5)
 
+      val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-  "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-    val dateOfBirth = new LocalDate(1978, 4, 5)
+      "statePension have statePensionAgeUnderConsideration flag as true" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(regularStatement))
 
-    val statePensionAgeDate = new LocalDate(2042, 4, 5)
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(
+            DesNIRecord(qualifyingYears = 36, List())
+          ))
 
-    val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe true
+        }
+      }
 
-    lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      "log a summary metric" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(regularStatement))
 
-    "statePension have statePensionAgeUnderConsideration flag as true" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(regularStatement))
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(
+            DesNIRecord(qualifyingYears = 36, List())
+          ))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 36, List())
-        ))
-
-      whenReady(statePensionF) { statePension =>
-        statePension.statePensionAgeUnderConsideration shouldBe true
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(true)
+        )
       }
     }
 
-    "log a summary metric" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(regularStatement))
+    "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 36, List())
-        ))
+      val dateOfBirth = new LocalDate(1978, 4, 6)
 
-      verify(mockMetrics, Mockito.atLeastOnce()).summary(
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq(false),
-        Matchers.eq(Scenario.Reached),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq(0),
-        Matchers.eq(None),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq[BigDecimal](119.3),
-        Matchers.eq[BigDecimal](39.22),
-        Matchers.eq[BigDecimal](2.66),
-        Matchers.eq[BigDecimal](155.65),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq(false),
-        Matchers.eq(None),
-        Matchers.eq(false),
-        Matchers.eq(true)
-      )
-    }
-  }
+      val statePensionAgeDate = new LocalDate(2042, 4, 6)
 
-  "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
+      val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-    val dateOfBirth = new LocalDate(1978, 4, 6)
+      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-    val statePensionAgeDate = new LocalDate(2042, 4, 6)
+      "statePension have statePensionAgeUnderConsideration flag as false" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(regularStatement))
 
-    val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(
+            DesNIRecord(qualifyingYears = 36, List())
+          ))
 
-    lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-    "statePension have statePensionAgeUnderConsideration flag as false" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(regularStatement))
-
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 36, List())
-        ))
-
-      whenReady(statePensionF) { statePension =>
-        statePension.statePensionAgeUnderConsideration shouldBe false
+        whenReady(statePensionF) { statePension =>
+          statePension.statePensionAgeUnderConsideration shouldBe false
+        }
       }
-    }
 
-    "log a summary metric" in {
-      when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(regularStatement))
+      "log a summary metric" in {
+        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(regularStatement))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-        .thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 36, List())
-        ))
+        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(
+            DesNIRecord(qualifyingYears = 36, List())
+          ))
 
-      verify(mockMetrics, Mockito.atLeastOnce()).summary(
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq(false),
-        Matchers.eq(Scenario.Reached),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq(0),
-        Matchers.eq(None),
-        Matchers.eq[BigDecimal](161.18),
-        Matchers.eq[BigDecimal](119.3),
-        Matchers.eq[BigDecimal](39.22),
-        Matchers.eq[BigDecimal](2.66),
-        Matchers.eq[BigDecimal](155.65),
-        Matchers.eq[BigDecimal](0),
-        Matchers.eq(false),
-        Matchers.eq(None),
-        Matchers.eq(false),
-        Matchers.eq(false)
-      )
+        verify(mockMetrics, Mockito.atLeastOnce()).summary(
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(false),
+          Matchers.eq(Scenario.Reached),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq(0),
+          Matchers.eq(None),
+          Matchers.eq[BigDecimal](161.18),
+          Matchers.eq[BigDecimal](119.3),
+          Matchers.eq[BigDecimal](39.22),
+          Matchers.eq[BigDecimal](2.66),
+          Matchers.eq[BigDecimal](155.65),
+          Matchers.eq[BigDecimal](0),
+          Matchers.eq(false),
+          Matchers.eq(None),
+          Matchers.eq(false),
+          Matchers.eq(false)
+        )
+      }
     }
   }
 }
