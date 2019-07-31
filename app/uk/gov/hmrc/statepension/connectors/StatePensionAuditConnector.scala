@@ -26,12 +26,10 @@ import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
 import scala.concurrent.ExecutionContext
 
-class StatePensionAuditConnector @Inject()(auditConnector: AuditConnector,
-                                           configuration: Configuration)
-                                          (implicit val ec: ExecutionContext) extends AppName {
+class StatePensionAuditConnector @Inject()(configuration: Configuration)
+                                          (implicit val ec: ExecutionContext) extends AuditConnector with AppName {
 
   lazy val auditingConfig = LoadAuditingConfig(s"auditing")
   override protected def appNameConfiguration: Configuration = configuration
 
-  def sendEvent(event: DataEvent)(implicit hc: HeaderCarrier): Unit = auditConnector.sendEvent(event)
 }

@@ -18,11 +18,14 @@ package uk.gov.hmrc.statepension.config
 
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
-import uk.gov.hmrc.statepension.services.{RateService, StatePensionService}
+import uk.gov.hmrc.statepension.WSHttp
+import uk.gov.hmrc.statepension.connectors.{CitizenDetailsConnector, DesConnector}
+import uk.gov.hmrc.statepension.services.RateService
 
 class StatePensionModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[RateService].to(RateService)
+    bind[WSHttp].to(WSHttp),
+    bind[RateService].to(RateService),
+    bind[AppContext].to(AppContext)
   )
 }

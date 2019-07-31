@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import akka.actor.ActorSystem
-import com.typesafe.config.Config
+import com.google.inject.Inject
 import play.api.Mode.Mode
-import play.api.{Configuration, Play}
-import uk.gov.hmrc.domain.Nino
 import play.api.http.Status.LOCKED
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.statepension.WSHttp
@@ -30,12 +30,15 @@ import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, Upstream4xxResponse}
 
-trait CitizenDetailsConnector {
-  def http: HttpGet
-  def serviceUrl: String
-  def metrics: ApplicationMetrics
+class CitizenDetailsConnector @Inject()(http: WSHttp,
+                                        metrics: ApplicationMetrics,
+                                        environment: Environment,
+                                        val runModeConfiguration: Configuration) extends ServicesConfig {
+
+  val serviceUrl: String = baseUrl("citizen-details")
+
+  protected def mode: Mode = environment.mode
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
@@ -59,16 +62,4 @@ trait CitizenDetailsConnector {
         Future.successful(value)
     }
   }
-}
-
-object CitizenDetailsConnector extends CitizenDetailsConnector with ServicesConfig {
-  override val http: HttpGet = new HttpGet with WSHttp {
-    override protected def actorSystem: ActorSystem = Play.current.actorSystem
-    override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
-    override protected def appNameConfiguration: Configuration = Play.current.configuration
-  }
-  override val serviceUrl: String = baseUrl("citizen-details")
-  override val metrics: ApplicationMetrics = Play.current.injector.instanceOf[ApplicationMetrics]
-  override protected def mode: Mode = Play.current.mode
-  override protected def runModeConfiguration: Configuration = Play.current.configuration
 }

@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import com.google.inject.Inject
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppContext}
 import uk.gov.hmrc.statepension.domain.APIAccess
 import uk.gov.hmrc.statepension.views._
 import play.api.http.{HttpErrorHandler, LazyHttpErrorHandler}
 
-class DocumentationController (errorHandler: HttpErrorHandler, appContext: AppContext)
+class DocumentationController @Inject()(errorHandler: HttpErrorHandler, appContext: AppContext)
   extends uk.gov.hmrc.api.controllers.DocumentationController(errorHandler = errorHandler) {
 
   override def definition(): Action[AnyContent] = Action {
@@ -36,5 +37,3 @@ class DocumentationController (errorHandler: HttpErrorHandler, appContext: AppCo
 
   private def buildStatus(): String = appContext.status.getOrElse("BETA")
 }
-
-object DocumentationController extends DocumentationController(LazyHttpErrorHandler, AppContext)
