@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.config
+package uk.gov.hmrc.statepension.controllers
 
-import play.api.inject.{Binding, Module}
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.statepension.WSHttp
-import uk.gov.hmrc.statepension.controllers.auth.MicroserviceAuthConnector
+import play.api.mvc.{Request, Result}
+import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 
-class StatePensionModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[WSHttp].to(WSHttp),
-    bind[AuthConnector].to(classOf[MicroserviceAuthConnector])
-  )
+import scala.concurrent.Future
+
+object FakeAuthAction extends AuthAction {
+
+  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
+
+    block(request)
+  }
 }
+

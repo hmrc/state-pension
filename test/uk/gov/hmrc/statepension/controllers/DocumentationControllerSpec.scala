@@ -28,11 +28,6 @@ import uk.gov.hmrc.statepension.config.AppContext
 
 class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
 
-  "respond to GET /api/definition" in {
-    val result = route(app, FakeRequest(GET, "/api/definition"))
-    status(result.get) should be(OK)
-  }
-
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
     val appContext = new AppContext(app.configuration) {
@@ -45,7 +40,7 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
       override lazy val revaluation: Option[Configuration] = None
     }
 
-    new DocumentationController(LazyHttpErrorHandler, appContext).definition()(FakeRequest())
+    new DocumentationController(LazyHttpErrorHandler, appContext, FakeAuthAction).definition()(FakeRequest())
 
   }
 

@@ -45,7 +45,7 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
   val appContext = app.injector.instanceOf[AppContext]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController(appContext, spService, mock[StatePensionAuditConnector]) {
+    new StatePensionController(appContext, spService, mock[StatePensionAuditConnector], FakeAuthAction) {
       override val app: String = "Test State Pension"
       override val context: String = "test"
   }
