@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers
+package uk.gov.hmrc.statepension.controllers.statepension
 
-import com.google.inject.Inject
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
+import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalSupport, Links}
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
+@Singleton
 class StatePensionController @Inject()(appContext: AppContext,
                                        statePensionService: StatePensionService,
                                        customAuditConnector: StatePensionAuditConnector,

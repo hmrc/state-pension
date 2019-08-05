@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers
+package uk.gov.hmrc.statepension.controllers.documentation
 
 import com.google.inject.Inject
 import play.api.http.HttpErrorHandler
