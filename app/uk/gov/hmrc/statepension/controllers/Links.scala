@@ -22,9 +22,9 @@ trait Links {
 
   val context: String
 
-  private def createLink(endpointUrl: String) = if(context.isEmpty) endpointUrl else s"/$context$endpointUrl"
+  private def createLink(endpointUrl: String): String = if(context.isEmpty) endpointUrl else s"/$context$endpointUrl"
 
   def statePensionHref(nino: Nino): String =
-    createLink(uk.gov.hmrc.statepension.controllers.routes.StatePensionController.get(nino).url)
+    createLink(statepension.routes.StatePensionController.get(nino).url)
 
 }
