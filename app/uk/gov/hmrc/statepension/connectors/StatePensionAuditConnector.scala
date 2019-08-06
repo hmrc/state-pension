@@ -16,27 +16,18 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import play.api.{Configuration, Play}
+import com.google.inject.Inject
+import play.api.Configuration
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.config.AppName
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
-object CustomAuditConnector extends CustomAuditConnector {
-  override lazy val auditConnector = StatePensionAuditConnector
-}
+import scala.concurrent.ExecutionContext
 
-trait CustomAuditConnector {
+class StatePensionAuditConnector @Inject()(configuration: Configuration)
+                                          (implicit val ec: ExecutionContext) extends AuditConnector with AppName {
 
-  val auditConnector: AuditConnector
+  lazy val auditingConfig = LoadAuditingConfig(s"auditing")
+  override protected def appNameConfiguration: Configuration = configuration
 
-  def sendEvent(event: DataEvent)(implicit hc: HeaderCarrier): Unit =
-    auditConnector.sendEvent(event)
-}
-
-object StatePensionAuditConnector extends AuditConnector with AppName {
-  override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
-  override protected def appNameConfiguration: Configuration = Play.current.configuration
 }

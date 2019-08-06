@@ -18,9 +18,9 @@ package uk.gov.hmrc.statepension.events
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016}
-import uk.gov.hmrc.http.HeaderCarrier
 
 object DesForecasting {
     def apply(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: DesAmountA2016, amountB: DesAmountB2016,

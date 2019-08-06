@@ -1,1 +1,1 @@
-GET        /ni/:nino                   uk.gov.hmrc.statepension.controllers.live.StatePensionController.get(nino: uk.gov.hmrc.domain.Nino)
+GET        /ni/:nino                   uk.gov.hmrc.statepension.controllers.StatePensionController.get(nino: uk.gov.hmrc.domain.Nino)

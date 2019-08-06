@@ -25,6 +25,6 @@ trait Links {
   private def createLink(endpointUrl: String) = if(context.isEmpty) endpointUrl else s"/$context$endpointUrl"
 
   def statePensionHref(nino: Nino): String =
-    createLink(uk.gov.hmrc.statepension.controllers.live.routes.StatePensionController.get(nino).url)
+    createLink(uk.gov.hmrc.statepension.controllers.routes.StatePensionController.get(nino).url)
 
 }

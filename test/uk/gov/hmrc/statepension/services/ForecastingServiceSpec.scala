@@ -17,16 +17,13 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import play.api.Configuration
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.domain.Forecast
 
 class ForecastingServiceSpec extends StatePensionUnitSpec {
 
-  val testForecastingService = new ForecastingService {
-    override lazy val rateService: RateService = RateServiceBuilder.default
-  }
+  val testForecastingService = new ForecastingService(rateService = RateServiceBuilder.default)
 
   "calculateStartingAmount" when {
     "Amount A is higher than Amount B" should {
@@ -49,9 +46,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
 
     "there is revalution rates" should {
       "not take them into account" in {
-        val service = new ForecastingService {
-          override lazy val rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
-        }
+        val service = new ForecastingService(rateService = RateServiceBuilder.twentySeventeenToTwentyEighteen)
+
         service.calculateStartingAmount(99.99, 100.00) shouldBe 100
       }
     }
@@ -79,9 +75,7 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     }
 
     "the starting amount revaluation rate is 2.5056% and pp revaluation rate is 1%" should {
-      val service = new ForecastingService {
-        override lazy val rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
-      }
+      val service = new ForecastingService(rateService = RateServiceBuilder.twentySeventeenToTwentyEighteen)
 
       "protected payment" should {
         "return 159.56 for 155.66" in {
@@ -207,27 +201,24 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
 
     "the rates have changed 2017-18" should {
       "use the rates from the configuration" in {
-        val service = new ForecastingService {
-          override def rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
-        }
+        val service = new ForecastingService(rateService = RateServiceBuilder.twentySeventeenToTwentyEighteen)
+
         service.calculateForecastAmount(new LocalDate(2017, 4, 5), 2020, 130, 28) shouldBe Forecast(148.23, 4)
       }
     }
 
     "the rates have changed 2018-19" should {
       "use the rates from the configuration" in {
-        val service = new ForecastingService {
-          override def rateService: RateService = RateServiceBuilder.twentyEighteenToTwentyNineteen
-        }
+        val service = new ForecastingService(rateService = RateServiceBuilder.twentyEighteenToTwentyNineteen)
+
         service.calculateForecastAmount(new LocalDate(2018, 4, 5), 2021, 130, 28) shouldBe Forecast(148.78, 4)
       }
     }
 
     "the rates have changed 2019-20" should {
       "use the rates from the configuration" in {
-        val service = new ForecastingService {
-          override def rateService: RateService = RateServiceBuilder.twentyNineteenToTwentyTwenty
-        }
+        val service = new ForecastingService(rateService = RateServiceBuilder.twentyNineteenToTwentyTwenty)
+
         service.calculateForecastAmount(new LocalDate(2019, 4, 5), 2022, 130, 28) shouldBe Forecast(149.27, 4)
       }
     }
@@ -432,9 +423,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
     }
 
     "2016-17 and more are posted (with the 2017-18 rates)" when {
-      val service = new ForecastingService {
-        override def rateService: RateService = RateServiceBuilder.twentySeventeenToTwentyEighteen
-      }
+      val service = new ForecastingService(rateService = RateServiceBuilder.twentySeventeenToTwentyEighteen)
+
       "there are no gaps" should {
         "add post 16 years onto the starting amount" should {
           val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 30, qualifyingYearsPost2016 = 2, forecastingService = service)
@@ -720,9 +710,8 @@ class ForecastingServiceSpec extends StatePensionUnitSpec {
 
     "rates have revalued" should {
       "still return the 2016 values" in {
-        val service = new ForecastingService {
-          override def rateService: RateService = RateServiceBuilder.apply(Map(0 -> 0, 1 -> 100, 2 -> 200))
-        }
+        val service = new ForecastingService(rateService = RateServiceBuilder.apply(Map(0 -> 0, 1 -> 100, 2 -> 200)))
+
         service.amountB(35, 0) shouldBe 155.65
       }
     }

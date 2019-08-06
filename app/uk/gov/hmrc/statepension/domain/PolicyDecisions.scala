@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.helpers
+package uk.gov.hmrc.statepension.domain
 
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.statepension.connectors.CustomAuditConnector
-import uk.gov.hmrc.http.HeaderCarrier
+object PolicyDecisions {
 
-object StubCustomAuditConnector extends CustomAuditConnector {
-  override lazy val auditConnector: AuditConnector = ???
-  override def sendEvent(event: DataEvent)(implicit hc: HeaderCarrier): Unit = {}
+  final val MINIMUM_QUALIFYING_YEARS = 10
+
 }

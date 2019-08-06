@@ -18,7 +18,6 @@ package uk.gov.hmrc.statepension.services
 
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import org.scalatest.{Matchers, WordSpecLike}
-import services.TaxYearResolver
 
 class TaxYearResolverSpec extends WordSpecLike with Matchers {
 

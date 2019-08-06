@@ -16,19 +16,15 @@
 
 package uk.gov.hmrc.statepension.services
 
+import com.google.inject.Inject
 import play.api.Configuration
 import uk.gov.hmrc.statepension.config.{AppContext, RevaluationRates}
 
 import scala.math.BigDecimal.RoundingMode
 
-object RateService extends RateService {
-  override lazy val ratesConfig: Configuration = AppContext.rates
-  override lazy val revaluationConfig: Option[Configuration] = AppContext.revaluation
-}
-
-trait RateService {
-  def ratesConfig: Configuration
-  def revaluationConfig: Option[Configuration]
+class RateService @Inject()(appContext: AppContext) {
+  lazy val ratesConfig: Configuration = appContext.rates
+  lazy val revaluationConfig: Option[Configuration] = appContext.revaluation
 
   val revaluationRates: RevaluationRates = RevaluationRates(revaluationConfig)
 

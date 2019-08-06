@@ -23,7 +23,7 @@ import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{DesLiability, LiabilityType}
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
-class DesExclusionService(dateOfDeath: Option[LocalDate],
+case class DesExclusionService(dateOfDeath: Option[LocalDate],
                        pensionDate: LocalDate,
                        now: LocalDate,
                        entitlement: BigDecimal,

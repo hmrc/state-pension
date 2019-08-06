@@ -19,54 +19,57 @@ package uk.gov.hmrc.statepension.connectors
 import com.codahale.metrics.Timer
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
 import play.api.test.FakeRequest
-import uk.gov.hmrc.play.http._
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.domain.nps.APIType
-import uk.gov.hmrc.statepension.services.Metrics
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
+import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpGet, HttpResponse, InternalServerException, NotFoundException, Upstream4xxResponse }
 
-class CitizenDetailsConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
+class CitizenDetailsConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAppPerSuite{
 
   val nino = generateNino()
   lazy val fakeRequest = FakeRequest()
   implicit val hc = HeaderCarrier()
-  val citizenDetailsConnector = new CitizenDetailsConnector {
+
+  val http: WSHttp = mock[WSHttp]
+  val metrics: ApplicationMetrics = mock[ApplicationMetrics]
+  val environment: Environment = app.injector.instanceOf[Environment]
+  val configuration: Configuration = app.injector.instanceOf[Configuration]
+  
+  val citizenDetailsConnector = new CitizenDetailsConnector(http, metrics, environment, configuration) {
     override val serviceUrl: String = "/"
-    override val http: HttpGet = mock[HttpGet]
-    override val metrics: Metrics = mock[Metrics]
   }
 
   val context = mock[Timer.Context]
   when(context.stop()).thenReturn(0)
-  when(citizenDetailsConnector.metrics.startTimer(Matchers.any())).thenReturn{ context }
+  when(metrics.startTimer(Matchers.any())).thenReturn{ context }
 
   "CitizenDetailsConnector" should {
 
     "return OK status when successful" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.successful(HttpResponse(200))
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.successful(HttpResponse(200))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF) shouldBe 200
     }
 
     "return 423 status when the Upstream is 423" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new Upstream4xxResponse(":(", 423, 423, Map()))
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new Upstream4xxResponse(":(", 423, 423, Map()))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF) shouldBe 423
     }
 
     "return NotFoundException for invalid nino" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new NotFoundException("Not Found"))
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new NotFoundException("Not Found"))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF.failed) shouldBe a [NotFoundException]
     }
 
     "return 500 response code when there is Upstream is 4XX" in {
-      when(citizenDetailsConnector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new InternalServerException("InternalServerError"))
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())) thenReturn Future.failed(new InternalServerException("InternalServerError"))
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)(hc)
       await(resultF.failed) shouldBe a [InternalServerException]
     }

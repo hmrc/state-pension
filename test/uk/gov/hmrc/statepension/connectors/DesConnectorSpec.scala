@@ -16,25 +16,33 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import com.codahale.metrics.Timer
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito._
-import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.Json
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpGet, HttpResponse}
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.helpers.StubMetrics
-import uk.gov.hmrc.statepension.services.Metrics
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
+import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
+class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAppPerSuite {
+
+  val http: WSHttp = mock[WSHttp]
+  val timerContext = mock[Timer.Context]
+  val metrics: ApplicationMetrics = mock[ApplicationMetrics]
+  val environment: Environment = app.injector.instanceOf[Environment]
+  val configuration: Configuration = app.injector.instanceOf[Configuration]
+
+  when(metrics.startTimer(Matchers.any())).thenReturn(timerContext)
 
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
@@ -162,20 +170,17 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
        |}""".stripMargin
 
   "getSummary" should {
-    val connector = new DesConnector {
-      override val http = mock[HttpGet]
 
-      override def desBaseUrl: String = "test-url"
+    val connector = new DesConnector(http, metrics, environment, configuration) {
+
+      override val desBaseUrl: String = "test-url"
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
 
-      override def token: String = "token"
-
-      override def environment: (String, String) = ("environment", "unit test")
+      override val token: String = "token"
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       """
         |{
         |  "contractedOutFlag": 0,
@@ -229,16 +234,69 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     connector.getSummary(nino)
 
     "make an http request to hod-url/nps-rest-service/services/nps/pensions/ninoWithoutSuffix/sp_summary" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/summary"))(Matchers.any(), Matchers.any(), Matchers.any())
+      verify(http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/summary"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" ignore {
       val header = headerCarrier
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
+      verify(http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
     "parse the json and return a Future[DesSummary]" in {
+
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        """
+          |{
+          |  "contractedOutFlag": 0,
+          |  "sensitiveCaseFlag": 0,
+          |  "spaDate": "2019-09-06",
+          |  "finalRelevantYear": 2018,
+          |  "accountNotMaintainedFlag": null,
+          |  "penForecast": {
+          |    "forecastAmount": 160.19,
+          |    "nspMax": 155.65,
+          |    "qualifyingYearsAtSpa": 40,
+          |    "forecastAmount2016": 160.19
+          |  },
+          |  "pensionShareOrderCoeg": false,
+          |  "dateOfDeath": null,
+          |  "sex": "M",
+          |  "statePensionAmount": {
+          |    "nspEntitlement": 161.18,
+          |    "apAmount": 2.36,
+          |    "amountB2016": {
+          |      "mainComponent": 155.65,
+          |      "rebateDerivedAmount": 0.0
+          |    },
+          |    "amountA2016": {
+          |      "ltbPost97ApCashValue": 6.03,
+          |      "ltbCatACashValue": 119.3,
+          |      "ltbPost88CodCashValue": null,
+          |      "ltbPre97ApCashValue": 17.79,
+          |      "ltbPre88CodCashValue": null,
+          |      "grbCash": 2.66,
+          |      "ltbPst88GmpCashValue": null,
+          |      "pre88Gmp": null,
+          |      "ltbPost02ApCashValue": 15.4
+          |    },
+          |    "protectedPayment2016": 5.53,
+          |    "startingAmount": 161.18
+          |  },
+          |  "dateOfBirth": "1954-03-09",
+          |  "nspQualifyingYears": 36,
+          |  "countryCode": 1,
+          |  "nspRequisiteYears": 35,
+          |  "minimumQualifyingPeriod": 1,
+          |  "addressPostcode": "WS9 8LL",
+          |  "reducedRateElectionToConsider": false,
+          |  "pensionShareOrderSerps": true,
+          |  "nino": "QQ123456A",
+          |  "earningsIncludedUpto": "2016-04-05"
+          |}
+      """.stripMargin))))
+
       val summary = await(connector.getSummary(nino))
+
       summary shouldBe DesSummary(
         new LocalDate(2016, 4, 5),
         "M",
@@ -273,7 +331,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         """
           |{
           |  "contractedOutFlag": 0,
@@ -328,20 +386,18 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
   }
 
   "getLiabilities" should {
-    val connector = new DesConnector {
-      override val http = mock[HttpGet]
+    val connector = new DesConnector(http, metrics, environment, configuration) {
 
-      override def desBaseUrl: String = "test-url"
+      override val desBaseUrl: String = "test-url"
 
-      override def token: String = "token"
+      override val token: String = "token"
 
-      override def environment: (String, String) = ("environment", "unit test")
+      override val desEnvironment: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       s"""
          |{
          |  "liabilities": [
@@ -388,15 +444,60 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     connector.getLiabilities(nino)
 
     "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/liabilities" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/liabilities"))(Matchers.any(), Matchers.any(), Matchers.any())
+      verify(http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/liabilities"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" ignore {
       val header = headerCarrier
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
+      verify(http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
     "parse the json and return a Future[List[DesLiability]" in {
+
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+        s"""
+           |{
+           |  "liabilities": [
+           |    {
+           |      "liabilityTypeEndDate": "1992-11-21",
+           |      "liabilityOccurrenceNo": 1,
+           |      "liabilityTypeStartDate": "1983-11-06",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-08",
+           |      "liabilityOccurrenceNo": 2,
+           |      "liabilityTypeStartDate": "1995-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-15",
+           |      "liabilityOccurrenceNo": 3,
+           |      "liabilityTypeStartDate": "2006-07-09",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2012-01-21",
+           |      "liabilityOccurrenceNo": 4,
+           |      "liabilityTypeStartDate": "2006-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    }
+           |  ]
+           |}
+      """.stripMargin))))
+
       val summary = await(connector.getLiabilities(nino))
       summary shouldBe List(
         DesLiability(Some(13)),
@@ -407,20 +508,18 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
     }
 
     "return a failed future with a json validation exception when it cannot parse to an DesLiabilities" in {
-      val connector = new DesConnector {
-        override val http = mock[HttpGet]
+      val connector = new DesConnector(http, metrics, environment, configuration) {
 
-        override def desBaseUrl: String = "test-url"
+        override val desBaseUrl: String = "test-url"
 
-        override def token: String = "token"
+        override val token: String = "token"
 
-        override def environment: (String, String) = ("environment", "unit test")
+        override val desEnvironment: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-        override val metrics: Metrics = StubMetrics
       }
 
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
            |  "liabilities": [
@@ -469,20 +568,18 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
   }
 
   "return a future with a json list for empty DesLiability" in {
-    val connector = new DesConnector {
-      override val http = mock[HttpGet]
+    val connector = new DesConnector(http, metrics, environment, configuration) {
 
-      override def desBaseUrl: String = "test-url"
+      override val desBaseUrl: String = "test-url"
 
-      override def token: String = "token"
+      override val token: String = "token"
 
-      override def environment: (String, String) = ("environment", "unit test")
+      override val desEnvironment: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
       s"""
          |{
          |  "liabilities": [
@@ -500,34 +597,36 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
   "getNIRecord" should {
     val mockHttpGet = mock[HttpGet]
-    val connector = new DesConnector {
-      override val http = mockHttpGet
+    val connector = new DesConnector(http, metrics, environment, configuration) {
 
-      override def desBaseUrl: String = "test-url"
+      override val desBaseUrl: String = "test-url"
 
-      override def token: String = "token"
+      override val token: String = "token"
 
-      override def environment: (String, String) = ("environment", "unit test")
+      override val desEnvironment: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-      override val metrics: Metrics = StubMetrics
     }
 
-    when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
+    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
     connector.getNIRecord(nino)
 
 
     "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/ni" in {
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/ni"))(Matchers.any(), Matchers.any(), Matchers.any())
+      verify(http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithSuffix/pensions/ni"))(Matchers.any(), Matchers.any(), Matchers.any())
     }
 
     "add the originator id to the header" ignore {
       val header = headerCarrier
       connector.getNIRecord(nino)
-      verify(connector.http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
+      verify(http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
     }
 
     "parse the json and return a Future[DesNIRecord]" in {
+
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
+      connector.getNIRecord(nino)
+
       val summary = await(connector.getNIRecord(nino))
       summary shouldBe DesNIRecord(
         qualifyingYears = 36,
@@ -540,29 +639,30 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
     "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
       val optJson = Some(Json.parse(jsonWithNoTaxYears))
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, optJson))
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, optJson))
 
       val summary = await(connector.getNIRecord(nino))
       summary shouldBe DesNIRecord(qualifyingYears = 36, List.empty)
     }
 
     "return a failed future with a json validation exception when it cannot parse to an DesNIRecord" in {
-      val connector = new DesConnector {
 
-        override val http = mock[HttpGet]
+      
+      
+      
+      val connector = new DesConnector(http, metrics, environment, configuration) {
+        
+        override val desBaseUrl: String = "test-url"
 
-        override def desBaseUrl: String = "test-url"
+        override val token: String = "token"
 
-        override def token: String = "token"
-
-        override def environment: (String, String) = ("environment", "unit test")
+        override val desEnvironment: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-
-        override def metrics: Metrics = StubMetrics
+        
       }
 
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
            |  "yearsToFry": 3,
@@ -584,22 +684,18 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar {
 
 
     "return a failed future with a json validation exception when it cannot parse to an DesNIRecord when taxyear is invalid" in {
-      val connector = new DesConnector {
+      val connector = new DesConnector(http, metrics, environment, configuration) {
 
-        override val http = mock[HttpGet]
+        override val desBaseUrl: String = "test-url"
 
-        override def desBaseUrl: String = "test-url"
+        override val token: String = "token"
 
-        override def token: String = "token"
-
-        override def environment: (String, String) = ("environment", "unit test")
+        override val desEnvironment: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-
-        override def metrics: Metrics = StubMetrics
       }
 
-      when(connector.http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
+      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
         s"""
            |{
            |  "yearsToFry": 3,

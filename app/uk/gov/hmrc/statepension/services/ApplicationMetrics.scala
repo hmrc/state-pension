@@ -18,26 +18,13 @@ package uk.gov.hmrc.statepension.services
 
 import com.codahale.metrics.Timer.Context
 import com.codahale.metrics.{Counter, Histogram, Timer}
+import com.google.inject.Inject
+import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.APIType
-import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, OldRules, Scenario}
-import uk.gov.hmrc.play.graphite.MicroserviceMetrics
+import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, Scenario}
 
-trait Metrics {
-  def startTimer(api: APIType): Timer.Context
-  def incrementFailedCounter(api: APIType): Unit
-
-  def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean, forecastScenario: Scenario,
-              personalMaximum: BigDecimal, yearsToContribute: Int, mqpScenario: Option[MQPScenario],
-              starting: BigDecimal, basicStatePension:BigDecimal,  additionalStatePension: BigDecimal,
-              graduatedRetirementBenefit:BigDecimal,grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
-              reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-              abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean): Unit
-
-  def exclusion(exclusion: Exclusion): Unit
-}
-
-object Metrics extends Metrics with MicroserviceMetrics {
+class ApplicationMetrics @Inject()(metrics: Metrics) {
 
   val timers: Map[APIType, Timer] = Map(
     APIType.Summary -> metrics.defaultRegistry.timer("summary-response-timer"),
@@ -52,8 +39,8 @@ object Metrics extends Metrics with MicroserviceMetrics {
     APIType.Liabilities -> metrics.defaultRegistry.counter("liabilities-failed-counter")
   )
 
-  override def startTimer(api: APIType): Context = timers(api).time()
-  override def incrementFailedCounter(api: APIType): Unit = failedCounters(api).inc()
+  def startTimer(api: APIType): Context = timers(api).time()
+  def incrementFailedCounter(api: APIType): Unit = failedCounters(api).inc()
 
   val forecastScenarioMeters: Map[Scenario, Counter] = Map(
     Scenario.Reached -> metrics.defaultRegistry.counter("forecastscenario-reached"),
@@ -85,7 +72,7 @@ object Metrics extends Metrics with MicroserviceMetrics {
   val rreCurrentWeeklyAmount:Histogram=metrics.defaultRegistry.histogram("reduced-rate-election-current-weekly-amount")
   val statePensionAgeUnderConsiderationMeter: Counter = metrics.defaultRegistry.counter("state-pension-age-under-consideration")
 
-  override def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
+  def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
                        mqpScenario : Option[MQPScenario], starting: BigDecimal, basicStatePension:BigDecimal,
                        additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
@@ -121,6 +108,6 @@ object Metrics extends Metrics with MicroserviceMetrics {
     Exclusion.ManualCorrespondenceIndicator -> metrics.defaultRegistry.counter("exclusion-manual-correspondence")
   )
 
-  override def exclusion(exclusion: Exclusion): Unit = exclusionMeters(exclusion).inc()
+  def exclusion(exclusion: Exclusion): Unit = exclusionMeters(exclusion).inc()
 
 }
