@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.controllers.auth
 import akka.util.Timeout
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{OK, UNAUTHORIZED}

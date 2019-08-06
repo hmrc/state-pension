@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import com.codahale.metrics.Timer
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.helpers.StubApplicationMetrics$
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 
@@ -37,10 +37,13 @@ import scala.language.postfixOps
 class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAppPerSuite {
 
   val http: WSHttp = mock[WSHttp]
-  def metrics: ApplicationMetrics = app.injector.instanceOf[StubApplicationMetrics$]
+  val timerContext = mock[Timer.Context]
+  val metrics: ApplicationMetrics = mock[ApplicationMetrics]
   val environment: Environment = app.injector.instanceOf[Environment]
-  def configuration: Configuration = app.injector.instanceOf[Configuration]
-  
+  val configuration: Configuration = app.injector.instanceOf[Configuration]
+
+  when(metrics.startTimer(Matchers.any())).thenReturn(timerContext)
+
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
 
