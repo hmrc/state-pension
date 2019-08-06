@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.connectors
 import com.codahale.metrics.Timer
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.test.FakeRequest
 import play.api.{Configuration, Environment}
