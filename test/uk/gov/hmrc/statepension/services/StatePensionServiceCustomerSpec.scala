@@ -161,7 +161,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any())
       }
 
     }
@@ -238,7 +238,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "not log a summary metric" in {
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
@@ -331,7 +331,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
             Matchers.eq[BigDecimal](0),
             Matchers.eq(true),
             Matchers.eq(Some(32.61)),
-            Matchers.eq(false),
             Matchers.eq(false)
           )
         }
@@ -360,7 +359,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
         whenReady(statePensionF) { statePension =>
-          statePension shouldBe StatePension(new LocalDate("2016-04-05"), StatePensionAmounts(false, StatePensionAmount(None, None, 0.00), StatePensionAmount(Some(34), None, 151.20), StatePensionAmount(Some(0), Some(2), 155.65), StatePensionAmount(None, None, 0), StatePensionAmount(None, None, 0), OldRules(0, 0, 0), NewRules(0, 0)), 61, new LocalDate("2018-01-01"), "2049-50", 35, false, 155.65, false, None, true, false)
+          statePension shouldBe StatePension(new LocalDate("2016-04-05"), StatePensionAmounts(false, StatePensionAmount(None, None, 0.00), StatePensionAmount(Some(34), None, 151.20), StatePensionAmount(Some(0), Some(2), 155.65), StatePensionAmount(None, None, 0), StatePensionAmount(None, None, 0), OldRules(0, 0, 0), NewRules(0, 0)), 61, new LocalDate("2018-01-01"), "2049-50", 35, false, 155.65, false, None, false)
         }
       }
 
@@ -392,7 +391,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         whenReady(statePensionF) { _ =>
           verify(mockMetrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
             Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-            Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+            Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
         }
       }
 
@@ -477,7 +476,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
@@ -561,7 +560,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
 
@@ -638,7 +637,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
       }
     }
   }

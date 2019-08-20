@@ -124,7 +124,6 @@ class StatePensionService @Inject()(des: DesConnector,
           reducedRateElection = summary.reducedRateElection,
           reducedRateElectionCurrentWeeklyAmount = if (summary.reducedRateElection) Some(summary.amounts.pensionEntitlementRounded)
           else None,
-          abroadAutoCredit = checkOverseasMaleAutoCredits(summary),
           statePensionAgeUnderConsideration = checkStatePensionAgeUnderConsideration(summary.dateOfBirth)
         )
         metrics.summary(statePension.amounts.forecast.weeklyAmount, statePension.amounts.current.weeklyAmount,
@@ -134,7 +133,7 @@ class StatePensionService @Inject()(des: DesConnector,
           statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
           statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
           statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount,
-          statePension.abroadAutoCredit, statePension.statePensionAgeUnderConsideration
+          statePension.statePensionAgeUnderConsideration
         )
 
         Right(statePension)
@@ -169,14 +168,6 @@ class StatePensionService @Inject()(des: DesConnector,
       summary.finalRelevantStartYear,
       exclusions
     ))
-  }
-
-  final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
-
-  private def checkOverseasMaleAutoCredits(summary: DesSummary): Boolean = {
-    if ( summary.sex.equalsIgnoreCase("M") && Country.isAbroad(summary.countryCode) && summary.statePensionAgeDate.isBefore(AUTO_CREDITS_EXCLUSION_DATE))
-      true
-    else false
   }
 
   final val CHANGE_SPA_MIN_DATE = new LocalDate(1970, 4, 6)

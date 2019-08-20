@@ -89,7 +89,6 @@ class StatePensionSpec extends StatePensionUnitSpec {
       fullStatePensionAmount,
       reducedRateElection,
       reducedRateElectionCurrentWeeklyAmount,
-      abroadAutoCredit,
       statePensionAgeUnderConsideration
     )
   }
@@ -135,17 +134,6 @@ class StatePensionSpec extends StatePensionUnitSpec {
       createStatePension(cope = 0).contractedOut shouldBe false
     }
   }
-
-
-  "overseas auto credits (abroad) customer" should {
-      "return false to Non-Abroad Customers" in {
-        createStatePension(abroadAutoCredit = false).abroadAutoCredit shouldBe false
-      }
-
-      "return true to Abroad Customers" in {
-        createStatePension(abroadAutoCredit = true).abroadAutoCredit shouldBe true
-      }
-    }
 
   "reducedRateElection" should {
     "return false to Non-RRE Customers" in {

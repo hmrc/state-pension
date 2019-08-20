@@ -128,7 +128,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             Matchers.eq[BigDecimal](0),
             Matchers.eq(false),
             Matchers.eq(None),
-            Matchers.eq(false),
             Matchers.eq(false)
           )
         }
@@ -1018,7 +1017,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             Matchers.eq[BigDecimal](0),
             Matchers.eq(false),
             Matchers.eq(None),
-            Matchers.eq(false),
             Matchers.eq(false)
           )
         }
@@ -1291,7 +1289,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             Matchers.eq[BigDecimal](0),
             Matchers.eq(false),
             Matchers.eq(None),
-            Matchers.eq(false),
             Matchers.eq(false)
           )
         }
