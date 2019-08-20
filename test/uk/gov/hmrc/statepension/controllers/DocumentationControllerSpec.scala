@@ -29,11 +29,6 @@ import uk.gov.hmrc.statepension.controllers.documentation.DocumentationControlle
 
 class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
 
-  "respond to GET /api/definition" in {
-    val result = route(app, FakeRequest(GET, "/api/definition"))
-    status(result.get) should be(OK)
-  }
-
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
     val appContext = new AppContext(app.configuration) {
