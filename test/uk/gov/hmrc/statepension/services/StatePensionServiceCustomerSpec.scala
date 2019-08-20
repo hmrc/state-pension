@@ -337,66 +337,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
     }
 
-    "the customer has male overseas auto credits (abroad exclusion)" should {
-
-      val NEWsummary = DesSummary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "M",
-        statePensionAgeDate = new LocalDate(2018, 1, 1),
-        finalRelevantStartYear = 2049,
-        pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1956, 7, 7),
-        dateOfDeath = None,
-        reducedRateElection = false,
-        countryCode = 200,
-        DesStatePensionAmounts()
-      )
-
-
-      "return StatePension object" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NEWsummary))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-        whenReady(statePensionF) { statePension =>
-          statePension shouldBe StatePension(new LocalDate("2016-04-05"), StatePensionAmounts(false, StatePensionAmount(None, None, 0.00), StatePensionAmount(Some(34), None, 151.20), StatePensionAmount(Some(0), Some(2), 155.65), StatePensionAmount(None, None, 0), StatePensionAmount(None, None, 0), OldRules(0, 0, 0), NewRules(0, 0)), 61, new LocalDate("2018-01-01"), "2049-50", 35, false, 155.65, false, None, false)
-        }
-      }
-
-      "have a pension age of 61" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NEWsummary))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-        whenReady(statePensionF) { statePension =>
-          statePension.pensionAge shouldBe 61
-        }
-      }
-
-      "have a pension date of 2018-1-1" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NEWsummary))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-        whenReady(statePensionF) { statePension =>
-          statePension.pensionDate shouldBe new LocalDate(2018, 1, 1)
-        }
-      }
-
-      "log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NEWsummary))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-        whenReady(statePensionF) { _ =>
-          verify(mockMetrics, times(1)).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-            Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-            Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
-        }
-      }
-
-    }
-
     "the customer has amount dissonance" should {
 
       lazy val summary = DesSummary(

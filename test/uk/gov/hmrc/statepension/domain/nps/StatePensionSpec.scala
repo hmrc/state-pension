@@ -60,7 +60,6 @@ class StatePensionSpec extends StatePensionUnitSpec {
                          qualifyingYears: Int = 30,
                          reducedRateElection:Boolean = false,
                          reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal] = None,
-                         abroadAutoCredit:Boolean = false,
                          startingAmount: BigDecimal = 160.18,
                          oldRules: OldRules = OldRules(basicStatePension = 119.30,
                                                        additionalStatePension= 30.00,
