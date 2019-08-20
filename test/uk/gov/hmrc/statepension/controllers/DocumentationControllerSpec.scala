@@ -25,13 +25,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 
 class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
-
-  "respond to GET /api/definition" in {
-    val result = route(app, FakeRequest(GET, "/api/definition"))
-    status(result.get) should be(OK)
-  }
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
