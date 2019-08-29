@@ -138,7 +138,6 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
           Matchers.eq(None),
-          Matchers.eq(false),
           Matchers.eq(false)
         )
       }
@@ -191,7 +190,6 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
           Matchers.eq(None),
-          Matchers.eq(false),
           Matchers.eq(true)
         )
       }
@@ -276,7 +274,6 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           Matchers.eq[BigDecimal](0),
           Matchers.eq(true),
           Matchers.eq(Some(32.61)),
-          Matchers.eq(false),
           Matchers.eq(true)
         )
       }
@@ -331,7 +328,6 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
           Matchers.eq(None),
-          Matchers.eq(false),
           Matchers.eq(true)
         )
       }
@@ -386,7 +382,6 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           Matchers.eq[BigDecimal](0),
           Matchers.eq(false),
           Matchers.eq(None),
-          Matchers.eq(false),
           Matchers.eq(false)
         )
       }

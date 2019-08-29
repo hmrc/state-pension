@@ -101,11 +101,6 @@
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
-            <td><p>Taxpayer who has overseas male auto credits (also known as "abroad" user)</p></td>
-            <td><p><code>RB313715C</code></p></td>
-            <td><p>200 (OK) Payload as regular example above</p></td>
-        </tr>
-        <tr>
             <th colspan="3">State Pension age</th>
         </tr>
         <tr>
