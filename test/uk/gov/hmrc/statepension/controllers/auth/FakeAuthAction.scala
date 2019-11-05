@@ -22,8 +22,8 @@ import scala.concurrent.Future
 
 object FakeAuthAction extends AuthAction {
 
-  override protected def refine[A](request: Request[A]): Future[Either[Result, Request[A]]] = {
-    Future.successful(Right(request))
+  override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
+    Future.successful(None)
   }
 }
 
