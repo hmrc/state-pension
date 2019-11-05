@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers
+package uk.gov.hmrc.statepension.controllers.auth
 
 import play.api.mvc.{Request, Result}
-import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 
 import scala.concurrent.Future
 
 object FakeAuthAction extends AuthAction {
 
-  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-
-    block(request)
+  override protected def refine[A](request: Request[A]): Future[Either[Result, Request[A]]] = {
+    Future.successful(Right(request))
   }
 }
 

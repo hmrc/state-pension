@@ -17,61 +17,104 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import akka.util.Timeout
-import org.mockito.Matchers.any
-import org.mockito.Mockito._
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.Matchers.{any, eq => MockitoEq}
+import org.mockito.Mockito.{verify, when}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{OK, UNAUTHORIZED}
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.http.Status.{BAD_REQUEST, OK, UNAUTHORIZED}
+import play.api.mvc.{Action, AnyContent, Controller, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.status
-import uk.gov.hmrc.auth.core.{AuthConnector, MissingBearerToken}
+import uk.gov.hmrc.auth.core.{ConfidenceLevel, InsufficientConfidenceLevel, InternalError, MissingBearerToken, Nino}
+import uk.gov.hmrc.domain.Generator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import play.api.test.Helpers.status
 
+class AuthActionSpec
+  extends PlaySpec
+    with GuiceOneAppPerSuite
+    with BeforeAndAfter
+    with MockitoSugar {
 
-class AuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
-
-  class Harness(authAction: AuthAction) extends Controller {
-    def onPageLoad(): Action[AnyContent] = authAction { request => Ok }
+  class AuthActionTestHarness(authAction: AuthAction) extends Controller {
+    def onPageLoad(): Action[AnyContent] = authAction { request =>
+      Ok
+    }
   }
+
+  private val ninoGenerator = new Generator()
+  private val testNino = ninoGenerator.nextNino.nino
+  private val goodUriWithNino = s"/ni/$testNino/"
 
   implicit val timeout: Timeout = 5 seconds
 
   "Auth Action" when {
     "the user is not logged in" must {
-      "must return unauthorised" in {
-
-        val mockAuthConnector = mock[AuthConnector]
-
-        when(mockAuthConnector.authorise(any(),any())(any(), any()))
-          .thenReturn(Future.failed(new MissingBearerToken))
-
-        val authAction = new AuthActionImpl(mockAuthConnector)
-        val controller = new Harness(authAction)
-        val result = controller.onPageLoad()(FakeRequest("", ""))
+      "return UNAUTHORIZED" in {
+        val (result, _) =
+          testAuthActionWith(Future.failed(new MissingBearerToken))
         status(result) mustBe UNAUTHORIZED
-
       }
     }
 
     "the user is logged in" must {
-      "must return the request" in {
-        val mockAuthConnector = mock[AuthConnector]
+      "return the request when the user is authorised and the nino in the uri matches" in {
 
-        when(mockAuthConnector.authorise[Unit](any(),any())(any(), any()))
-          .thenReturn(Future.successful(()))
+        val (result, mockAuthConnector) =
+          testAuthActionWith(Future.successful(()))
 
-        val authAction = new AuthActionImpl(mockAuthConnector)
-        val controller = new Harness(authAction)
-
-        val result = controller.onPageLoad()(FakeRequest("", ""))
         status(result) mustBe OK
 
+        verify(mockAuthConnector)
+          .authorise[Unit](MockitoEq(
+            ConfidenceLevel.L200 and
+              Nino(hasNino = true, nino = Some(testNino))),
+            any())(any(), any())
+      }
+
+      "return UNAUTHORIZED when the Confidence Level is less than 200" in {
+        val (result, _) =
+          testAuthActionWith(Future.failed(new InsufficientConfidenceLevel))
+        status(result) mustBe UNAUTHORIZED
+      }
+
+      "return UNAUTHORIZED when the Nino is rejected by auth" in {
+        val (result, _) =
+          testAuthActionWith(Future.failed(new InternalError("IncorrectNino")))
+        status(result) mustBe UNAUTHORIZED
+      }
+
+      "return BAD_REQUEST when the user is authorised and the uri doesn't match our expected format" in {
+        val (result, _) =
+          testAuthActionWith(Future.successful(()),
+            "/UriThatDoesNotMatchTheRegex")
+        status(result) mustBe BAD_REQUEST
       }
     }
   }
+
+  private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): MicroserviceAuthConnector = {
+    val connector = mock[MicroserviceAuthConnector]
+
+    when(connector.authorise[T](any(), any())(any(), any()))
+      .thenReturn(authoriseResult)
+
+    connector
+  }
+
+  private def testAuthActionWith[T](authResult: Future[T],
+                                    uri: String = goodUriWithNino): (Future[Result], MicroserviceAuthConnector) = {
+    val mockAuthConnector = newMockConnectorWithAuthResult(authResult)
+    val authAction = new AuthActionImpl(mockAuthConnector)
+
+    val testHarness = new AuthActionTestHarness(authAction)
+
+    (testHarness.onPageLoad()(FakeRequest(method = "", path = uri)),
+      mockAuthConnector)
+  }
 }
+

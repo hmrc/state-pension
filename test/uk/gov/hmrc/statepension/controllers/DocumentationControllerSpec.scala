@@ -25,6 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.controllers.auth.FakeAuthAction
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 
 class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {

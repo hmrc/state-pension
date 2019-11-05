@@ -17,40 +17,54 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.Configuration
+import play.api.Mode.Mode
+import play.api.{Configuration, Environment, Logger}
 import play.api.http.Status.UNAUTHORIZED
 import play.api.mvc.Results._
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, NoActiveSession, PlayAuthConnector}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, Nino, NoActiveSession, PlayAuthConnector}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.statepension.WSHttp
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthActionImpl @Inject()(override val authConnector: AuthConnector)
-                              (implicit ec: ExecutionContext) extends AuthAction with AuthorisedFunctions {
+class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit executionContext: ExecutionContext)
+  extends AuthAction with AuthorisedFunctions {
 
-  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
+  override protected def refine[A](request: Request[A]): Future[Either[Result, Request[A]]] = {
+
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, None)
 
-    authorised(ConfidenceLevel.L200) {
-      block(request)
-    }recover {
-      case ex: NoActiveSession =>
-        Status(UNAUTHORIZED)
+    val matchNinoInUriPattern = "/.{0}ni/([^/]+)/?.*".r
+
+    val matches = matchNinoInUriPattern.findAllIn(request.uri)
+
+    if (matches.isEmpty) {
+      Future.successful(Left(BadRequest))
+    } else {
+      val uriNino: Option[String] = Some(matches.group(1))
+      authorised(ConfidenceLevel.L200 and Nino(hasNino = true, nino = uriNino)) {
+        Future.successful(Right(request))
+      }.recover {
+        case t: Throwable => {
+          Logger.debug("Debug info - " + t.getMessage)
+          Left(Unauthorized)
+        }
+      }
     }
   }
 }
 
 @ImplementedBy(classOf[AuthActionImpl])
-trait AuthAction extends ActionBuilder[Request] with ActionFunction[Request, Request]
+trait AuthAction extends ActionBuilder[Request] with ActionRefiner[Request, Request]
 
-class MicroserviceAuthConnector @Inject()(val http: WSHttp, configuration: Configuration) extends PlayAuthConnector {
+class MicroserviceAuthConnector @Inject()(val http: WSHttp,
+                                          val runModeConfiguration: Configuration,
+                                          environment: Environment
+                                         ) extends PlayAuthConnector with ServicesConfig {
+  override val serviceUrl: String = baseUrl("auth")
 
-  val host = configuration.getString("microservice.services.auth.host").get
-  val port = configuration.getString("microservice.services.auth.port").get
-
-  override val serviceUrl: String = s"http://$host:$port"
-
+  override protected def mode: Mode = environment.mode
 }
