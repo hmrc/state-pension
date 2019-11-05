@@ -76,7 +76,6 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
     155.65,
     false,
     None,
-    false,
     false
   )
 
@@ -125,7 +124,6 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe false
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
-      (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe false
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
@@ -165,7 +163,6 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe true
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe Some(155.65)
-      (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe false
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
@@ -205,7 +202,6 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
       (json \ "reducedRateElection").as[Boolean] shouldBe false
       (json \ "reducedRateElectionCurrentWeeklyAmount").asOpt[BigDecimal] shouldBe None
-      (json \ "abroadAutoCredit").as[Boolean] shouldBe false
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe true
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"

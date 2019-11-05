@@ -60,10 +60,6 @@ case class DesExclusionService(dateOfDeath: Option[LocalDate],
     if (liabilities.exists(_.liabilityType.contains( LiabilityType.ISLE_OF_MAN))) Exclusion.IsleOfMan :: exclusionList
     else exclusionList
 
-  // scalastyle:off magic.number
-  final val AUTO_CREDITS_EXCLUSION_DATE = new LocalDate(2018, 10, 6)
-  // scalastyle:on magic.number
-
   private val exclusions = FunctionHelper.composeAll(List(
     checkDead,
     checkManualCorrespondence,

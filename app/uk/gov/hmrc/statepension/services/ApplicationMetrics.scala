@@ -78,7 +78,7 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
                        additionalStatePension: BigDecimal, graduatedRetirementBenefit:BigDecimal,
                        grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal,
                        reducedRateElection: Boolean,reducedRateElectionCurrentWeeklyAmount:Option[BigDecimal],
-                       abroadAutoCredit: Boolean, statePensionAgeUnderConsideration: Boolean): Unit = {
+                       statePensionAgeUnderConsideration: Boolean): Unit = {
     startingAmount.update(starting.toInt)
     oldRulesBasicStatePension.update(basicStatePension.toInt)
     oldRulesAdditionalStatePension.update(additionalStatePension.toInt)
@@ -89,7 +89,6 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
       metrics.defaultRegistry.counter("exclusion-mwrre").inc()
       rreCurrentWeeklyAmount.update(reducedRateElectionCurrentWeeklyAmount.getOrElse[BigDecimal](0).toInt)
     }
-    if(abroadAutoCredit) metrics.defaultRegistry.counter("exclusion-abroad").inc()
     forecastAmountMeter.update(forecast.toInt)
     currentAmountMeter.update(current.toInt)
     personalMaxAmountMeter.update(personalMaximum.toInt)

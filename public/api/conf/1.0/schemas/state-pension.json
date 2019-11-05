@@ -236,11 +236,6 @@
       "description": "The amount of accrued State Pension to date each week returned only if the customer has \u2018reduced rate election\u2019 and regardless of qualifying years ",
       "example": "133.41"
     },
-    "abroadAutoCredit": {
-      "type": "boolean",
-      "description": "Whether the customer is male, reached State Pension age before 6 October 2018 and has an overseas address",
-      "example": "true"
-    },
     "statePensionAgeUnderConsideration": {
       "type": "boolean",
       "description": "Whether the customer has a date of birth between 6 April 1970 and 5 April 1978.  These customers may have a change to their State Pension age due to an ongoing government consultation.",
