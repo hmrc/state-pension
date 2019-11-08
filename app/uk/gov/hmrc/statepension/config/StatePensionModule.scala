@@ -18,13 +18,10 @@ package uk.gov.hmrc.statepension.config
 
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.statepension.WSHttp
-import uk.gov.hmrc.statepension.controllers.auth.MicroserviceAuthConnector
 
 class StatePensionModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[WSHttp].to(WSHttp),
-    bind[AuthConnector].to(classOf[MicroserviceAuthConnector])
+    bind[WSHttp].to(WSHttp)
   )
 }
