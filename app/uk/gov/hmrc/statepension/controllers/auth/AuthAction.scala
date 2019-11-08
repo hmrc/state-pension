@@ -36,12 +36,21 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, None)
 
-    authorised(AuthProviders(PrivilegedApplication) and ConfidenceLevel.L200 and Enrolment("read:state-pension")) {
-      Future.successful(None)
-    }.recover {
-      case t: Throwable =>
-        Logger.debug("Debug info - " + t.getMessage)
-        Some(Unauthorized)
+    val matchNinoInUriPattern = "/ni/([^/]+)/?.*".r
+
+    val matches = matchNinoInUriPattern.findAllIn(request.uri)
+
+    if (matches.isEmpty) {
+      Future.successful(Some(BadRequest))
+    } else {
+      val uriNino: Option[String] = Some(matches.group(1))
+      authorised((ConfidenceLevel.L200 and Nino(true, uriNino)) or AuthProviders(PrivilegedApplication)) {
+        Future.successful(None)
+      }.recover {
+        case t: Throwable =>
+          Logger.debug("Debug info - " + t.getMessage)
+          Some(Unauthorized)
+      }
     }
   }
 }

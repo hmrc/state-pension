@@ -72,7 +72,7 @@ class AuthActionSpec
 
         verify(mockAuthConnector)
           .authorise[Unit](MockitoEq(
-            AuthProviders(PrivilegedApplication) and ConfidenceLevel.L200 and Enrolment("read:state-pension")),
+            (ConfidenceLevel.L200 and Nino(true, Some(testNino))) or AuthProviders(PrivilegedApplication)),
             any())(any(), any())
       }
 
