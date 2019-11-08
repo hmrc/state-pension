@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
+import uk.gov.hmrc.statepension.controllers.auth.FakeAuthAction
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
@@ -46,7 +47,7 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
   val appContext = app.injector.instanceOf[AppContext]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController(appContext, spService, mock[StatePensionAuditConnector]) {
+    new StatePensionController(appContext, spService, mock[StatePensionAuditConnector], FakeAuthAction) {
       override val app: String = "Test State Pension"
       override val context: String = "test"
   }

@@ -20,13 +20,16 @@ import com.google.inject.Inject
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppContext}
+import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 import uk.gov.hmrc.statepension.domain.APIAccess
 import uk.gov.hmrc.statepension.views._
 
-class DocumentationController @Inject()(errorHandler: HttpErrorHandler, appContext: AppContext)
+class DocumentationController @Inject()(errorHandler: HttpErrorHandler,
+                                        appContext: AppContext,
+                                        authAction: AuthAction)
   extends uk.gov.hmrc.api.controllers.DocumentationController(errorHandler = errorHandler) {
 
-  override def definition(): Action[AnyContent] = Action {
+  override def definition(): Action[AnyContent] = authAction {
     Ok(txt.definition(buildAccess(), buildStatus())).as("application/json")
   }
 
