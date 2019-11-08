@@ -63,7 +63,7 @@ class AuthActionSpec
     }
 
     "the user is logged in" must {
-      "return the request when the user is authorised" in {
+      "return the request when the user is authorised and Nino matches the Nino in the uri" in {
 
         val (result, mockAuthConnector) =
           testAuthActionWith(Future.successful(()))
@@ -82,9 +82,9 @@ class AuthActionSpec
         status(result) mustBe UNAUTHORIZED
       }
 
-      "return UNAUTHORIZED when the read:state-pension enrolment is not present" in {
+      "return UNAUTHORIZED when the Nino is rejected by auth" in {
         val (result, _) =
-          testAuthActionWith(Future.failed(new InsufficientEnrolments))
+          testAuthActionWith(Future.failed(InternalError("IncorrectNino")))
         status(result) mustBe UNAUTHORIZED
       }
 
@@ -92,6 +92,13 @@ class AuthActionSpec
         val (result, _) =
           testAuthActionWith(Future.failed(new UnsupportedAuthProvider))
         status(result) mustBe UNAUTHORIZED
+      }
+
+      "return BAD_REQUEST when the user is authorised and the uri doesn't match our expected format" in {
+        val (result, _) =
+          testAuthActionWith(Future.successful(()),
+            "/UriThatDoesNotMatchTheRegex")
+        status(result) mustBe BAD_REQUEST
       }
     }
   }
