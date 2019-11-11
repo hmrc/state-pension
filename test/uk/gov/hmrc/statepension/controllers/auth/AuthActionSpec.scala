@@ -71,8 +71,7 @@ class AuthActionSpec
         status(result) mustBe OK
 
         verify(mockAuthConnector)
-          .authorise[Unit](MockitoEq(
-            (ConfidenceLevel.L200 and Nino(true, Some(testNino))) or AuthProviders(PrivilegedApplication)),
+          .authorise[Unit](MockitoEq(ConfidenceLevel.L200 and Nino(true, Some(testNino))),
             any())(any(), any())
       }
 
@@ -85,12 +84,6 @@ class AuthActionSpec
       "return UNAUTHORIZED when the Nino is rejected by auth" in {
         val (result, _) =
           testAuthActionWith(Future.failed(InternalError("IncorrectNino")))
-        status(result) mustBe UNAUTHORIZED
-      }
-
-      "return UNAUTHORIZED when not a Privileged application" in {
-        val (result, _) =
-          testAuthActionWith(Future.failed(new UnsupportedAuthProvider))
         status(result) mustBe UNAUTHORIZED
       }
 
