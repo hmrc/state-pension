@@ -44,7 +44,7 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
       Future.successful(Some(BadRequest))
     } else {
       val uriNino: Option[String] = Some(matches.group(1))
-      authorised(ConfidenceLevel.L200 and Nino(true, uriNino)) {
+      authorised((ConfidenceLevel.L200 and Nino(true, uriNino)) or AuthProviders(PrivilegedApplication)) {
         Future.successful(None)
       }.recover {
         case t: Throwable =>
