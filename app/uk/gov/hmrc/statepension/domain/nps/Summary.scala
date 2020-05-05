@@ -22,9 +22,8 @@ import play.api.libs.json.{JsPath, Reads}
 
 import scala.math.BigDecimal.RoundingMode
 
-case class DesSummary(
+final case class DesSummary(
                        earningsIncludedUpTo: LocalDate,
-                       sex: String,
                        statePensionAgeDate: LocalDate,
                        finalRelevantStartYear: Int,
                        pensionSharingOrderSERPS: Boolean,
@@ -51,7 +50,6 @@ object DesSummary {
 
   implicit val reads: Reads[DesSummary] = (
     (JsPath \ "earningsIncludedUpto").read[LocalDate] and
-      (JsPath \ "sex").read[String] and
       (JsPath \ "spaDate").read[LocalDate] and
       (JsPath \ "finalRelevantYear").read[Int] and
       readBooleanWithDefault(JsPath \ "pensionShareOrderSerps") and
