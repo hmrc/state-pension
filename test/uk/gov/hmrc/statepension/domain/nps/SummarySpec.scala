@@ -76,7 +76,6 @@ class SummarySpec extends UnitSpec {
         """.stripMargin
 
       val result = DesSummary(earningsIncludedUpTo = LocalDate.parse("2014-01-01"),
-        sex = "M",
         statePensionAgeDate = LocalDate.parse("2014-08-25"),
         finalRelevantStartYear = 2014,
         pensionSharingOrderSERPS = true,

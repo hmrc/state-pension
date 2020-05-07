@@ -56,7 +56,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
   val summary = DesSummary(
     earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-    sex = "M",
     statePensionAgeDate = new LocalDate(2018, 1, 1),
     finalRelevantStartYear = 2049,
     pensionSharingOrderSERPS = false,
@@ -89,7 +88,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2050, 7, 7),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
@@ -170,7 +168,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
       val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(1954, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2016, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
@@ -246,7 +243,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
       val summary1 = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
@@ -341,7 +337,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
       lazy val summary = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "M",
         statePensionAgeDate = new LocalDate(2018, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,

@@ -76,7 +76,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
         val regularStatement = DesSummary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-          sex = "F",
           statePensionAgeDate = new LocalDate(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
@@ -777,7 +776,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
         val regularStatement = DesSummary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-          sex = "F",
           statePensionAgeDate = new LocalDate(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
@@ -828,7 +826,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
@@ -1031,7 +1028,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
@@ -1091,7 +1087,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
@@ -1306,7 +1301,6 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
       val regularStatement = DesSummary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        sex = "F",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,

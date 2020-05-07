@@ -299,7 +299,6 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
       summary shouldBe DesSummary(
         new LocalDate(2016, 4, 5),
-        "M",
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = true,
