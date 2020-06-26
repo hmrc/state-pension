@@ -21,7 +21,7 @@ import play.api.Mode.Mode
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
+import uk.gov.hmrc.auth.core.AuthProvider.{PrivilegedApplication, Verify}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -44,7 +44,9 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
       Future.successful(Some(BadRequest))
     } else {
       val uriNino: Option[String] = Some(matches.group(1))
-      authorised((ConfidenceLevel.L200 and Nino(true, uriNino)) or AuthProviders(PrivilegedApplication)) {
+      authorised(
+        (ConfidenceLevel.L200 and Nino(true, uriNino)) or (ConfidenceLevel.L500 and AuthProviders(Verify)) or AuthProviders(PrivilegedApplication)
+      ) {
         Future.successful(None)
       }.recover {
         case t: Throwable =>

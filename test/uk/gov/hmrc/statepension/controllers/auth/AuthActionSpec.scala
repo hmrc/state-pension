@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import play.api.test.Helpers.status
-import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
+import uk.gov.hmrc.auth.core.AuthProvider.{PrivilegedApplication, Verify}
 
 class AuthActionSpec
   extends PlaySpec
@@ -72,7 +72,8 @@ class AuthActionSpec
 
         verify(mockAuthConnector)
           .authorise[Unit](MockitoEq(
-            (ConfidenceLevel.L200 and Nino(true, Some(testNino))) or AuthProviders(PrivilegedApplication)),
+            (ConfidenceLevel.L200 and Nino(true, Some(testNino))) or (ConfidenceLevel.L500 and AuthProviders(Verify)) or AuthProviders(PrivilegedApplication)
+          ),
             any())(any(), any())
       }
 
