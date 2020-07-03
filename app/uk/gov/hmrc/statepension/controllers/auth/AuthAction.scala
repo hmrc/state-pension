@@ -23,12 +23,14 @@ import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core.AuthProvider.{PrivilegedApplication, Verify}
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.statepension.WSHttp
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future.successful
 
 class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit executionContext: ExecutionContext)
   extends AuthAction with AuthorisedFunctions {
@@ -41,14 +43,16 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
     val matches = matchNinoInUriPattern.findAllIn(request.uri)
 
     if (matches.isEmpty) {
-      Future.successful(Some(BadRequest))
+      successful(Some(BadRequest))
     } else {
       val uriNino: Option[String] = Some(matches.group(1))
       authorised(
         (ConfidenceLevel.L200 and Nino(true, uriNino)) or (ConfidenceLevel.L500 and AuthProviders(Verify)) or AuthProviders(PrivilegedApplication)
-      ) {
-        Future.successful(None)
-      }.recover {
+      ).retrieve(Retrievals.trustedHelper) {
+        case Some(trusted) =>
+          if (uriNino.contains(trusted.principalNino)) successful(None) else successful(Some(Unauthorized))
+        case None => successful(None)
+      } recover {
         case t: Throwable =>
           Logger.debug("Debug info - " + t.getMessage)
           Some(Unauthorized)
