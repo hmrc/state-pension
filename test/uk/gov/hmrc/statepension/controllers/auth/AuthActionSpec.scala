@@ -23,17 +23,20 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{BAD_REQUEST, OK, UNAUTHORIZED}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{AuthProviders, ConfidenceLevel, Enrolment, InsufficientConfidenceLevel, InsufficientEnrolments, InternalError, MissingBearerToken, Nino, UnsupportedAuthProvider}
+import play.api.test.Helpers.status
+import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+import uk.gov.hmrc.auth.core.retrieve.{GGCredId, PAClientId, ~}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.statepension.controllers.auth.AuthActionSpec.retrievalsTestingSyntax
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import play.api.test.Helpers.status
-import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 
 class AuthActionSpec
   extends PlaySpec
@@ -47,9 +50,9 @@ class AuthActionSpec
     }
   }
 
-  private val ninoGenerator = new Generator()
-  private val testNino = ninoGenerator.nextNino.nino
-  private val goodUriWithNino = s"/ni/$testNino/"
+  private val ninoGenerator: Generator = new Generator()
+  private val testNino: String = ninoGenerator.nextNino.nino
+  private val goodUriWithNino: String = s"/ni/$testNino/"
 
   implicit val timeout: Timeout = 5 seconds
 
@@ -63,42 +66,90 @@ class AuthActionSpec
     }
 
     "the user is logged in" must {
-      "return the request when the user is authorised and Nino matches the Nino in the uri" in {
+      "return the request" when {
+        "the user is authorised and Nino matches the Nino in the uri" in {
 
-        val (result, mockAuthConnector) =
-          testAuthActionWith(Future.successful(()))
+          val (result, mockAuthConnector) =
+            testAuthActionWith(Future.successful(Some(testNino) ~ None  ~ GGCredId("")))
 
-        status(result) mustBe OK
+          status(result) mustBe OK
 
-        verify(mockAuthConnector)
-          .authorise[Unit](MockitoEq(
-            (ConfidenceLevel.L200 and Nino(true, Some(testNino))) or AuthProviders(PrivilegedApplication)),
-            any())(any(), any())
+          verify(mockAuthConnector)
+            .authorise[Unit](MockitoEq(
+              ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
+            ), any())(any(), any())
+        }
+        "the user is a trusted helper and requests with the nino of the helpee" in {
+          val helperNino = ninoGenerator.nextNino.nino
+          val (result, mockAuthConnector) =
+            testAuthActionWith(Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", testNino)) ~ GGCredId("")))
+
+          status(result) mustBe OK
+
+          verify(mockAuthConnector)
+            .authorise[Unit](MockitoEq(
+              ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
+            ), any())(any(), any())
+        }
+
+        "the request comes from a privileged application" in {
+          val (result, mockAuthConnector) =
+            testAuthActionWith(Future.successful(None ~ None ~ PAClientId("")))
+
+          status(result) mustBe OK
+
+          verify(mockAuthConnector)
+            .authorise[Unit](MockitoEq(
+              ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
+            ), any())(any(), any())
+        }
       }
 
-      "return UNAUTHORIZED when the Confidence Level is less than 200" in {
-        val (result, _) =
-          testAuthActionWith(Future.failed(new InsufficientConfidenceLevel))
-        status(result) mustBe UNAUTHORIZED
+      "return UNAUTHORIZED" when {
+        "the Confidence Level is less than 200" in {
+          val (result, _) =
+            testAuthActionWith(Future.failed(new InsufficientConfidenceLevel))
+          status(result) mustBe UNAUTHORIZED
+        }
+
+        "the Nino is rejected by auth" in {
+          val (result, _) =
+            testAuthActionWith(Future.failed(InternalError("IncorrectNino")))
+          status(result) mustBe UNAUTHORIZED
+        }
+
+        "not a Privileged application" in {
+          val (result, _) =
+            testAuthActionWith(Future.failed(new UnsupportedAuthProvider))
+          status(result) mustBe UNAUTHORIZED
+        }
+
+        "the trusted helpee nino does not match the uri Nino" in {
+          val notTestNino = testNino.take(testNino.length-1) + "X"
+          val helperNino = ninoGenerator.nextNino.nino
+          val (result, _) = testAuthActionWith(Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", notTestNino)) ~ GGCredId("")))
+          status(result) mustBe UNAUTHORIZED
+        }
       }
 
-      "return UNAUTHORIZED when the Nino is rejected by auth" in {
-        val (result, _) =
-          testAuthActionWith(Future.failed(InternalError("IncorrectNino")))
-        status(result) mustBe UNAUTHORIZED
+      "return BAD_REQUEST" when {
+        "the user is authorised and the uri doesn't match our expected format" in {
+          val (result, _) =
+            testAuthActionWith(Future.successful(()),
+              "/UriThatDoesNotMatchTheRegex")
+          status(result) mustBe BAD_REQUEST
+        }
       }
+      "return INTERNAL_SERVER_ERROR" when {
+        "auth returns with no nino" in {
+          val (result, _) = testAuthActionWith(Future.successful(None ~ None))
+          status(result) mustBe INTERNAL_SERVER_ERROR
+        }
 
-      "return UNAUTHORIZED when not a Privileged application" in {
-        val (result, _) =
-          testAuthActionWith(Future.failed(new UnsupportedAuthProvider))
-        status(result) mustBe UNAUTHORIZED
-      }
-
-      "return BAD_REQUEST when the user is authorised and the uri doesn't match our expected format" in {
-        val (result, _) =
-          testAuthActionWith(Future.successful(()),
-            "/UriThatDoesNotMatchTheRegex")
-        status(result) mustBe BAD_REQUEST
+        "auth returns an unexpected exception" in {
+          val (result, _) = testAuthActionWith(Future.failed(new Exception("")))
+          status(result) mustBe INTERNAL_SERVER_ERROR
+        }
       }
     }
   }
@@ -122,5 +173,11 @@ class AuthActionSpec
     (testHarness.onPageLoad()(FakeRequest(method = "", path = uri)),
       mockAuthConnector)
   }
+
 }
 
+object AuthActionSpec {
+  implicit class retrievalsTestingSyntax[A](val a: A) extends AnyVal {
+    def ~[B](b: B): A ~ B = new ~(a, b)
+  }
+}

@@ -26,7 +26,7 @@ object AppDependencies {
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
     "uk.gov.hmrc" %% "play-hmrc-api" % "3.4.0-play-25",
     "uk.gov.hmrc" %% "play-hal" % "1.8.0-play-25",
-    "uk.gov.hmrc" %% "auth-client"  %  "2.22.0-play-25"
+    "uk.gov.hmrc" %% "auth-client"  %  "3.0.0-play-25"
   )
 
   val test: Seq[ModuleID] = Seq(

@@ -23,15 +23,20 @@ import play.api.mvc._
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{authProviderId, nino, trustedHelper}
+import uk.gov.hmrc.auth.core.retrieve.{PAClientId, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.statepension.WSHttp
 
+import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit executionContext: ExecutionContext)
   extends AuthAction with AuthorisedFunctions {
+
+  private val logger = Logger(this.getClass)
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, None)
@@ -40,16 +45,31 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
 
     val matches = matchNinoInUriPattern.findAllIn(request.uri)
 
+    def check(nino: String): Future[Option[Status]] = {
+      val uriNino = matches.group(1)
+      if (uriNino == nino) successful(None)
+      else {
+        logger.warn("nino does not match nino in uri")
+        successful(Some(Unauthorized))
+      }
+    }
+
     if (matches.isEmpty) {
-      Future.successful(Some(BadRequest))
+      successful(Some(BadRequest))
     } else {
-      val uriNino: Option[String] = Some(matches.group(1))
-      authorised((ConfidenceLevel.L200 and Nino(true, uriNino)) or AuthProviders(PrivilegedApplication)) {
-        Future.successful(None)
-      }.recover {
-        case t: Throwable =>
-          Logger.debug("Debug info - " + t.getMessage)
+      authorised(
+        ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
+      ).retrieve(nino and trustedHelper and authProviderId) {
+        case _ ~ _ ~ PAClientId(_) => successful(None)
+        case _ ~ Some(trusted) ~ _ => check(trusted.principalNino)
+        case Some(nino) ~ None ~ _ => check(nino)
+      } recover {
+        case e: AuthorisationException =>
+          logger.debug("Debug info - " + e.getMessage, e)
           Some(Unauthorized)
+        case e: Throwable =>
+          logger.error("Unexpected Error", e)
+          Some(InternalServerError)
       }
     }
   }
