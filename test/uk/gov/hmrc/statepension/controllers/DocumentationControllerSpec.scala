@@ -42,7 +42,7 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
       override lazy val revaluation: Option[Configuration] = None
     }
 
-    new DocumentationController(LazyHttpErrorHandler, appContext, FakeAuthAction).definition()(FakeRequest())
+    new DocumentationController(LazyHttpErrorHandler, appContext).definition()(FakeRequest())
 
   }
 
