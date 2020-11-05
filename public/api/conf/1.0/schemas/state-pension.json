@@ -25,6 +25,10 @@
           {
             "enum": ["PostStatePensionAge"],
             "description": "The current date is equal to or greater than the day before the customer\u2019s State Pension date. The customer is eligible for State Pension and therefore we do not provide a forecast."
+          },
+          {
+            "enum": ["ManualCorrespondenceIndicator"],
+            "description": "The current date is equal to or greater than the day before the customer\u2019s State Pension date. The customer is eligible for State Pension and therefore we do not provide a forecast."
           }
         ],
         "description": "A list of exclusion reasons",

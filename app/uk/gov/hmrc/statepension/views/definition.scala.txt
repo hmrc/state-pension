@@ -21,12 +21,6 @@
         "status": "@status",
         "endpointsEnabled": true,
         "access" : @Json.toJson(access)
-      },
-      {
-        "version":"2.0",
-        "status":"ALPHA",
-        "endpointsEnabled": false,
-        "access" : @Json.toJson(access)
       }
     ]
   }
