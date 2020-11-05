@@ -1,0 +1,214 @@
+#%RAML 1.0
+---
+
+title: State Pension
+version: 2.0
+protocols: [ HTTPS ]
+baseUri: https://api.service.hmrc.gov.uk/
+
+documentation:
+ - title: Overview
+   content: !include docs/overview.md
+ - title: Versioning
+   content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/versioning.md
+ - title: Errors
+   content: !include https://developer.service.hmrc.gov.uk/api-documentation/assets/common/docs/errors.md
+
+mediaType: [ application/json, application/hal+json ]
+
+uses:
+  sec: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/securitySchemes.raml
+  headers: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/headers.raml
+  annotations: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/annotations.raml
+  types: https://developer.service.hmrc.gov.uk/api-documentation/assets/common/modules/types.raml
+
+/state-pension:
+  /ni:
+    /{nino}:
+      uriParameters:
+        nino:
+          description: A valid National Insurance number
+          type: string
+          example: QQ123456A
+      get:
+        displayName: Get State Pension statement
+        description: Returns a State Pension statement
+        is: [headers.acceptHeader]
+        (annotations.scope): "read:state-pension"
+        securedBy: [ sec.oauth_2_0: { scopes: [ "read:state-pension" ] } ]
+        (annotations.sandboxData): !include testdata/get-state-pension.md
+
+        responses:
+          200:
+            body:
+              application/json:
+                type: !include schemas/state-pension.json
+                examples:
+                  Regular:
+                    description: Regular response
+                    value: !include examples/ni-example-1.json
+                  RegularReducedRateElection:
+                    description: Regular (Reduced Rate Election) response
+                    value: !include examples/ni-example-2.json
+                  Exclusion:
+                    description: Exclusion response
+                    value: !include examples/ni-example-3.json
+
+
+          400:
+            body:
+              application/json:
+                type: types.errorResponse
+                examples:
+                  InvalidNino:
+                    description: Invalid NINO
+                    value:
+                      code: ERROR_NINO_INVALID
+                  BadRequest:
+                    description: Bad Request
+                    value:
+                      code: BAD_REQUEST
+          401:
+            body:
+              application/json:
+                type: types.errorResponse
+                examples:
+                  Unauth:
+                    description: Unauthorized
+                    value:
+                      code: UNAUTHORIZED
+          403:
+            body:
+              application/json:
+                type: types.errorResponse
+                examples:
+                  ExcManCor:
+                    description: Manual Correspondence exclusion, the customer cannot be served digitally and needs to contact HMRC
+                    value:
+                      code: EXCLUSION_MANUAL_CORRESPONDENCE
+                  ExcDead:
+                    description: Death recorded, the customer needs to contact the National Insurance Helpline
+                    value:
+                      code: EXCLUSION_DEAD
+          404:
+            body:
+              application/json:
+                type: types.errorResponse
+                examples:
+                  NotFound:
+                    description: Resource not found
+                    value:
+                      code: NOT_FOUND
+          406:
+            body:
+              application/json:
+                type: types.errorResponse
+                examples:
+                  NotAcceptable:
+                    description: Accept header is missing or invalid
+                    value:
+                      code: ACCEPT_HEADER_INVALID
+          500:
+            body:
+              application/json:
+                type: types.errorResponse
+                examples:
+                  InternalServerError:
+                    description: Internal Server Error
+                    value:
+                      code: INTERNAL_SERVER_ERROR
+  /pd:
+    /ni:
+        /{nino}:
+          uriParameters:
+            nino:
+              description: A valid National Insurance number
+              type: string
+              example: QQ123456A
+          get:
+            displayName: Get State Pension Dashboard data
+            description: Returns a State Pension Dashboard data
+            is: [headers.acceptHeader]
+            (annotations.scope): "read:state-pension"
+            securedBy: [ sec.oauth_2_0: { scopes: [ "read:state-pension" ] } ]
+            (annotations.sandboxData): !include testdata/get-state-pension.md #TODO
+
+            responses:
+              200:
+                body:
+                  application/json:
+                    type: !include schemas/state-pension.json #TODO
+                    examples:
+                      Regular:
+                        description: Regular response
+                        value: !include examples/ni-example-1.json #TODO
+                      RegularReducedRateElection:
+                        description: Regular (Reduced Rate Election) response
+                        value: !include examples/ni-example-2.json #TODO
+                      Exclusion:
+                        description: Exclusion response
+                        value: !include examples/ni-example-3.json #TODO
+
+
+              400:
+                body:
+                  application/json:
+                    type: types.errorResponse
+                    examples:
+                      InvalidNino:
+                        description: Invalid NINO
+                        value:
+                          code: ERROR_NINO_INVALID
+                      BadRequest:
+                        description: Bad Request
+                        value:
+                          code: BAD_REQUEST
+              401:
+                body:
+                  application/json:
+                    type: types.errorResponse
+                    examples:
+                      Unauth:
+                        description: Unauthorized
+                        value:
+                          code: UNAUTHORIZED
+              403:
+                body:
+                  application/json:
+                    type: types.errorResponse
+                    examples:
+                      ExcManCor:
+                        description: Manual Correspondence exclusion, the customer cannot be served digitally and needs to contact HMRC
+                        value:
+                          code: EXCLUSION_MANUAL_CORRESPONDENCE
+                      ExcDead:
+                        description: Death recorded, the customer needs to contact the National Insurance Helpline
+                        value:
+                          code: EXCLUSION_DEAD
+              404:
+                body:
+                  application/json:
+                    type: types.errorResponse
+                    examples:
+                      NotFound:
+                        description: Resource not found
+                        value:
+                          code: NOT_FOUND
+              406:
+                body:
+                  application/json:
+                    type: types.errorResponse
+                    examples:
+                      NotAcceptable:
+                        description: Accept header is missing or invalid
+                        value:
+                          code: ACCEPT_HEADER_INVALID
+              500:
+                body:
+                  application/json:
+                    type: types.errorResponse
+                    examples:
+                      InternalServerError:
+                        description: Internal Server Error
+                        value:
+                          code: INTERNAL_SERVER_ERROR
