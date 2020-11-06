@@ -9,10 +9,6 @@
       "type": "string",
         "oneOf": [
           {
-            "enum": [ "Abroad" ],
-            "description": "Male who has an address outside United Kingdom and Isle of Man, and retires before 6 October 2018. Unable to automate currently, manual intervention required."
-          },
-          {
             "enum": ["IsleOfMan"],
             "description": "The customer has National Insurance contributions from the Isle of Man. Manual separation of National Insurance record required, customer should contact the National Insurance Helpline."
           },
@@ -25,14 +21,10 @@
           {
             "enum": ["PostStatePensionAge"],
             "description": "The current date is equal to or greater than the day before the customer\u2019s State Pension date. The customer is eligible for State Pension and therefore we do not provide a forecast."
-          },
-          {
-            "enum": ["ManualCorrespondenceIndicator"],
-            "description": "The current date is equal to or greater than the day before the customer\u2019s State Pension date. The customer is eligible for State Pension and therefore we do not provide a forecast."
           }
         ],
         "description": "A list of exclusion reasons",
-        "example": "Abroad"
+        "example": "IsleOfMan"
         }
     },
     "earningsIncludedUpTo": {
