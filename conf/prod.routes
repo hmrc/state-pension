@@ -1,5 +1,6 @@
 # Add all the application routes to the app.routes file
 ->         /ni                        app.Routes
+->         /pd/ni                     dashboard.Routes
 ->         /                          health.Routes
 ->         /api                       definition.Routes
 
