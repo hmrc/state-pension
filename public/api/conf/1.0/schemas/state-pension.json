@@ -9,10 +9,6 @@
       "type": "string",
         "oneOf": [
           {
-            "enum": [ "Abroad" ],
-            "description": "Male who has an address outside United Kingdom and Isle of Man, and retires before 6 October 2018. Unable to automate currently, manual intervention required."
-          },
-          {
             "enum": ["IsleOfMan"],
             "description": "The customer has National Insurance contributions from the Isle of Man. Manual separation of National Insurance record required, customer should contact the National Insurance Helpline."
           },
@@ -28,7 +24,7 @@
           }
         ],
         "description": "A list of exclusion reasons",
-        "example": "Abroad"
+        "example": "IsleOfMan"
         }
     },
     "earningsIncludedUpTo": {

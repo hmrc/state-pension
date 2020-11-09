@@ -26,7 +26,8 @@ import uk.gov.hmrc.statepension.views._
 class DocumentationController @Inject()(errorHandler: HttpErrorHandler,
                                         appContext: AppContext)
   extends uk.gov.hmrc.api.controllers.DocumentationController(errorHandler = errorHandler) {
-
+//TODO allow config to control v2 status
+//TODO allow for seperate whitelist for Priv
   override def definition(): Action[AnyContent] = Action {
     Ok(txt.definition(buildAccess(), buildStatus())).as("application/json")
   }
