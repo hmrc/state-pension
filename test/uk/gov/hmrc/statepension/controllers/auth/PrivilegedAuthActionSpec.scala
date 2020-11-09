@@ -21,7 +21,7 @@ import org.mockito.Mockito.{verify, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.mvc.{Action, AnyContent, Controller, Request}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED, await, defaultAwaitTimeout, status}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
@@ -50,12 +50,13 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
       Matchers.any[ExecutionContext]
     )).thenReturn(result)
 
+
+  val request: Request[AnyContent] = FakeRequest()
+  implicit val hc: HeaderCarrier =
+    HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
+
   "PrivilegedAuthAction" must {
     "make a call to auth for privileged application" in {
-      val request = FakeRequest()
-      implicit val hc: HeaderCarrier =
-        HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
-
       setupAuthConnector(Future.successful(()))
 
       await(Harness.onPageLoad()(request))
@@ -70,10 +71,6 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
     "return OK" when {
       "user is authenticated" in {
-        val request = FakeRequest()
-        implicit val hc: HeaderCarrier =
-          HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
-
         setupAuthConnector(Future.successful(()))
 
         val result = Harness.onPageLoad()(request)
@@ -84,10 +81,6 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
     "return Unauthorized" when {
       "auth throws an authenticated exception" in {
-        val request = FakeRequest()
-        implicit val hc: HeaderCarrier =
-          HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
-
         setupAuthConnector(Future.failed(InternalError()))
 
         val result = Harness.onPageLoad()(request)
@@ -98,10 +91,6 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
     "return InternalServerError" when {
       "auth throws an exception which isn't an authenticated exception" in {
-        val request = FakeRequest()
-        implicit val hc: HeaderCarrier =
-          HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
-
         setupAuthConnector(Future.failed(new Exception("Expected Exception")))
 
         val result = Harness.onPageLoad()(request)
