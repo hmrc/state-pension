@@ -22,4 +22,8 @@ object APIType {
   case object NIRecord extends APIType
   case object Liabilities extends APIType
   case object CitizenDetails extends APIType
+
+  case object IfSummary extends APIType
+  case object IfNIRecord extends APIType
+  case object IfLiabilities extends APIType
 }

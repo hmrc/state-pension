@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.config
+package uk.gov.hmrc.statepension
 
-import play.api.inject.{Binding, Module}
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.statepension.{WSHttp, WSHttpImpl}
-import uk.gov.hmrc.statepension.controllers.auth.MicroserviceAuthConnector
+import uk.gov.hmrc.domain.{Generator, Nino}
 
-class StatePensionModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[WSHttp].to[WSHttpImpl],
-    bind[AuthConnector].to(classOf[MicroserviceAuthConnector])
-  )
+import scala.util.Random
+
+trait NinoGenerator {
+  private val ninoGenerator = new Generator(new Random())
+  def generateNino(): Nino = ninoGenerator.nextNino
+  def generateNinoWithPrefix(prefix: String): Nino = {
+    require(prefix.length == 2)
+    Nino(ninoGenerator.nextNino.toString().replaceFirst("[A-Z]{2}", prefix))
+  }
 }

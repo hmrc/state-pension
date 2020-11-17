@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.controllers
 
 import org.scalatestplus.play.OneAppPerSuite
-import play.api.Configuration
+import play.api.{Configuration, Environment}
 import play.api.http.LazyHttpErrorHandler
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.Result
@@ -32,7 +32,7 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
-    val appContext = new AppContext(app.configuration) {
+    val appContext = new AppContext(app.configuration, Environment.simple()) {
       override lazy val appName: String = ""
       override lazy val apiGatewayContext: String = ""
       override lazy val access: Option[Configuration] = apiConfig

@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.config
+package uk.gov.hmrc.statepension.fixtures
 
-import play.api.inject.{Binding, Module}
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.statepension.{WSHttp, WSHttpImpl}
-import uk.gov.hmrc.statepension.controllers.auth.MicroserviceAuthConnector
+import uk.gov.hmrc.statepension.domain.nps.DesNIRecord
 
-class StatePensionModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[WSHttp].to[WSHttpImpl],
-    bind[AuthConnector].to(classOf[MicroserviceAuthConnector])
-  )
+object DesNIRecordFixture {
+
+  def exampleDesNiRecordJson(nino: String): String =
+    s"""{
+      "yearsToFry": 3,
+      "nonQualifyingYears": 10,
+      "dateOfEntry": "1969-08-01",
+      "employmentDetails": [],
+      "pre75CcCount": 250,
+      "numberOfQualifyingYears": 36,
+      "nonQualifyingYearsPayable": 5,
+      "nino": "$nino"
+    }"""
+
+  val exampleDesNiRecord: DesNIRecord = DesNIRecord(qualifyingYears = 36, List.empty)
+
 }

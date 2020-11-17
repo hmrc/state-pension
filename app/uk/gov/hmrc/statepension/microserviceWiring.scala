@@ -17,23 +17,26 @@
 package uk.gov.hmrc.statepension
 
 import akka.actor.ActorSystem
+import com.google.inject.Inject
 import com.typesafe.config.Config
-import play.api.Mode.Mode
-import play.api.{Configuration, Play}
+import play.api.Configuration
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.hooks.HttpHooks
 import uk.gov.hmrc.play.audit.http.HttpAuditing
+import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.config.{AppName, RunMode}
+import uk.gov.hmrc.play.config.AppName
 import uk.gov.hmrc.play.http.ws._
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
 trait WSHttp extends HttpGet with WSGet with HttpPut with WSPut with HttpPost with WSPost with HttpDelete with WSDelete with Hooks with AppName
 
-object WSHttp extends WSHttp {
-  override protected def actorSystem: ActorSystem = Play.current.actorSystem
-  override protected def configuration: Option[Config] = Option(Play.current.configuration.underlying)
-  override protected def appNameConfiguration: Configuration = Play.current.configuration
+class WSHttpImpl @Inject()(
+                            val actorSystem: ActorSystem,
+                            config: Configuration
+                          ) extends WSHttp {
+  override protected def appNameConfiguration: Configuration = config
+  override protected def configuration: Option[Config] = Option(config.underlying)
 }
 
 trait Hooks extends HttpHooks with HttpAuditing {
@@ -41,8 +44,6 @@ trait Hooks extends HttpHooks with HttpAuditing {
   override lazy val auditConnector: AuditConnector = MicroserviceAuditConnector
 }
 
-object MicroserviceAuditConnector extends AuditConnector with RunMode {
-  override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
-  override protected def mode: Mode = Play.current.mode
-  override protected def runModeConfiguration: Configuration = Play.current.configuration
+object MicroserviceAuditConnector extends AuditConnector {
+  override lazy val auditingConfig: AuditingConfig = LoadAuditingConfig("auditing")
 }
