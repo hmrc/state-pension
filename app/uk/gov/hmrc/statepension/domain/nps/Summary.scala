@@ -22,7 +22,7 @@ import play.api.libs.json.{JsPath, Reads}
 
 import scala.math.BigDecimal.RoundingMode
 
-final case class DesSummary(
+final case class Summary(
                        earningsIncludedUpTo: LocalDate,
                        statePensionAgeDate: LocalDate,
                        finalRelevantStartYear: Int,
@@ -31,13 +31,13 @@ final case class DesSummary(
                        dateOfDeath: Option[LocalDate] = None,
                        reducedRateElection: Boolean = false,
                        countryCode: Int = 0,
-                       amounts: DesStatePensionAmounts = DesStatePensionAmounts()
+                       amounts: PensionAmounts = PensionAmounts()
                      ) {
   val finalRelevantYear: String = s"$finalRelevantStartYear-${(finalRelevantStartYear + 1).toString.takeRight(2)}"
   val statePensionAge: Int = new Period(dateOfBirth, statePensionAgeDate).getYears
 }
 
-object DesSummary {
+object Summary {
 
   val readBooleanFromInt: JsPath => Reads[Boolean] =
     jsPath => jsPath.readNullable[Int].map(_.getOrElse(0) != 0)
@@ -48,7 +48,7 @@ object DesSummary {
   val readBooleanWithDefault: JsPath => Reads[Boolean] =
     jsPath => jsPath.readNullable[Boolean].map(_.getOrElse(false))
 
-  implicit val reads: Reads[DesSummary] = (
+  implicit val reads: Reads[Summary] = (
     (JsPath \ "earningsIncludedUpto").read[LocalDate] and
       (JsPath \ "spaDate").read[LocalDate] and
       (JsPath \ "finalRelevantYear").read[Int] and
@@ -57,36 +57,36 @@ object DesSummary {
       (JsPath \ "dateOfDeath").readNullable[LocalDate] and
       readBooleanWithDefault(JsPath \ "reducedRateElectionToConsider") and
       readNullableInt(JsPath \ "countryCode") and
-      (JsPath \ "statePensionAmount").read[DesStatePensionAmounts]
-    ) (DesSummary.apply _)
+      (JsPath \ "statePensionAmount").read[PensionAmounts]
+    ) (Summary.apply _)
 
 }
 
-case class DesStatePensionAmounts(
-                                   pensionEntitlement: BigDecimal = 0,
-                                   startingAmount2016: BigDecimal = 0,
-                                   protectedPayment2016: BigDecimal = 0,
-                                   amountA2016: DesAmountA2016 = DesAmountA2016(),
-                                   amountB2016: DesAmountB2016 = DesAmountB2016()
+case class PensionAmounts(
+                                pensionEntitlement: BigDecimal = 0,
+                                startingAmount2016: BigDecimal = 0,
+                                protectedPayment2016: BigDecimal = 0,
+                                amountA2016: AmountA2016 = AmountA2016(),
+                                amountB2016: AmountB2016 = AmountB2016()
                                  ) {
   lazy val pensionEntitlementRounded: BigDecimal = pensionEntitlement.setScale(2, RoundingMode.HALF_UP)
 }
 
-object DesStatePensionAmounts {
+object PensionAmounts {
 
   val readBigDecimal: JsPath => Reads[BigDecimal] =
     jsPath => jsPath.readNullable[BigDecimal].map(_.getOrElse(0))
 
-  implicit val reads: Reads[DesStatePensionAmounts] = (
+  implicit val reads: Reads[PensionAmounts] = (
     readBigDecimal(JsPath \ "nspEntitlement") and
       readBigDecimal(JsPath \ "startingAmount") and
       readBigDecimal(JsPath \ "protectedPayment2016") and
-      (JsPath \ "amountA2016").read[DesAmountA2016] and
-      (JsPath \ "amountB2016").read[DesAmountB2016]
-    ) (DesStatePensionAmounts.apply _)
+      (JsPath \ "amountA2016").read[AmountA2016] and
+      (JsPath \ "amountB2016").read[AmountB2016]
+    ) (PensionAmounts.apply _)
 }
 
-case class DesAmountA2016(
+case class AmountA2016(
                            basicStatePension: BigDecimal = 0,
                            pre97AP: BigDecimal = 0,
                            post97AP: BigDecimal = 0,
@@ -104,12 +104,12 @@ case class DesAmountA2016(
 
 }
 
-object DesAmountA2016 {
+object AmountA2016 {
 
   val readBigDecimal: JsPath => Reads[BigDecimal] =
     jsPath => jsPath.readNullable[BigDecimal].map(_.getOrElse(0))
 
-  implicit val reads: Reads[DesAmountA2016] = (
+  implicit val reads: Reads[AmountA2016] = (
     readBigDecimal(JsPath \ "ltbCatACashValue") and
       readBigDecimal(JsPath \ "ltbPre97ApCashValue") and
       readBigDecimal(JsPath \ "ltbPost97ApCashValue") and
@@ -119,18 +119,18 @@ object DesAmountA2016 {
       readBigDecimal(JsPath \ "ltbPre88CodCashValue") and
       readBigDecimal(JsPath \ "ltbPost88CodCashValue") and
       readBigDecimal(JsPath \ "grbCash")
-    ) (DesAmountA2016.apply _)
+    ) (AmountA2016.apply _)
 
 }
 
-case class DesAmountB2016(mainComponent: BigDecimal = 0, rebateDerivedAmount: BigDecimal = 0)
+case class AmountB2016(mainComponent: BigDecimal = 0, rebateDerivedAmount: BigDecimal = 0)
 
-object DesAmountB2016 {
+object AmountB2016 {
   val readBigDecimal: JsPath => Reads[BigDecimal] =
     jsPath => jsPath.readNullable[BigDecimal].map(_.getOrElse(0))
 
-  implicit val reads: Reads[DesAmountB2016] = (
+  implicit val reads: Reads[AmountB2016] = (
     readBigDecimal(JsPath \ "mainComponent") and
       readBigDecimal(JsPath \ "rebateDerivedAmount")
-    ) (DesAmountB2016.apply _)
+    ) (AmountB2016.apply _)
 }

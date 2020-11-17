@@ -29,7 +29,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.fixtures.{DesLiabilitiesFixture, DesNIRecordFixture, DesSummaryFixture}
+import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 
@@ -48,7 +48,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
 
-  val jsonWithNoTaxYears: String = DesNIRecordFixture.exampleDesNiRecordJson(nino.nino)
+  val jsonWithNoTaxYears: String = NIRecordFixture.exampleDesNiRecordJson(nino.nino)
 
   val jsonNiRecord =
     s"""
@@ -235,11 +235,11 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     "parse the json and return a Future[DesSummary]" in {
 
       when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        DesSummaryFixture.exampleDesSummaryJson.stripMargin))))
+        SummaryFixture.exampleSummaryJson.stripMargin))))
 
       val summary = await(connector.getSummary(nino))
 
-      summary shouldBe DesSummaryFixture.exampleDesSummary
+      summary shouldBe SummaryFixture.exampleSummary
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
@@ -367,14 +367,14 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     "parse the json and return a Future[List[DesLiability]" in {
 
       when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        DesLiabilitiesFixture.exampleLiabilitiesJson(nino.nino).stripMargin))))
+        LiabilitiesFixture.exampleLiabilitiesJson(nino.nino).stripMargin))))
 
       val summary = await(connector.getLiabilities(nino))
       summary shouldBe List(
-        DesLiability(Some(13)),
-        DesLiability(Some(13)),
-        DesLiability(Some(13)),
-        DesLiability(Some(13))
+        Liability(Some(13)),
+        Liability(Some(13)),
+        Liability(Some(13)),
+        Liability(Some(13))
       )
     }
 
@@ -499,12 +499,12 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
       connector.getNIRecord(nino)
 
       val summary = await(connector.getNIRecord(nino))
-      summary shouldBe DesNIRecord(
+      summary shouldBe NIRecord(
         qualifyingYears = 36,
         List(
-          DesNITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
-          DesNITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
-          DesNITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
+          NITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+          NITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+          NITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
         ))
     }
 
@@ -513,7 +513,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
       when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, optJson))
 
       val summary = await(connector.getNIRecord(nino))
-      summary shouldBe DesNIRecord(qualifyingYears = 36, List.empty)
+      summary shouldBe NIRecord(qualifyingYears = 36, List.empty)
     }
 
     "return a failed future with a json validation exception when it cannot parse to an DesNIRecord" in {

@@ -26,8 +26,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.domain.nps.{Country, DesSummary}
-import uk.gov.hmrc.statepension.events.DesForecasting
+import uk.gov.hmrc.statepension.domain.nps.{Country, Summary}
+import uk.gov.hmrc.statepension.events.Forecasting
 
 import scala.concurrent.Future
 
@@ -54,7 +54,7 @@ class StatePensionService @Inject()(des: DesConnector,
       manualCorrespondence <- manualCorrespondenceF
     } yield {
 
-      val exclusions: List[Exclusion] = DesExclusionService(
+      val exclusions: List[Exclusion] = ExclusionService(
         dateOfDeath = summary.dateOfDeath,
         pensionDate = summary.statePensionAgeDate,
         now,
@@ -67,7 +67,7 @@ class StatePensionService @Inject()(des: DesConnector,
 
       val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)
 
-      auditDesSummary(nino, summary, purgedRecord.qualifyingYears, exclusions)
+      auditSummary(nino, summary, purgedRecord.qualifyingYears, exclusions)
 
       if (exclusions.nonEmpty) {
 
@@ -157,9 +157,9 @@ class StatePensionService @Inject()(des: DesConnector,
     }
   }
 
-  private[services] def auditDesSummary(nino: Nino, summary: DesSummary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit = {
+  private[services] def auditSummary(nino: Nino, summary: Summary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit = {
     //Audit Des Data used in calculation
-    customAuditConnector.sendEvent(DesForecasting(
+    customAuditConnector.sendEvent(Forecasting(
       nino,
       summary.earningsIncludedUpTo,
       qualifyingYears,

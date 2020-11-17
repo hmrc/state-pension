@@ -17,11 +17,11 @@
 package uk.gov.hmrc.statepension.fixtures
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016, DesStatePensionAmounts, DesSummary}
+import uk.gov.hmrc.statepension.domain.nps.{AmountA2016, AmountB2016, PensionAmounts, Summary}
 
-object DesSummaryFixture {
+object SummaryFixture {
 
-  val exampleDesSummaryJson: String = """
+  val exampleSummaryJson: String = """
   {
     "contractedOutFlag": 0,
     "sensitiveCaseFlag": 0,
@@ -71,7 +71,7 @@ object DesSummaryFixture {
   }
   """
 
-  val exampleDesSummary: DesSummary = DesSummary(
+  val exampleSummary: Summary = Summary(
     new LocalDate(2016, 4, 5),
     statePensionAgeDate = new LocalDate(2019, 9, 6),
     finalRelevantStartYear = 2018,
@@ -80,11 +80,11 @@ object DesSummaryFixture {
     None,
     reducedRateElection = false,
     countryCode = 1,
-    DesStatePensionAmounts(
+    PensionAmounts(
       pensionEntitlement = 161.18,
       startingAmount2016 = 161.18,
       protectedPayment2016 = 5.53,
-      DesAmountA2016(
+      AmountA2016(
         basicStatePension = 119.30,
         pre97AP = 17.79,
         post97AP = 6.03,
@@ -95,11 +95,10 @@ object DesSummaryFixture {
         post88COD = 0,
         graduatedRetirementBenefit = 2.66
       ),
-      DesAmountB2016(
+      AmountB2016(
         mainComponent = 155.65,
         rebateDerivedAmount = 0
       )
     )
   )
-
 }

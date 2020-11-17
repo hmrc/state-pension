@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.statepension.fixtures
 
-import uk.gov.hmrc.statepension.domain.nps.DesLiability
+import uk.gov.hmrc.statepension.domain.nps.Liability
 
-object DesLiabilitiesFixture {
+object LiabilitiesFixture {
 
   def exampleLiabilitiesJson(nino: String) = s"""
   {
@@ -63,11 +63,11 @@ object DesLiabilitiesFixture {
   }
   """
 
-  val exampleLiabilities: List[DesLiability] = List(
-    DesLiability(Some(13)),
-    DesLiability(Some(13)),
-    DesLiability(Some(13)),
-    DesLiability(Some(13))
+  val exampleLiabilities: List[Liability] = List(
+    Liability(Some(13)),
+    Liability(Some(13)),
+    Liability(Some(13)),
+    Liability(Some(13))
   )
 
 }

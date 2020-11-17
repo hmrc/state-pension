@@ -44,16 +44,16 @@ trait NpsConnector {
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
 
-  def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[DesSummary] =
-    connectToDES[DesSummary](summaryUrl(nino), summaryMetricType)
+  def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
+    connectToHOD[Summary](summaryUrl(nino), summaryMetricType)
 
-  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[DesLiability]] =
-    connectToDES[DesLiabilities](liabilitiesUrl(nino), liabilitiesMetricType).map(_.liabilities)
+  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
+    connectToHOD[Liabilities](liabilitiesUrl(nino), liabilitiesMetricType).map(_.liabilities)
 
-  def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[DesNIRecord] =
-    connectToDES[DesNIRecord](niRecordUrl(nino), niRecordMetricType)
+  def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
+    connectToHOD[NIRecord](niRecordUrl(nino), niRecordMetricType)
 
-  private def connectToDES[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
+  private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, HeaderCarrier(Some(Authorization(s"Bearer $token")))
       .withExtraHeaders(serviceOriginatorId, environmentHeader),  ec=global)

@@ -30,7 +30,7 @@ import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, await, defaultAwaitTime
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse}
 import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.fixtures.{DesLiabilitiesFixture, DesNIRecordFixture, DesSummaryFixture}
+import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{NinoGenerator, WireMockHelper}
 
@@ -75,7 +75,7 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
     def stubGetSummary(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/summary", status, body)
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
-      stubGetSummary(body = DesSummaryFixture.exampleDesSummaryJson)
+      stubGetSummary(body = SummaryFixture.exampleSummaryJson)
 
       await(ifConnector.getSummary(nino))
 
@@ -88,9 +88,9 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
     }
     "return the response object" when {
       "response json is valid" in {
-        stubGetSummary(body = DesSummaryFixture.exampleDesSummaryJson)
+        stubGetSummary(body = SummaryFixture.exampleSummaryJson)
 
-        await(ifConnector.getSummary(nino)) mustBe DesSummaryFixture.exampleDesSummary
+        await(ifConnector.getSummary(nino)) mustBe SummaryFixture.exampleSummary
       }
     }
 
@@ -118,7 +118,7 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
     def stubLiabilities(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities", status, body)
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
-      stubLiabilities(body = DesLiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
+      stubLiabilities(body = LiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
 
       await(ifConnector.getLiabilities(nino))
 
@@ -132,9 +132,9 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
 
     "return the response object" when {
       "response json is valid" in {
-        stubLiabilities(body = DesLiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
+        stubLiabilities(body = LiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
 
-        await(ifConnector.getLiabilities(nino)) mustBe DesLiabilitiesFixture.exampleLiabilities
+        await(ifConnector.getLiabilities(nino)) mustBe LiabilitiesFixture.exampleLiabilities
       }
     }
 
@@ -163,7 +163,7 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
     def stubNiRecord(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details", status, body)
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
-      stubNiRecord(body = DesNIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
+      stubNiRecord(body = NIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
 
       await(ifConnector.getNIRecord(nino))
 
@@ -176,9 +176,9 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
 
     "return the response object" when {
       "response json is valid" in {
-        stubNiRecord(body = DesNIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
+        stubNiRecord(body = NIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
 
-        await(ifConnector.getNIRecord(nino)) mustBe DesNIRecordFixture.exampleDesNiRecord
+        await(ifConnector.getNIRecord(nino)) mustBe NIRecordFixture.exampleDesNiRecord
       }
     }
 

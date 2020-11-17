@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.domain.nps
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
 
-class DesNIRecordSpec extends UnitSpec{
+class NIRecordSpec extends UnitSpec{
   "DesNIRecord" should {
     "deserialise correctly" in {
 
@@ -110,16 +110,16 @@ class DesNIRecordSpec extends UnitSpec{
           |}
         """.stripMargin
 
-      val testData = DesNIRecord(
+      val testData = NIRecord(
         qualifyingYears = 31,
         taxYears =  List(
-          DesNITaxYear(
+          NITaxYear(
             startTaxYear = Some(2016),
             qualifying = Some(true),
             underInvestigation = Some(false),
             payableFlag = Some(true)
           ),
-          DesNITaxYear(
+          NITaxYear(
             startTaxYear = Some(2015),
             qualifying = Some(true),
             underInvestigation = Some(true),
@@ -128,7 +128,7 @@ class DesNIRecordSpec extends UnitSpec{
         )
       )
 
-      Json.parse(jsonPayload).as[DesNIRecord] shouldBe testData
+      Json.parse(jsonPayload).as[NIRecord] shouldBe testData
 
     }
   }
@@ -150,12 +150,12 @@ class DesNIRecordSpec extends UnitSpec{
                          |  "nino": "YN315615"
                          |}""".stripMargin
 
-    val testData = DesNIRecord(
+    val testData = NIRecord(
       qualifyingYears = 36,
       taxYears =  List.empty
     )
 
-    Json.parse(jsonPayload).as[DesNIRecord] shouldBe testData
+    Json.parse(jsonPayload).as[NIRecord] shouldBe testData
   }
 
   "return a valid NiRecord with empty qualifying years" in {
@@ -173,12 +173,12 @@ class DesNIRecordSpec extends UnitSpec{
                          |  "nino": "YN315615"
                          |}""".stripMargin
 
-    val testData = DesNIRecord(
+    val testData = NIRecord(
       qualifyingYears = 0,
       taxYears =  List.empty
     )
 
-    Json.parse(jsonPayload).as[DesNIRecord] shouldBe testData
+    Json.parse(jsonPayload).as[NIRecord] shouldBe testData
   }
 
 

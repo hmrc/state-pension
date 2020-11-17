@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.fixtures
+package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.statepension.domain.nps.DesNIRecord
+import play.api.libs.json._
 
-object DesNIRecordFixture {
+case class Liability(liabilityType: Option[Int])
 
-  def exampleDesNiRecordJson(nino: String): String =
-    s"""{
-      "yearsToFry": 3,
-      "nonQualifyingYears": 10,
-      "dateOfEntry": "1969-08-01",
-      "employmentDetails": [],
-      "pre75CcCount": 250,
-      "numberOfQualifyingYears": 36,
-      "nonQualifyingYearsPayable": 5,
-      "nino": "$nino"
-    }"""
+object Liability {
+  implicit val reads: Reads[Liability] = (__ \ "liabilityType").readNullable[Int].map(Liability.apply)
+}
 
-  val exampleDesNiRecord: DesNIRecord = DesNIRecord(qualifyingYears = 36, List.empty)
+case class Liabilities(liabilities: List[Liability])
 
+object Liabilities {
+  val readNullableList:JsPath => Reads[List[Liability]] =
+    jsPath => jsPath.readNullable[List[Liability]].map(_.getOrElse(List.empty).filter(_.liabilityType.isDefined))
+
+  implicit val reads: Reads[Liabilities] =
+    readNullableList(__ \ "liabilities").map(Liabilities.apply)
 }
