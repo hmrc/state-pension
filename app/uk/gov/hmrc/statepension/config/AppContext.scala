@@ -17,9 +17,11 @@
 package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
-import play.api.Configuration
+import play.api.{Configuration, Environment}
+import play.api.Mode.Mode
+import uk.gov.hmrc.play.config.ServicesConfig
 
-class AppContext @Inject()(configuration: Configuration) {
+class AppContext @Inject()(configuration: Configuration, environment: Environment) extends ServicesConfig {
   lazy val appName = configuration.getString("appName").getOrElse(throw new RuntimeException("appName is not configured"))
   lazy val apiGatewayContext = configuration.getString("api.gateway.context")
     .getOrElse(throw new RuntimeException("api.gateway.context is not configured"))
@@ -28,4 +30,13 @@ class AppContext @Inject()(configuration: Configuration) {
   lazy val connectToHOD = configuration.getBoolean("feature.connectToHOD").getOrElse(false)
   lazy val rates: Configuration = configuration.getConfig("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
   lazy val revaluation: Option[Configuration] = configuration.getConfig("rates.revaluation")
+
+  val ifBaseUrl: String = baseUrl("if-hod")
+  val ifOriginatorIdKey: String = getConfString("if-hod.originatoridkey", "")
+  val ifOriginatorIdValue: String = getConfString("if-hod.originatoridvalue", "")
+  val ifEnvironment: String = getConfString("if-hod.environment", "")
+  val ifToken: String = getConfString("if-hod.token", "")
+
+  override protected def mode: Mode = environment.mode
+  override protected def runModeConfiguration: Configuration = configuration
 }

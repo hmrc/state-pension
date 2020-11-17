@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.DesLiability
+import uk.gov.hmrc.statepension.domain.nps.Liability
 
 class ExclusionServiceSpec extends StatePensionUnitSpec {
 
@@ -32,9 +32,9 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
                               entitlement: BigDecimal = 0,
                               startingAmount: BigDecimal = 0,
                               calculatedStartingAmount: BigDecimal = 0,
-                              liabilities: List[DesLiability] = List(),
+                              liabilities: List[Liability] = List(),
                               manualCorrespondenceOnly: Boolean = false) =
-    DesExclusionService(dateOfDeath, pensionDate, now, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
+    ExclusionService(dateOfDeath, pensionDate, now, entitlement, startingAmount, calculatedStartingAmount, liabilities, manualCorrespondenceOnly)
 
   "getExclusions" when {
     "there is no exclusions" should {
@@ -100,10 +100,10 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
       "there is some liabilities" should {
         "return List(IsleOfMan) if the list includes liability type 5" in {
-          exclusionServiceBuilder(liabilities = List(DesLiability(Some(5)), DesLiability(Some(16)))).getExclusions shouldBe List(Exclusion.IsleOfMan)
+          exclusionServiceBuilder(liabilities = List(Liability(Some(5)), Liability(Some(16)))).getExclusions shouldBe List(Exclusion.IsleOfMan)
         }
         "return no exclusions if the list does not include liability type 5" in {
-          exclusionServiceBuilder(liabilities = List(DesLiability(Some(15)), DesLiability(Some(16)))).getExclusions shouldBe Nil
+          exclusionServiceBuilder(liabilities = List(Liability(Some(15)), Liability(Some(16)))).getExclusions shouldBe Nil
         }
       }
     }
@@ -129,7 +129,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
           entitlement = 100,
           startingAmount = 100,
           calculatedStartingAmount = 101,
-          liabilities = List(DesLiability(Some(5)), DesLiability(Some(5)), DesLiability(Some(1))),
+          liabilities = List(Liability(Some(5)), Liability(Some(5)), Liability(Some(1))),
           manualCorrespondenceOnly = true
         ).getExclusions shouldBe List(
           Exclusion.Dead,

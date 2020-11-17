@@ -54,7 +54,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
   }
 
-  val summary = DesSummary(
+  val summary = Summary(
     earningsIncludedUpTo = new LocalDate(2016, 4, 5),
     statePensionAgeDate = new LocalDate(2018, 1, 1),
     finalRelevantStartYear = 2049,
@@ -69,11 +69,11 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       .thenReturn(Future.successful(false))
 
     when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-      .thenReturn(Future.successful(DesNIRecord(
+      .thenReturn(Future.successful(NIRecord(
         qualifyingYears = 35,
         List(
-          DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)),
-          DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))
+          NITaxYear(Some(2000), Some(false), Some(false), Some(true)),
+          NITaxYear(Some(2001), Some(false), Some(false), Some(true))
         )
       )))
 
@@ -86,7 +86,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
     "the customer is dead" should {
 
-      val summary = DesSummary(
+      val summary = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2050, 7, 7),
         finalRelevantStartYear = 2049,
@@ -95,7 +95,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         dateOfDeath = Some(new LocalDate(2000, 9, 13)),
         reducedRateElection = false,
         countryCode = 1,
-        DesStatePensionAmounts()
+        PensionAmounts()
       )
 
 
@@ -166,7 +166,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
     "the customer is over state pension age" should {
 
-      val summary = DesSummary(
+      val summary = Summary(
         earningsIncludedUpTo = new LocalDate(1954, 4, 5),
         statePensionAgeDate = new LocalDate(2016, 1, 1),
         finalRelevantStartYear = 2049,
@@ -175,7 +175,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         dateOfDeath = None,
         reducedRateElection = false,
         countryCode = 1,
-        DesStatePensionAmounts()
+        PensionAmounts()
       )
 
       "return post state pension age exclusion" in {
@@ -241,7 +241,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
     "the customer has married women's reduced rate election" should {
 
-      val summary1 = DesSummary(
+      val summary1 = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2018, 1, 1),
         finalRelevantStartYear = 2049,
@@ -250,11 +250,11 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 32.61,
           startingAmount2016 = 35.58,
           protectedPayment2016 = 0,
-          DesAmountA2016(
+          AmountA2016(
             basicStatePension = 31.81,
             pre97AP = 0,
             post97AP = 0,
@@ -265,7 +265,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
             post88COD = 0,
             graduatedRetirementBenefit = 0
           ),
-          DesAmountB2016(
+          AmountB2016(
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
@@ -276,7 +276,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary1
         ))
-        lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
         whenReady(summaryF) { summary =>
           summary.reducedRateElection shouldBe true
         }
@@ -307,7 +307,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
           .thenReturn(Future.successful(summary1))
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+          NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
         lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
         whenReady(statePensionF) { _ =>
@@ -335,16 +335,16 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
     "the customer has amount dissonance" should {
 
-      lazy val summary = DesSummary(
+      lazy val summary = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2018, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1956, 7, 7),
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 155.65,
           startingAmount2016 = 155.65,
-          amountB2016 = DesAmountB2016(
+          amountB2016 = AmountB2016(
             mainComponent = 155.64
           )
         )
@@ -421,7 +421,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "return isle of man exclusion" in {
         when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            List(DesLiability(Some(5)))
+            List(Liability(Some(5)))
           ))
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
@@ -434,7 +434,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "have a pension age of 61" in {
         when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            List(DesLiability(Some(5)))
+            List(Liability(Some(5)))
           ))
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
@@ -447,7 +447,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "have a pension date of 2018-1-1" in {
         when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            List(DesLiability(Some(5)))
+            List(Liability(Some(5)))
           ))
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
@@ -460,7 +460,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "not have the statePensionAgeUnderConsideration flag enabled" in {
         when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            List(DesLiability(Some(5)))
+            List(Liability(Some(5)))
           ))
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
@@ -473,7 +473,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "log an exclusion metric" in {
         when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            List(DesLiability(Some(5)))
+            List(Liability(Some(5)))
           ))
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
@@ -488,7 +488,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "not log a summary metric" in {
         when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            List(DesLiability(Some(5)))
+            List(Liability(Some(5)))
           ))
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))

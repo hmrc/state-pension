@@ -58,18 +58,18 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
   when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
     .thenReturn(Future.successful(false))
 
-  def regularStatementWithDateOfBirth(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate): DesSummary = {
-    DesSummary(
+  def regularStatementWithDateOfBirth(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate): Summary = {
+    Summary(
       earningsIncludedUpTo = new LocalDate(2016, 4, 5),
       statePensionAgeDate = statePensionAgeDate,
       finalRelevantStartYear = 2018,
       pensionSharingOrderSERPS = false,
       dateOfBirth = dateOfBirth,
-      amounts = DesStatePensionAmounts(
+      amounts = PensionAmounts(
         pensionEntitlement = 161.18,
         startingAmount2016 = 161.18,
         protectedPayment2016 = 5.53,
-        DesAmountA2016(
+        AmountA2016(
           basicStatePension = 119.3,
           pre97AP = 17.79,
           post97AP = 6.03,
@@ -80,7 +80,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           post88COD = 0,
           graduatedRetirementBenefit = 2.66
         ),
-        DesAmountB2016(
+        AmountB2016(
           mainComponent = 155.65,
           rebateDerivedAmount = 0
         )
@@ -101,7 +101,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       ))
 
       when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 36, List())
+        NIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -153,7 +153,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       ))
 
       when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 36, List())
+        NIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -196,7 +196,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
     "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
 
-      val summary = DesSummary(
+      val summary = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2038, 1, 1),
         finalRelevantStartYear = 2049,
@@ -205,11 +205,11 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 32.61,
           startingAmount2016 = 35.58,
           protectedPayment2016 = 0,
-          DesAmountA2016(
+          AmountA2016(
             basicStatePension = 31.81,
             pre97AP = 0,
             post97AP = 0,
@@ -220,7 +220,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
             post88COD = 0,
             graduatedRetirementBenefit = 0
           ),
-          DesAmountB2016(
+          AmountB2016(
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
@@ -229,7 +229,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+      lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
 
@@ -238,7 +238,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
         ))
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+          NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
 
         whenReady(statePensionF) { statePension =>
@@ -253,7 +253,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
         ))
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 9, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)), DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+          NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
 
         verify(mockMetrics, times(1)).summary(
@@ -293,7 +293,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 36, List())
+            NIRecord(qualifyingYears = 36, List())
           ))
 
         whenReady(statePensionF) { statePension =>
@@ -307,7 +307,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 36, List())
+            NIRecord(qualifyingYears = 36, List())
           ))
 
         verify(mockMetrics, Mockito.atLeastOnce()).summary(
@@ -347,7 +347,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 36, List())
+            NIRecord(qualifyingYears = 36, List())
           ))
 
         whenReady(statePensionF) { statePension =>
@@ -361,7 +361,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 36, List())
+            NIRecord(qualifyingYears = 36, List())
           ))
 
         verify(mockMetrics, Mockito.atLeastOnce()).summary(

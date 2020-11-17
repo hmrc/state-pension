@@ -29,6 +29,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
 
@@ -47,18 +48,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
   val nino: Nino = generateNino()
   val ninoWithSuffix: String = nino.toString().take(8)
 
-  val jsonWithNoTaxYears =
-    s"""
-       |{
-       |  "yearsToFry": 3,
-       |  "nonQualifyingYears": 10,
-       |  "dateOfEntry": "1969-08-01",
-       |  "employmentDetails": [],
-       |  "pre75CcCount": 250,
-       |  "numberOfQualifyingYears": 36,
-       |  "nonQualifyingYearsPayable": 5,
-       |  "nino": "$nino"
-       |}""".stripMargin
+  val jsonWithNoTaxYears: String = NIRecordFixture.exampleDesNiRecordJson(nino.nino)
 
   val jsonNiRecord =
     s"""
@@ -245,88 +235,11 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     "parse the json and return a Future[DesSummary]" in {
 
       when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        """
-          |{
-          |  "contractedOutFlag": 0,
-          |  "sensitiveCaseFlag": 0,
-          |  "spaDate": "2019-09-06",
-          |  "finalRelevantYear": 2018,
-          |  "accountNotMaintainedFlag": null,
-          |  "penForecast": {
-          |    "forecastAmount": 160.19,
-          |    "nspMax": 155.65,
-          |    "qualifyingYearsAtSpa": 40,
-          |    "forecastAmount2016": 160.19
-          |  },
-          |  "pensionShareOrderCoeg": false,
-          |  "dateOfDeath": null,
-          |  "sex": "M",
-          |  "statePensionAmount": {
-          |    "nspEntitlement": 161.18,
-          |    "apAmount": 2.36,
-          |    "amountB2016": {
-          |      "mainComponent": 155.65,
-          |      "rebateDerivedAmount": 0.0
-          |    },
-          |    "amountA2016": {
-          |      "ltbPost97ApCashValue": 6.03,
-          |      "ltbCatACashValue": 119.3,
-          |      "ltbPost88CodCashValue": null,
-          |      "ltbPre97ApCashValue": 17.79,
-          |      "ltbPre88CodCashValue": null,
-          |      "grbCash": 2.66,
-          |      "ltbPst88GmpCashValue": null,
-          |      "pre88Gmp": null,
-          |      "ltbPost02ApCashValue": 15.4
-          |    },
-          |    "protectedPayment2016": 5.53,
-          |    "startingAmount": 161.18
-          |  },
-          |  "dateOfBirth": "1954-03-09",
-          |  "nspQualifyingYears": 36,
-          |  "countryCode": 1,
-          |  "nspRequisiteYears": 35,
-          |  "minimumQualifyingPeriod": 1,
-          |  "addressPostcode": "WS9 8LL",
-          |  "reducedRateElectionToConsider": false,
-          |  "pensionShareOrderSerps": true,
-          |  "nino": "QQ123456A",
-          |  "earningsIncludedUpto": "2016-04-05"
-          |}
-      """.stripMargin))))
+        SummaryFixture.exampleSummaryJson.stripMargin))))
 
       val summary = await(connector.getSummary(nino))
 
-      summary shouldBe DesSummary(
-        new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2019, 9, 6),
-        finalRelevantStartYear = 2018,
-        pensionSharingOrderSERPS = true,
-        dateOfBirth = new LocalDate(1954, 3, 9),
-        None,
-        reducedRateElection = false,
-        countryCode = 1,
-        DesStatePensionAmounts(
-          pensionEntitlement = 161.18,
-          startingAmount2016 = 161.18,
-          protectedPayment2016 = 5.53,
-          DesAmountA2016(
-            basicStatePension = 119.30,
-            pre97AP = 17.79,
-            post97AP = 6.03,
-            post02AP = 15.4,
-            pre88GMP = 0,
-            post88GMP = 0,
-            pre88COD = 0,
-            post88COD = 0,
-            graduatedRetirementBenefit = 2.66
-          ),
-          DesAmountB2016(
-            mainComponent = 155.65,
-            rebateDerivedAmount = 0
-          )
-        )
-      )
+      summary shouldBe SummaryFixture.exampleSummary
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
@@ -391,7 +304,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
       override val token: String = "token"
 
-      override val desEnvironment: (String, String) = ("environment", "unit test")
+      override val environmentHeader: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
     }
@@ -454,55 +367,14 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
     "parse the json and return a Future[List[DesLiability]" in {
 
       when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-        s"""
-           |{
-           |  "liabilities": [
-           |    {
-           |      "liabilityTypeEndDate": "1992-11-21",
-           |      "liabilityOccurrenceNo": 1,
-           |      "liabilityTypeStartDate": "1983-11-06",
-           |      "liabilityTypeEndDateReason": "END DATE HELD",
-           |      "liabilityType": 13,
-           |      "nino": "$nino",
-           |      "awardAmount": null
-           |    },
-           |    {
-           |      "liabilityTypeEndDate": "2006-07-08",
-           |      "liabilityOccurrenceNo": 2,
-           |      "liabilityTypeStartDate": "1995-09-24",
-           |      "liabilityTypeEndDateReason": "END DATE HELD",
-           |      "liabilityType": 13,
-           |      "nino": "$nino",
-           |      "awardAmount": null
-           |    },
-           |    {
-           |      "liabilityTypeEndDate": "2006-07-15",
-           |      "liabilityOccurrenceNo": 3,
-           |      "liabilityTypeStartDate": "2006-07-09",
-           |      "liabilityTypeEndDateReason": "END DATE HELD",
-           |      "liabilityType": 13,
-           |      "nino": "$nino",
-           |      "awardAmount": null
-           |    },
-           |    {
-           |      "liabilityTypeEndDate": "2012-01-21",
-           |      "liabilityOccurrenceNo": 4,
-           |      "liabilityTypeStartDate": "2006-09-24",
-           |      "liabilityTypeEndDateReason": "END DATE HELD",
-           |      "liabilityType": 13,
-           |      "nino": "$nino",
-           |      "awardAmount": null
-           |    }
-           |  ]
-           |}
-      """.stripMargin))))
+        LiabilitiesFixture.exampleLiabilitiesJson(nino.nino).stripMargin))))
 
       val summary = await(connector.getLiabilities(nino))
       summary shouldBe List(
-        DesLiability(Some(13)),
-        DesLiability(Some(13)),
-        DesLiability(Some(13)),
-        DesLiability(Some(13))
+        Liability(Some(13)),
+        Liability(Some(13)),
+        Liability(Some(13)),
+        Liability(Some(13))
       )
     }
 
@@ -513,7 +385,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
         override val token: String = "token"
 
-        override val desEnvironment: (String, String) = ("environment", "unit test")
+        override val environmentHeader: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
       }
@@ -573,7 +445,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
       override val token: String = "token"
 
-      override val desEnvironment: (String, String) = ("environment", "unit test")
+      override val environmentHeader: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
     }
@@ -602,7 +474,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
       override val token: String = "token"
 
-      override val desEnvironment: (String, String) = ("environment", "unit test")
+      override val environmentHeader: (String, String) = ("environment", "unit test")
 
       override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
     }
@@ -627,12 +499,12 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
       connector.getNIRecord(nino)
 
       val summary = await(connector.getNIRecord(nino))
-      summary shouldBe DesNIRecord(
+      summary shouldBe NIRecord(
         qualifyingYears = 36,
         List(
-          DesNITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
-          DesNITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
-          DesNITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
+          NITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+          NITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+          NITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
         ))
     }
 
@@ -641,7 +513,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
       when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, optJson))
 
       val summary = await(connector.getNIRecord(nino))
-      summary shouldBe DesNIRecord(qualifyingYears = 36, List.empty)
+      summary shouldBe NIRecord(qualifyingYears = 36, List.empty)
     }
 
     "return a failed future with a json validation exception when it cannot parse to an DesNIRecord" in {
@@ -655,7 +527,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
         override val token: String = "token"
 
-        override val desEnvironment: (String, String) = ("environment", "unit test")
+        override val environmentHeader: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
         
@@ -689,7 +561,7 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
         override val token: String = "token"
 
-        override val desEnvironment: (String, String) = ("environment", "unit test")
+        override val environmentHeader: (String, String) = ("environment", "unit test")
 
         override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
       }

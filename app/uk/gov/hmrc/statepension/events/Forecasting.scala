@@ -20,16 +20,16 @@ import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.{DesAmountA2016, DesAmountB2016}
+import uk.gov.hmrc.statepension.domain.nps.{AmountA2016, AmountB2016}
 
-object DesForecasting {
-    def apply(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: DesAmountA2016, amountB: DesAmountB2016,
-              finalRelevantYear: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): DesForecasting =
-        new DesForecasting(nino, earningsIncludedUpTo, currentQualifyingYears, amountA, amountB, finalRelevantYear, exclusions)
+object Forecasting {
+    def apply(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: AmountA2016, amountB: AmountB2016,
+              finalRelevantYear: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Forecasting =
+        new Forecasting(nino, earningsIncludedUpTo, currentQualifyingYears, amountA, amountB, finalRelevantYear, exclusions)
 }
 
-class DesForecasting(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: DesAmountA2016,
-                  amountB: DesAmountB2016, finalRelevantYear: Int, exclusions: List[Exclusion])
+class Forecasting(nino: Nino, earningsIncludedUpTo: LocalDate, currentQualifyingYears: Int, amountA: AmountA2016,
+                  amountB: AmountB2016, finalRelevantYear: Int, exclusions: List[Exclusion])
                  (implicit hc: HeaderCarrier)
   extends BusinessEvent("Forecasting", nino, Map(
       "nino" -> nino.value,

@@ -19,9 +19,9 @@ package uk.gov.hmrc.statepension.domain.nps
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
 
-class DesNITaxYearSpec extends UnitSpec {
+class NITaxYearSpec extends UnitSpec {
 
-  val trueYear: DesNITaxYear = Json.parse(
+  val trueYear: NITaxYear = Json.parse(
   """
       |{
       |      "qualifying": true,
@@ -29,9 +29,9 @@ class DesNITaxYearSpec extends UnitSpec {
       |      "payable": true,
       |      "rattdTaxYear": "1975"
       |}
-    """.stripMargin).as[DesNITaxYear]
+    """.stripMargin).as[NITaxYear]
 
-  val falseYear: DesNITaxYear = Json.parse(
+  val falseYear: NITaxYear = Json.parse(
     """
       |{
       |      "qualifying": false,
@@ -39,9 +39,9 @@ class DesNITaxYearSpec extends UnitSpec {
       |      "payable": false,
       |      "rattdTaxYear": "1976"
       |}
-    """.stripMargin).as[DesNITaxYear]
+    """.stripMargin).as[NITaxYear]
 
-  "DesNITaxYear" when {
+  "NITaxYear" when {
     "being read from JSON" should {
       "parse the start tax year correctly" in {
         trueYear.startTaxYear shouldBe Some(1975)
@@ -67,24 +67,24 @@ class DesNITaxYearSpec extends UnitSpec {
     "payable" when {
       "payableFlag is 0" should {
         "return false" in {
-          DesNITaxYear(Some(2015), qualifying = Some(false), underInvestigation = Some(false), payableFlag = Some(false)).payable shouldBe false
+          NITaxYear(Some(2015), qualifying = Some(false), underInvestigation = Some(false), payableFlag = Some(false)).payable shouldBe false
         }
       }
       "payableFlag is true" when {
         "the year is qualifying" should {
           "return false" in {
-            DesNITaxYear(Some(2015), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(true)).payable shouldBe false
+            NITaxYear(Some(2015), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(true)).payable shouldBe false
           }
         }
         "the year is not qualifying" when {
           "the year is under investigation" should {
             "return false" in {
-              DesNITaxYear(Some(2015), qualifying = Some(false), underInvestigation = Some(true), payableFlag = Some(true)).payable shouldBe false
+              NITaxYear(Some(2015), qualifying = Some(false), underInvestigation = Some(true), payableFlag = Some(true)).payable shouldBe false
             }
           }
           "the year is not under investigation" should {
             "return true" in {
-              DesNITaxYear(Some(2015), qualifying = Some(false), underInvestigation = Some(false), payableFlag = Some(true)).payable shouldBe true
+              NITaxYear(Some(2015), qualifying = Some(false), underInvestigation = Some(false), payableFlag = Some(true)).payable shouldBe true
             }
           }
         }

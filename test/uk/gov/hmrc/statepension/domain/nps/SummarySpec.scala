@@ -75,7 +75,7 @@ class SummarySpec extends UnitSpec {
           |}
         """.stripMargin
 
-      val result = DesSummary(earningsIncludedUpTo = LocalDate.parse("2014-01-01"),
+      val result = Summary(earningsIncludedUpTo = LocalDate.parse("2014-01-01"),
         statePensionAgeDate = LocalDate.parse("2014-08-25"),
         finalRelevantStartYear = 2014,
         pensionSharingOrderSERPS = true,
@@ -83,11 +83,11 @@ class SummarySpec extends UnitSpec {
         dateOfDeath = Some(LocalDate.parse("2014-08-25")),
         reducedRateElection = true,
         countryCode = 11,
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 89,
           startingAmount2016 = 11,
           protectedPayment2016 = 12,
-          amountA2016 = DesAmountA2016(
+          amountA2016 = AmountA2016(
             basicStatePension = 123,
             pre97AP = 123,
             post97AP = 123,
@@ -98,13 +98,13 @@ class SummarySpec extends UnitSpec {
             post88COD = 123,
             graduatedRetirementBenefit = 123
       ),
-          amountB2016 = DesAmountB2016(
+          amountB2016 = AmountB2016(
             mainComponent = 12,
             rebateDerivedAmount = 34
           )
         ))
 
-      Json.parse(jsonPayload).as[DesSummary] shouldBe result
+      Json.parse(jsonPayload).as[Summary] shouldBe result
     }
   }
 

@@ -19,9 +19,9 @@ package uk.gov.hmrc.statepension.domain.nps
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
 
-class DesLiabilitySpec extends UnitSpec {
+class LiabilitySpec extends UnitSpec {
 
-  "DesLiability" should {
+  "Liability" should {
     "deserialise correctly" in {
       val jsonPayload =
         """
@@ -50,14 +50,14 @@ class DesLiabilitySpec extends UnitSpec {
           |}
         """.stripMargin
 
-      val testData = DesLiabilities(
+      val testData = Liabilities(
         List(
-          DesLiability(liabilityType = Some(45)),
-          DesLiability(liabilityType = Some(45))
+          Liability(liabilityType = Some(45)),
+          Liability(liabilityType = Some(45))
         )
       )
 
-      Json.parse(jsonPayload).as[DesLiabilities] shouldBe testData
+      Json.parse(jsonPayload).as[Liabilities] shouldBe testData
     }
 
     "give an emptyList for empty json object" in {
@@ -77,11 +77,11 @@ class DesLiabilitySpec extends UnitSpec {
           |}
         """.stripMargin
 
-      val testData = DesLiabilities(
+      val testData = Liabilities(
         List()
       )
 
-      Json.parse(jsonPayload).as[DesLiabilities] shouldBe testData
+      Json.parse(jsonPayload).as[Liabilities] shouldBe testData
     }
   }
 

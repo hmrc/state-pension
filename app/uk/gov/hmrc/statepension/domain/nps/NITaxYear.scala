@@ -21,20 +21,20 @@ import play.api.libs.json.{JsPath, Reads, _}
 
 import scala.util.Try
 
-case class DesNITaxYear(startTaxYear: Option[Int], qualifying: Option[Boolean], underInvestigation: Option[Boolean], payableFlag: Option[Boolean]) {
+case class NITaxYear(startTaxYear: Option[Int], qualifying: Option[Boolean], underInvestigation: Option[Boolean], payableFlag: Option[Boolean]) {
   lazy val payable: Boolean = payableFlag.get && !qualifying.get && !underInvestigation.get //payableFlag from NPS Response is incorrect
 }
 
-object DesNITaxYear {
+object NITaxYear {
   val readBooleanFromInt: JsPath => Reads[Boolean] = jsPath => jsPath.read[Int].map(_.equals(1))
 
   val readNullableIntFromString: JsPath => Reads[Option[Int]] =
     jsPath => jsPath.readNullable[String].map(s => s.map(st => Try(st.toInt).toOption.getOrElse(throw new Exception(s"${jsPath.path.head} is not a valid integer"))))
 
-  implicit val reads: Reads[DesNITaxYear] = (
+  implicit val reads: Reads[NITaxYear] = (
     readNullableIntFromString(__ \ "rattdTaxYear") and
       (__ \ "qualifying").readNullable[Boolean] and
       (__ \ "underInvestigationFlag").readNullable[Boolean] and
       (__ \ "payable").readNullable[Boolean]
-    ) (DesNITaxYear.apply _)
+    ) (NITaxYear.apply _)
 }

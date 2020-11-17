@@ -20,17 +20,17 @@ import org.joda.time.LocalDate
 import play.Logger
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
-import uk.gov.hmrc.statepension.domain.nps.{DesLiability, LiabilityType}
+import uk.gov.hmrc.statepension.domain.nps.{Liability, LiabilityType}
 import uk.gov.hmrc.statepension.util.FunctionHelper
 
-case class DesExclusionService(dateOfDeath: Option[LocalDate],
-                       pensionDate: LocalDate,
-                       now: LocalDate,
-                       entitlement: BigDecimal,
-                       startingAmount: BigDecimal,
-                       calculatedStartingAmount: BigDecimal,
-                       liabilities: List[DesLiability],
-                       manualCorrespondenceOnly: Boolean) {
+case class ExclusionService(dateOfDeath: Option[LocalDate],
+                            pensionDate: LocalDate,
+                            now: LocalDate,
+                            entitlement: BigDecimal,
+                            startingAmount: BigDecimal,
+                            calculatedStartingAmount: BigDecimal,
+                            liabilities: List[Liability],
+                            manualCorrespondenceOnly: Boolean) {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 

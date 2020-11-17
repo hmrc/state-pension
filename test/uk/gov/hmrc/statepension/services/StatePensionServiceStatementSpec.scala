@@ -63,8 +63,8 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
     when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
       .thenReturn(Future.successful(
-        DesNIRecord(qualifyingYears = 20, List(DesNITaxYear(Some(2000), Some(false), Some(false), Some(true)),
-          DesNITaxYear(Some(2001), Some(false), Some(false), Some(true))))
+        NIRecord(qualifyingYears = 20, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)),
+          NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
       ))
 
   }
@@ -74,17 +74,17 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
     "there are no exclusions" when {
       "there is a regular statement (Reached)" should {
 
-        val regularStatement = DesSummary(
+        val regularStatement = Summary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
           statePensionAgeDate = new LocalDate(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
           dateOfBirth = new LocalDate(1954, 3, 9),
-          amounts = DesStatePensionAmounts(
+          amounts = PensionAmounts(
             pensionEntitlement = 161.18,
             startingAmount2016 = 161.18,
             protectedPayment2016 = 5.53,
-            DesAmountA2016(
+            AmountA2016(
               basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
@@ -95,7 +95,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               post88COD = 0,
               graduatedRetirementBenefit = 2.66
             ),
-            DesAmountB2016(
+            AmountB2016(
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
@@ -107,7 +107,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -136,7 +136,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -148,7 +148,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -162,7 +162,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -176,7 +176,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -190,7 +190,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -204,7 +204,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -218,7 +218,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -232,7 +232,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -246,7 +246,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -260,7 +260,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -274,7 +274,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -288,7 +288,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -302,7 +302,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -316,7 +316,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement.copy(pensionSharingOrderSERPS = true)))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
         }
@@ -326,7 +326,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement.copy(pensionSharingOrderSERPS = false)))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
         }
@@ -336,7 +336,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -350,7 +350,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -366,7 +366,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
         }
@@ -379,7 +379,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
           service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
         }
@@ -394,7 +394,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -409,7 +409,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -424,7 +424,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -439,7 +439,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -454,7 +454,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -469,7 +469,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -487,7 +487,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -502,7 +502,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -517,7 +517,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -533,7 +533,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
                 protectedPayment2016 = 0,
-                DesAmountA2016(
+                AmountA2016(
                   basicStatePension = 0,
                   pre97AP = 0,
                   post97AP = 0,
@@ -544,7 +544,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
                   post88COD = 0,
                   graduatedRetirementBenefit = 0
                 ),
-                DesAmountB2016(
+                AmountB2016(
                   mainComponent = 0,
                   rebateDerivedAmount = 0
                 )
@@ -552,7 +552,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -565,7 +565,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
                 protectedPayment2016 = 0,
-                DesAmountA2016(
+                AmountA2016(
                   basicStatePension = 0,
                   pre97AP = 0,
                   post97AP = 0,
@@ -576,7 +576,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
                   post88COD = 0,
                   graduatedRetirementBenefit = 0
                 ),
-                DesAmountB2016(
+                AmountB2016(
                   mainComponent = 0,
                   rebateDerivedAmount = 0
                 )
@@ -584,7 +584,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -597,7 +597,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
                 protectedPayment2016 = 0,
-                DesAmountA2016(
+                AmountA2016(
                   basicStatePension = 0,
                   pre97AP = 0,
                   post97AP = 0,
@@ -608,7 +608,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
                   post88COD = 0,
                   graduatedRetirementBenefit = 0
                 ),
-                DesAmountB2016(
+                AmountB2016(
                   mainComponent = 0,
                   rebateDerivedAmount = 0
                 )
@@ -616,7 +616,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -633,7 +633,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -647,7 +647,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -661,7 +661,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -677,7 +677,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -691,7 +691,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
             statement.amounts.forecast.monthlyAmount shouldBe 700.85
@@ -704,7 +704,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -718,7 +718,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -730,11 +730,11 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
           "return a weekly current amount of 0" in {
             when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-              regularStatement.copy(amounts = DesStatePensionAmounts())
+              regularStatement.copy(amounts = PensionAmounts())
             ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -743,11 +743,11 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
           "return a monthly current amount of 0" in {
             when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-              regularStatement.copy(amounts = DesStatePensionAmounts())
+              regularStatement.copy(amounts = PensionAmounts())
             ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -756,11 +756,11 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
           "return an annual current amount of 0" in {
             when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-              regularStatement.copy(amounts = DesStatePensionAmounts())
+              regularStatement.copy(amounts = PensionAmounts())
             ))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).right.get
 
@@ -774,17 +774,17 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
     "there are exclusions" when {
       "there is a regular statement (Reached)" should {
 
-        val regularStatement = DesSummary(
+        val regularStatement = Summary(
           earningsIncludedUpTo = new LocalDate(2016, 4, 5),
           statePensionAgeDate = new LocalDate(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
           dateOfBirth = new LocalDate(1954, 3, 9),
-          amounts = DesStatePensionAmounts(
+          amounts = PensionAmounts(
             pensionEntitlement = 161.18,
             startingAmount2016 = 0,
             protectedPayment2016 = 5.53,
-            DesAmountA2016(
+            AmountA2016(
               basicStatePension = 119.3,
               pre97AP = 17.79,
               post97AP = 6.03,
@@ -795,7 +795,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               post88COD = 0,
               graduatedRetirementBenefit = 2.66
             ),
-            DesAmountB2016(
+            AmountB2016(
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
@@ -809,7 +809,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               .thenReturn(Future.successful(regularStatement))
 
             when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-              .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 36, List())))
+              .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
             val statement = service.getStatement(generateNino()).left
 
@@ -824,17 +824,17 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
     "there is a regular statement (Forecast)" should {
 
-      val regularStatement = DesSummary(
+      val regularStatement = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          DesAmountA2016(
+          AmountA2016(
             basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -845,7 +845,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          DesAmountB2016(
+          AmountB2016(
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
@@ -859,7 +859,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -873,7 +873,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -887,7 +887,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -903,7 +903,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -917,7 +917,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -934,7 +934,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -948,7 +948,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -962,7 +962,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -976,7 +976,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           ))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-            DesNIRecord(qualifyingYears = 20, List())
+            NIRecord(qualifyingYears = 20, List())
           ))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -992,7 +992,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         ))
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          DesNIRecord(qualifyingYears = 20, List())
+          NIRecord(qualifyingYears = 20, List())
         ))
 
         val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
@@ -1026,17 +1026,17 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
     "there is a regular statement (grossStatePension)" should {
 
-      val regularStatement = DesSummary(
+      val regularStatement = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          DesAmountA2016(
+          AmountA2016(
             basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -1047,7 +1047,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          DesAmountB2016(
+          AmountB2016(
             mainComponent = 66.37, // Net SP
             rebateDerivedAmount = 18.13
           )
@@ -1061,7 +1061,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 20, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -1073,7 +1073,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             .thenReturn(Future.successful(regularStatement))
 
           when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 20, List())))
+            .thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
           val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
 
@@ -1085,17 +1085,17 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
     "there is a regular statement (Fill Gaps)" should {
 
-      val regularStatement = DesSummary(
+      val regularStatement = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 121.4123,
           startingAmount2016 = 121.41,
           protectedPayment2016 = 5.53,
-          DesAmountA2016(
+          AmountA2016(
             basicStatePension = 79.53,
             pre97AP = 17.79,
             post97AP = 6.03,
@@ -1106,7 +1106,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
-          DesAmountB2016(
+          AmountB2016(
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
@@ -1165,7 +1165,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.totalAP shouldBe 41.88
@@ -1176,7 +1176,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.additionalStatePension shouldBe 39.22
@@ -1187,7 +1187,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.graduatedRetirementBenefit shouldBe 2.66
@@ -1198,7 +1198,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[DesSummary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.basicStatePension shouldBe 79.53
@@ -1299,17 +1299,17 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
     "there is an mqp user" should {
 
-      val regularStatement = DesSummary(
+      val regularStatement = Summary(
         earningsIncludedUpTo = new LocalDate(2016, 4, 5),
         statePensionAgeDate = new LocalDate(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
         dateOfBirth = new LocalDate(1954, 3, 9),
-        amounts = DesStatePensionAmounts(
+        amounts = PensionAmounts(
           pensionEntitlement = 40.53,
           startingAmount2016 = 40.53,
           protectedPayment2016 = 0,
-          DesAmountA2016(
+          AmountA2016(
             basicStatePension = 35.79,
             pre97AP = 0,
             post97AP = 0,
@@ -1320,7 +1320,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             post88COD = 0,
             graduatedRetirementBenefit = 0
           ),
-          DesAmountB2016(
+          AmountB2016(
             mainComponent = 40.02,
             rebateDerivedAmount = 0
           )
@@ -1332,7 +1332,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
           .thenReturn(Future.successful(regularStatement))
 
         when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(DesNIRecord(qualifyingYears = 9, List())))
+          .thenReturn(Future.successful(NIRecord(qualifyingYears = 9, List())))
 
         lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
         whenReady(statement) { statement =>

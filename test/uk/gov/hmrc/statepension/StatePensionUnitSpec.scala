@@ -16,19 +16,9 @@
 
 package uk.gov.hmrc.statepension
 
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.util.Random
-
-trait StatePensionUnitSpec extends uk.gov.hmrc.play.test.UnitSpec {
-
-  private val ninoGenerator = new Generator(new Random())
-  def generateNino(): Nino = ninoGenerator.nextNino
-  def generateNinoWithPrefix(prefix: String): Nino = {
-    require(prefix.length == 2)
-    Nino(ninoGenerator.nextNino.toString().replaceFirst("[A-Z]{2}", prefix))
-  }
+trait StatePensionUnitSpec extends uk.gov.hmrc.play.test.UnitSpec with NinoGenerator {
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 }
