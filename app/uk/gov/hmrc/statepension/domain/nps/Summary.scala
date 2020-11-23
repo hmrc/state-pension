@@ -31,7 +31,8 @@ final case class Summary(
                        dateOfDeath: Option[LocalDate] = None,
                        reducedRateElection: Boolean = false,
                        countryCode: Int = 0,
-                       amounts: PensionAmounts = PensionAmounts()
+                       amounts: PensionAmounts = PensionAmounts(),
+                       manualCorrespondenceIndicator: Option[Boolean] = None
                      ) {
   val finalRelevantYear: String = s"$finalRelevantStartYear-${(finalRelevantStartYear + 1).toString.takeRight(2)}"
   val statePensionAge: Int = new Period(dateOfBirth, statePensionAgeDate).getYears
@@ -57,7 +58,8 @@ object Summary {
       (JsPath \ "dateOfDeath").readNullable[LocalDate] and
       readBooleanWithDefault(JsPath \ "reducedRateElectionToConsider") and
       readNullableInt(JsPath \ "countryCode") and
-      (JsPath \ "statePensionAmount").read[PensionAmounts]
+      (JsPath \ "statePensionAmount").read[PensionAmounts] and
+      (JsPath \ "manualCorrespondenceIndicator").readNullable[Boolean]
     ) (Summary.apply _)
 
 }

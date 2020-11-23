@@ -1,7 +1,8 @@
 # Add all the application routes to the app.routes file
-->         /ni                        app.Routes
-->         /pd/ni                     dashboard.Routes
-->         /                          health.Routes
-->         /api                       definition.Routes
+GET       /ni/:nino             uk.gov.hmrc.statepension.controllers.statepension.CheckPensionController.get(nino: uk.gov.hmrc.domain.Nino)
+GET       /pd/ni/:nino          uk.gov.hmrc.statepension.controllers.statepension.DashboardController.get(nino: uk.gov.hmrc.domain.Nino)
 
-GET        /admin/metrics             @com.kenshoo.play.metrics.MetricsController.metrics
+->         /                    health.Routes
+->         /api                 definition.Routes
+
+GET        /admin/metrics       @com.kenshoo.play.metrics.MetricsController.metrics

@@ -102,7 +102,7 @@ class SummarySpec extends UnitSpec {
             mainComponent = 12,
             rebateDerivedAmount = 34
           )
-        ))
+        ), None)
 
       Json.parse(jsonPayload).as[Summary] shouldBe result
     }

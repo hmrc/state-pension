@@ -99,6 +99,7 @@ object SummaryFixture {
         mainComponent = 155.65,
         rebateDerivedAmount = 0
       )
-    )
+    ),
+    None
   )
 }

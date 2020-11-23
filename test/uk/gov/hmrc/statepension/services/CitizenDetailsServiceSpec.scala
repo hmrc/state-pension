@@ -27,7 +27,6 @@ import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
 
 import scala.concurrent.Future
 
-//TODO change to proper extensions
 class CitizenDetailsServiceSpec extends StatePensionUnitSpec with MockitoSugar {
 
   val nino: Nino = generateNino()

@@ -21,10 +21,11 @@ import uk.gov.hmrc.domain.Nino
 trait Links {
 
   val context: String
+  def endpointUrl(nino: Nino): String
 
   private def createLink(endpointUrl: String): String = if(context.isEmpty) endpointUrl else s"/$context$endpointUrl"
 
   def statePensionHref(nino: Nino): String =
-    createLink(statepension.routes.StatePensionController.get(nino).url)
+    createLink(endpointUrl(nino))
 
 }
