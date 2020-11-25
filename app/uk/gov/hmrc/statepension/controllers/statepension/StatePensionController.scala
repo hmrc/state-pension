@@ -33,18 +33,20 @@ import uk.gov.hmrc.statepension.services.StatePensionService
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-class StatePensionController @Inject()(appContext: AppContext,
-                                       statePensionService: StatePensionService,
-                                       customAuditConnector: StatePensionAuditConnector,
-                                       authAction: AuthAction)
+trait StatePensionController
   extends BaseController
     with HeaderValidator
     with ErrorHandling
     with HalSupport
     with Links {
 
+  val appContext: AppContext
+  val statePensionService: StatePensionService
+  val customAuditConnector: StatePensionAuditConnector
+  val authAction: AuthAction
+
   override val app: String = "State-Pension"
-  override val context: String = appContext.apiGatewayContext
+  override lazy val context: String = appContext.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = (authAction andThen validateAccept(acceptHeaderValidationRules)).async {
     implicit request =>

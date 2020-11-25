@@ -22,9 +22,11 @@ import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
@@ -36,27 +38,25 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
   with ScalaFutures
   with MockitoSugar {
 
-  val mockDesConnector: DesConnector = mock[DesConnector]
+  val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
-  val mockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
-  lazy val service: StatePensionService = new StatePensionService(mockDesConnector,
-    mockCitizenDetails,
-    defaultForecasting,
-    RateServiceBuilder.default,
-    mockMetrics,
-    mock[StatePensionAuditConnector]) {
+  lazy val service: StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+    override val nps: NpsConnector = mockNpsConnector
+    override val forecastingService: ForecastingService = defaultForecasting
+    override val rateService: RateService = RateServiceBuilder.default
+    override val metrics: ApplicationMetrics = mockMetrics
+    override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+    override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+      Future.successful(false)
   }
 
-  when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+  when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
     .thenReturn(Future.successful(
       List()
     ))
-
-  when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-    .thenReturn(Future.successful(false))
 
   def regularStatementWithDateOfBirth(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate): Summary = {
     Summary(
@@ -96,18 +96,18 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       val dateOfBirth = new LocalDate(1970, 4, 5)
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
@@ -117,7 +117,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       }
 
       "log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
@@ -148,18 +148,18 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       val dateOfBirth = new LocalDate(1970, 4, 6)
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         List()
       ))
 
-      when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+      when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
         NIRecord(qualifyingYears = 36, List())
       ))
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
@@ -169,7 +169,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       }
 
       "log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
@@ -224,20 +224,19 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        None
       )
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
-      lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
-
       "statePension have statePensionAgeUnderConsideration flag as true" in {
 
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
 
@@ -248,11 +247,11 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
 
       "log a summary metric" in {
 
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
 
@@ -288,10 +287,10 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             NIRecord(qualifyingYears = 36, List())
           ))
@@ -302,10 +301,10 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       }
 
       "log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             NIRecord(qualifyingYears = 36, List())
           ))
@@ -342,10 +341,10 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             NIRecord(qualifyingYears = 36, List())
           ))
@@ -356,10 +355,10 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
       }
 
       "log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             NIRecord(qualifyingYears = 36, List())
           ))

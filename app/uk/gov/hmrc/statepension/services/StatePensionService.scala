@@ -22,8 +22,9 @@ import com.google.inject.Inject
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps.{Country, Summary}
@@ -31,27 +32,28 @@ import uk.gov.hmrc.statepension.events.Forecasting
 
 import scala.concurrent.Future
 
-class StatePensionService @Inject()(des: DesConnector,
-                                    citizenDetailsService: CitizenDetailsService,
-                                    forecastingService: ForecastingService,
-                                    rateService: RateService,
-                                    metrics: ApplicationMetrics,
-                                    customAuditConnector: StatePensionAuditConnector) {
+trait StatePensionService {
+
+  val nps: NpsConnector
+  val forecastingService: ForecastingService
+  val rateService: RateService
+  val metrics: ApplicationMetrics
+  val customAuditConnector: StatePensionAuditConnector
+  def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
   def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
 
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
-    val summaryF =  des.getSummary(nino)
-    val liablitiesF = des.getLiabilities(nino)
-    val manualCorrespondenceF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)
-    val niRecordF = des.getNIRecord(nino)
+    val summaryF =  nps.getSummary(nino)
+    val liablitiesF = nps.getLiabilities(nino)
+    val niRecordF = nps.getNIRecord(nino)
 
     for {
       summary <- summaryF
       liablities <- liablitiesF
       niRecord <- niRecordF
-      manualCorrespondence <- manualCorrespondenceF
+      manualCorrespondence <- getMCI(summary, nino)
     } yield {
 
       val exclusions: List[Exclusion] = ExclusionService(

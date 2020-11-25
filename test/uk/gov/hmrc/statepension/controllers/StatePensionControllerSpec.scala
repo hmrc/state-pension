@@ -29,7 +29,7 @@ import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
-import uk.gov.hmrc.statepension.controllers.auth.FakeAuthAction
+import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
@@ -44,13 +44,18 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  val appContext = app.injector.instanceOf[AppContext]
+  val _appContext: AppContext = app.injector.instanceOf[AppContext]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController(appContext, spService, mock[StatePensionAuditConnector], FakeAuthAction) {
+    new StatePensionController {
       override val app: String = "Test State Pension"
-      override val context: String = "test"
-  }
+      override lazy val context: String = "test"
+      override val appContext: AppContext = _appContext
+      override val statePensionService: StatePensionService = spService
+      override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+      override val authAction: AuthAction = FakeAuthAction
+      override def endpointUrl(nino: Nino): String = s"/ni/$nino"
+    }
 
   val testStatePension = StatePension(
     new LocalDate(2015, 4, 5),

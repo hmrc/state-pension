@@ -23,9 +23,11 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionUnitSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain._
@@ -39,19 +41,20 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
   with BeforeAndAfterEach {
 
 
-  val mockDesConnector: DesConnector = mock[DesConnector]
-  val mockStatePensionAuditConnector = mock[StatePensionAuditConnector]
+  val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
-  val mockCitizenDetails: CitizenDetailsService = mock[CitizenDetailsService]
+
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
-  lazy val service: StatePensionService = new StatePensionService(mockDesConnector,
-    mockCitizenDetails,
-    defaultForecasting,
-    RateServiceBuilder.default,
-    mockMetrics,
-    mockStatePensionAuditConnector) {
+  def service(mci: Boolean = false): StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+    override val nps: NpsConnector = mockNpsConnector
+    override val forecastingService: ForecastingService = defaultForecasting
+    override val rateService: RateService = RateServiceBuilder.default
+    override val metrics: ApplicationMetrics = mockMetrics
+    override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+    override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+      Future.successful(mci)
   }
 
   val summary = Summary(
@@ -63,12 +66,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
   )
 
   override def beforeEach: Unit = {
-    Mockito.reset(mockDesConnector, mockMetrics, mockCitizenDetails, mockStatePensionAuditConnector)
+    Mockito.reset(mockNpsConnector, mockMetrics)
 
-    when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-      .thenReturn(Future.successful(false))
-
-    when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+    when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
       .thenReturn(Future.successful(NIRecord(
         qualifyingYears = 35,
         List(
@@ -77,7 +77,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         )
       )))
 
-    when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+    when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
       .thenReturn(Future.successful(List()))
 
   }
@@ -100,50 +100,50 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
 
       "return dead exclusion" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.Dead)
         }
       }
 
       "have a pension age of 67" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionAge shouldBe 67
         }
       }
 
       "have a pension date of 2050-7-7" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2050, 7, 7)
         }
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.statePensionAgeUnderConsideration shouldBe false
         }
       }
 
       "log an exclusion metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.Dead)
@@ -152,10 +152,10 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "not log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
@@ -179,52 +179,52 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       )
 
       "return post state pension age exclusion" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.PostStatePensionAge)
         }
       }
 
       "have a pension age of 61" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionAge shouldBe 61
         }
       }
 
       "have a pension date of 2016-1-1" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
         }
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.statePensionAgeUnderConsideration shouldBe false
         }
       }
 
       "log an exclusion metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.PostStatePensionAge)
@@ -273,43 +273,43 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       )
 
       "summary have RRE flag as true" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary1
         ))
-        lazy val summaryF: Future[Summary] = mockDesConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(Matchers.any())(Matchers.any())
         whenReady(summaryF) { summary =>
           summary.reducedRateElection shouldBe true
         }
       }
 
       "statePension have RRE flag as true" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary1
         ))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statePensionF: Future[StatePension] = service().getStatement(generateNino()).right.get
         whenReady(statePensionF) { statePension =>
           statePension.reducedRateElection shouldBe true
         }
       }
 
       "statePension" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary1
         ))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statePensionF: Future[StatePension] = service().getStatement(generateNino()).right.get
         whenReady(statePensionF) { statePension =>
           statePension.reducedRateElectionCurrentWeeklyAmount shouldBe Some(32.61)
         }
       }
 
       "log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary1))
 
-        when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
-        lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statePensionF: Future[StatePension] = service().getStatement(generateNino()).right.get
         whenReady(statePensionF) { _ =>
           verify(mockMetrics, times(1)).summary(
             Matchers.eq[BigDecimal](155.65),
@@ -350,12 +350,12 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         )
       )
 
-      lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+      lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
       "return amount dissonance" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
@@ -363,9 +363,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "have a pension age of 61" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionAge shouldBe 61
@@ -373,9 +373,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "have a pension date of 2018-1-1" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
@@ -383,9 +383,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         whenReady(exclusionF) { exclusion =>
           exclusion.statePensionAgeUnderConsideration shouldBe false
@@ -393,9 +393,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "log an exclusion metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         whenReady(exclusionF) { _ =>
           verify(mockMetrics, times(1)).exclusion(
@@ -405,9 +405,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "not log a summary metric" in {
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
@@ -419,65 +419,65 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
 
 
       "return isle of man exclusion" in {
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             List(Liability(Some(5)))
           ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.IsleOfMan)
         }
       }
 
       "have a pension age of 61" in {
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             List(Liability(Some(5)))
           ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionAge shouldBe 61
         }
       }
 
       "have a pension date of 2018-1-1" in {
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             List(Liability(Some(5)))
           ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             List(Liability(Some(5)))
           ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.statePensionAgeUnderConsideration shouldBe false
         }
       }
 
       "log an exclusion metric" in {
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             List(Liability(Some(5)))
           ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.IsleOfMan)
@@ -486,13 +486,13 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "not log a summary metric" in {
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(
             List(Liability(Some(5)))
           ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
@@ -500,63 +500,50 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
     }
 
     "the customer has a manual correspondence indicator" should {
-
-
       "return mci exclusion" in {
-        when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(true))
-
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
         }
       }
 
       "have a pension age of 61" in {
-        when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(true))
-
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionAge shouldBe 61
         }
       }
 
       "have a pension date of 2018-1-1" in {
-        when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(true))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
         }
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
-        when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           List()
         ))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           summary
         ))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           exclusion.statePensionAgeUnderConsideration shouldBe false
         }
       }
 
       "log an exclusion metric" in {
-        when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(true))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
+        lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
         whenReady(exclusionF) { exclusion =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.ManualCorrespondenceIndicator)
@@ -565,14 +552,14 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       }
 
       "not log a summary metric" in {
-        when(mockCitizenDetails.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(true))
-        when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service.getStatement(generateNino()).left.get
-        verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
+        whenReady(exclusionF) { _ =>
+          verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+            Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
+            Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
+        }
       }
     }
   }
