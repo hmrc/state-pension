@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito.when
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
@@ -27,13 +27,14 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.NinoGenerator
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, IfConnector, StatePensionAuditConnector}
-import uk.gov.hmrc.statepension.domain.{Exclusion, StatePensionExclusion}
-import uk.gov.hmrc.statepension.domain.nps.{AmountA2016, AmountB2016, NIRecord, PensionAmounts, Summary}
+import uk.gov.hmrc.statepension.connectors.{IfConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.domain.Exclusion
+import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
+import uk.gov.hmrc.statepension.fixtures.SummaryFixture
 
 import scala.concurrent.Future
 
-class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator {
+class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator with EitherValues with BeforeAndAfterEach {
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 
   val mockIfConnector: IfConnector = mock[IfConnector]
@@ -50,43 +51,22 @@ class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator
     .injector()
     .instanceOf[DashboardService]
 
-  val summary: Summary = Summary(
-    earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-    statePensionAgeDate = LocalDate.now().plusYears(1),
-    finalRelevantStartYear = 2018,
-    pensionSharingOrderSERPS = false,
-    dateOfBirth = new LocalDate(1954, 3, 9),
-    amounts = PensionAmounts(
-      pensionEntitlement = 40.53,
-      startingAmount2016 = 40.53,
-      protectedPayment2016 = 0,
-      AmountA2016(
-        basicStatePension = 35.79,
-        pre97AP = 0,
-        post97AP = 0,
-        post02AP = 4.74,
-        pre88GMP = 0,
-        post88GMP = 0,
-        pre88COD = 0,
-        post88COD = 0,
-        graduatedRetirementBenefit = 0
-      ),
-      AmountB2016(
-        mainComponent = 40.02,
-        rebateDerivedAmount = 0
-      )
-    )
-  )
+  val summary: Summary = SummaryFixture.exampleSummary
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    when(mockIfConnector.getLiabilities(Matchers.any())(Matchers.any()))
+      .thenReturn(Future.successful(List()))
+    when(mockIfConnector.getNIRecord(Matchers.any())(Matchers.any()))
+      .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
+  }
 
   "getStatement" must {
     "return StatePension data" when {
       "Summary data has false for MCI check" in {
         when(mockIfConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
-        when(mockIfConnector.getLiabilities(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(List()))
-        when(mockIfConnector.getNIRecord(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
         val result = await(sut.getStatement(generateNino()))
         result mustBe a [Right[_, _]]
@@ -97,19 +77,9 @@ class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator
       "summary data has true for MCI check" in {
         when(mockIfConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(true))))
-        when(mockIfConnector.getLiabilities(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(List()))
-        when(mockIfConnector.getNIRecord(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
         val result = await(sut.getStatement(generateNino()))
-        result must matchPattern {
-          case Left(StatePensionExclusion(
-          List(Exclusion.ManualCorrespondenceIndicator),
-          _,
-          _,
-          _)) =>
-        }
+        result.left.value.exclusionReasons mustBe List(Exclusion.ManualCorrespondenceIndicator)
       }
     }
   }

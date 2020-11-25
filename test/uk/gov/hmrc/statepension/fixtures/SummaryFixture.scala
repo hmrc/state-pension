@@ -25,7 +25,7 @@ object SummaryFixture {
   {
     "contractedOutFlag": 0,
     "sensitiveCaseFlag": 0,
-    "spaDate": "2019-09-06",
+    "spaDate": "2025-09-06",
     "finalRelevantYear": 2018,
     "accountNotMaintainedFlag": null,
     "penForecast": {
@@ -73,7 +73,7 @@ object SummaryFixture {
 
   val exampleSummary: Summary = Summary(
     new LocalDate(2016, 4, 5),
-    statePensionAgeDate = new LocalDate(2019, 9, 6),
+    statePensionAgeDate = new LocalDate(2025, 9, 6),
     finalRelevantStartYear = 2018,
     pensionSharingOrderSERPS = true,
     dateOfBirth = new LocalDate(1954, 3, 9),
