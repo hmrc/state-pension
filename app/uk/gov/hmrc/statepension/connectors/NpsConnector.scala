@@ -20,7 +20,7 @@ import play.api.data.validation.ValidationError
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, NotFoundException}
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -48,7 +48,9 @@ trait NpsConnector {
     connectToHOD[Summary](summaryUrl(nino), summaryMetricType)
 
   def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
-    connectToHOD[Liabilities](liabilitiesUrl(nino), liabilitiesMetricType).map(_.liabilities)
+    connectToHOD[Liabilities](liabilitiesUrl(nino), liabilitiesMetricType)
+      .map(_.liabilities)
+      .recover { case _: NotFoundException => Nil }
 
   def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
     connectToHOD[NIRecord](niRecordUrl(nino), niRecordMetricType)
@@ -66,10 +68,10 @@ trait NpsConnector {
     } recover {
       // http-verbs throws exceptions, convert to Try
       case ex => Failure(ex)
-    } flatMap (handleResult(api, url, _))
+    } flatMap (handleResult(api, _))
   }
 
-  private def handleResult[A](api: APIType, url: String, tryResult: Try[A]): Future[A] = {
+  private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] = {
     tryResult match {
       case Failure(ex) =>
         metrics.incrementFailedCounter(api)
