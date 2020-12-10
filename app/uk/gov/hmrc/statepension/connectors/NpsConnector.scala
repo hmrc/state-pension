@@ -66,10 +66,10 @@ trait NpsConnector {
     } recover {
       // http-verbs throws exceptions, convert to Try
       case ex => Failure(ex)
-    } flatMap (handleResult(api, url, _))
+    } flatMap (handleResult(api, _))
   }
 
-  private def handleResult[A](api: APIType, url: String, tryResult: Try[A]): Future[A] = {
+  private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] = {
     tryResult match {
       case Failure(ex) =>
         metrics.incrementFailedCounter(api)
