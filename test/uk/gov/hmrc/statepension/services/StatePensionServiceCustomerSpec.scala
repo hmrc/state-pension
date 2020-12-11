@@ -144,7 +144,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
           .thenReturn(Future.successful(summary))
 
         lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
-        whenReady(exclusionF) { exclusion =>
+        whenReady(exclusionF) { _ =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.Dead)
           )
@@ -155,7 +155,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
@@ -350,8 +349,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         )
       )
 
-      lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
-
       "return amount dissonance" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
@@ -407,7 +404,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "not log a summary metric" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
@@ -492,7 +488,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
           ))
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
+
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
@@ -544,7 +540,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
         lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
-        whenReady(exclusionF) { exclusion =>
+        whenReady(exclusionF) { _ =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.ManualCorrespondenceIndicator)
           )

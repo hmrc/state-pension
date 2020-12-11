@@ -467,7 +467,6 @@ class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAp
 
 
   "getNIRecord" should {
-    val mockHttpGet = mock[HttpGet]
     val connector = new DesConnector(http, metrics, environment, configuration) {
 
       override val desBaseUrl: String = "test-url"

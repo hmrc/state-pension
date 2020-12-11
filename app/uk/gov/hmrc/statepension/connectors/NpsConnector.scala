@@ -69,6 +69,7 @@ trait NpsConnector {
     } flatMap (handleResult(api, url, _))
   }
 
+  //TODO[Refactor] url is not used
   private def handleResult[A](api: APIType, url: String, tryResult: Try[A]): Future[A] = {
     tryResult match {
       case Failure(ex) =>

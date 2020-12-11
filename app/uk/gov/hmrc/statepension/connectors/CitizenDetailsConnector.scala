@@ -54,6 +54,7 @@ class CitizenDetailsConnector @Inject()(http: WSHttp,
     } flatMap (handleResult(url(nino), _))
   }
 
+  //TODO[Refactor] url is never used
   private def handleResult[A](url: String, tryResult: Try[A]): Future[A] = {
     tryResult match {
       case Failure(ex) =>
