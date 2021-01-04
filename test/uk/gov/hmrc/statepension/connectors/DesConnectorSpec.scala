@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.statepension.connectors
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito
+import org.joda.time.LocalDate
+import org.mockito.{Matchers, Mockito}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -25,7 +27,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.domain.nps.Summary
+import uk.gov.hmrc.statepension.domain.nps.{APIType, AmountA2016, AmountB2016, NIRecord, NITaxYear, PensionAmounts, Summary}
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
@@ -34,15 +36,7 @@ import scala.language.postfixOps
 
 class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
 
-  //val http: WSHttp = mock[WSHttp]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
-  //val timerContext = mock[Timer.Context]
-  //val metrics: ApplicationMetrics = mock[ApplicationMetrics]
-  //val environment: Environment = app.injector.instanceOf[Environment]
-  //val configuration: Configuration = app.injector.instanceOf[Configuration]
-
-  //when(metrics.startTimer(Matchers.any())).thenReturn(timerContext)
-
   val nino: Nino = generateNino()
   val ninoWithoutSuffix: String = nino.withoutSuffix
 
@@ -56,122 +50,19 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       bind[ApplicationMetrics].toInstance(mockMetrics)
     ).build()
 
-  lazy val desConnector = app.injector.instanceOf[DesConnector]
-  val getSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(mockMetrics)
+  }
 
+  lazy val desConnector = app.injector.instanceOf[DesConnector]
   val jsonWithNoTaxYears: String = NIRecordFixture.exampleDesNiRecordJson(nino.nino)
 
-  val jsonNiRecord =
-    s"""
-       |{
-       |  "yearsToFry": 3,
-       |  "nonQualifyingYears": 10,
-       |  "dateOfEntry": "1969-08-01",
-       |  "employmentDetails": [],
-       |  "pre75CcCount": 250,
-       |  "numberOfQualifyingYears": 36,
-       |  "nonQualifyingYearsPayable": 5,
-       |  "taxYears": [
-       |    {
-       |      "classThreePayableByPenalty": null,
-       |      "classTwoOutstandingWeeks": null,
-       |      "classTwoPayable": null,
-       |      "qualifying": true,
-       |      "underInvestigationFlag": false,
-       |      "classTwoPayableBy": null,
-       |      "coClassOnePaid": null,
-       |      "classTwoPayableByPenalty": null,
-       |      "coPrimaryPaidEarnings": null,
-       |      "payable": false,
-       |      "rattdTaxYear": "1975",
-       |      "niEarnings": null,
-       |      "amountNeeded": null,
-       |      "primaryPaidEarnings": "1285.4500",
-       |      "classThreePayable": null,
-       |      "niEarningsEmployed": "70.6700",
-       |      "otherCredits": [
-       |        {
-       |          "creditSourceType": 0,
-       |          "ccType": 23,
-       |          "numberOfCredits": 20
-       |        },
-       |        {
-       |          "creditSourceType": 24,
-       |          "ccType": 23,
-       |          "numberOfCredits": 6
-       |        }
-       |      ],
-       |      "niEarningsSelfEmployed": null,
-       |      "classThreePayableBy": null,
-       |      "niEarningsVoluntary": null
-       |    },
-       |    {
-       |      "classThreePayableByPenalty": null,
-       |      "classTwoOutstandingWeeks": null,
-       |      "classTwoPayable": null,
-       |      "qualifying": true,
-       |      "underInvestigationFlag": false,
-       |      "classTwoPayableBy": null,
-       |      "coClassOnePaid": null,
-       |      "classTwoPayableByPenalty": null,
-       |      "coPrimaryPaidEarnings": null,
-       |      "payable": false,
-       |      "rattdTaxYear": "1976",
-       |      "niEarnings": null,
-       |      "amountNeeded": null,
-       |      "primaryPaidEarnings": "932.1700",
-       |      "classThreePayable": null,
-       |      "niEarningsEmployed": "53.5000",
-       |      "otherCredits": [
-       |        {
-       |          "creditSourceType": 0,
-       |          "ccType": 23,
-       |          "numberOfCredits": 4
-       |        },
-       |        {
-       |          "creditSourceType": 24,
-       |          "ccType": 23,
-       |          "numberOfCredits": 30
-       |        }
-       |      ],
-       |      "niEarningsSelfEmployed": null,
-       |      "classThreePayableBy": null,
-       |      "niEarningsVoluntary": null
-       |    },
-       |    {
-       |      "classThreePayableByPenalty": null,
-       |      "classTwoOutstandingWeeks": null,
-       |      "classTwoPayable": null,
-       |      "qualifying": true,
-       |      "underInvestigationFlag": false,
-       |      "classTwoPayableBy": null,
-       |      "coClassOnePaid": null,
-       |      "classTwoPayableByPenalty": null,
-       |      "coPrimaryPaidEarnings": null,
-       |      "payable": false,
-       |      "rattdTaxYear": "1977",
-       |      "niEarnings": null,
-       |      "amountNeeded": null,
-       |      "primaryPaidEarnings": "1433.0400",
-       |      "classThreePayable": null,
-       |      "niEarningsEmployed": "82.1300",
-       |      "otherCredits": [
-       |        {
-       |          "creditSourceType": 24,
-       |          "ccType": 23,
-       |          "numberOfCredits": 28
-       |        }
-       |      ],
-       |      "niEarningsSelfEmployed": null,
-       |      "classThreePayableBy": null,
-       |      "niEarningsVoluntary": null
-       |    }
-       |  ],
-       |  "nino": "$nino"
-       |}""".stripMargin
-
   "getSummary" should {
-    "return OK status when successful" in {
+
+    val summaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+
+    "return a Summary object when successful" in {
       val expectedJson: JsValue = Json.parse(
         """
           |{
@@ -224,18 +115,39 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       """.stripMargin)
 
       server.stubFor(
-        get(urlEqualTo(getSummaryUrl)).willReturn(ok().withBody(expectedJson.toString()))
+        get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(expectedJson.toString()))
       )
 
-      val response: Summary = await(desConnector.getSummary(nino))
-      response shouldBe expectedJson.as[Summary]
+      val expectedPensionAmounts = PensionAmounts(
+        pensionEntitlement = 161.18,
+        startingAmount2016 = 161.18,
+        protectedPayment2016 = 5.53,
+        amountA2016 = AmountA2016(119.3,17.79,6.03,15.4,0,0,0,0,2.66),
+        amountB2016 = AmountB2016(155.65,0))
 
-      server.verify(getRequestedFor(urlEqualTo(getSummaryUrl))
+      val expectedSummary =  Summary(
+        earningsIncludedUpTo = new LocalDate(2016, 4,5),
+        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        finalRelevantStartYear = 2018,
+        pensionSharingOrderSERPS = true,
+        dateOfBirth = new LocalDate(1954, 3, 9),
+        dateOfDeath = None,
+        countryCode = 1,
+        amounts = expectedPensionAmounts,
+        manualCorrespondenceIndicator = None)
+
+      val response: Summary = await(desConnector.getSummary(nino))
+      response shouldBe expectedSummary
+
+      server.verify(getRequestedFor(urlEqualTo(summaryUrl))
         .withHeader("Authorization", equalTo("Bearer testToken"))
         .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
         .withHeader("Environment", equalTo("testEnvironment"))
       )
 
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.Summary))).stop()
+      }
     }
 
     "return a failed future with a json validation exception when it cannot parse to an NpsSummary" in {
@@ -287,7 +199,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         """.stripMargin)
 
       server.stubFor(
-        get(urlEqualTo(getSummaryUrl)).willReturn(ok().withBody(invalidJson.toString()))
+        get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(invalidJson.toString()))
       )
 
       val exception = intercept[desConnector.JsonValidationException]{
@@ -295,6 +207,10 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       }
 
       exception.getMessage shouldBe "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.Summary))).stop()
+      }
     }
   }
 
@@ -468,156 +384,192 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
 //  }
 //
 //
-//  "getNIRecord" should {
-//    val connector = new DesConnector(http, metrics, environment, configuration) {
-//
-//      override val desBaseUrl: String = "test-url"
-//
-//      override val token: String = "token"
-//
-//      override val environmentHeader: (String, String) = ("environment", "unit test")
-//
-//      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-//    }
-//
-//    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
-//    connector.getNIRecord(nino)
-//
-//
-//    "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/ni" in {
-//      verify(http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithoutSuffix/pensions/ni"))(Matchers.any(), Matchers.any(), Matchers.any())
-//    }
-//
-//    "add the originator id to the header" ignore {
-//      val header = headerCarrier
-//      connector.getNIRecord(nino)
-//      verify(http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
-//    }
-//
-//    "parse the json and return a Future[DesNIRecord]" in {
-//
-//      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(jsonNiRecord))))
-//      connector.getNIRecord(nino)
-//
-//      val summary = await(connector.getNIRecord(nino))
-//      summary shouldBe NIRecord(
-//        qualifyingYears = 36,
-//        List(
-//          NITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
-//          NITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
-//          NITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
-//        ))
-//    }
-//
-//    "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
-//      val optJson = Some(Json.parse(jsonWithNoTaxYears))
-//      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, optJson))
-//
-//      val summary = await(connector.getNIRecord(nino))
-//      summary shouldBe NIRecord(qualifyingYears = 36, List.empty)
-//    }
-//
-//    "return a failed future with a json validation exception when it cannot parse to an DesNIRecord" in {
-//
-//
-//
-//
-//      val connector = new DesConnector(http, metrics, environment, configuration) {
-//
-//        override val desBaseUrl: String = "test-url"
-//
-//        override val token: String = "token"
-//
-//        override val environmentHeader: (String, String) = ("environment", "unit test")
-//
-//        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-//
-//      }
-//
-//      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-//        s"""
-//           |{
-//           |  "yearsToFry": 3,
-//           |  "nonQualifyingYears": 10,
-//           |  "dateOfEntry": "1969-08-01",
-//           |  "employmentDetails": [],
-//           |  "pre75CcCount": 250,
-//           |  "numberOfQualifyingYears": "36",
-//           |  "nonQualifyingYearsPayable": "5",
-//           |  "nino": "$nino"
-//           |}
-//      """.stripMargin))))
-//
-//      ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
-//        ex shouldBe a[connector.JsonValidationException]
-//        ex.getMessage shouldBe "/numberOfQualifyingYears - error.expected.jsnumber"
-//      }
-//    }
-//
-//
-//    "return a failed future with a json validation exception when it cannot parse to an DesNIRecord when taxyear is invalid" in {
-//      val connector = new DesConnector(http, metrics, environment, configuration) {
-//
-//        override val desBaseUrl: String = "test-url"
-//
-//        override val token: String = "token"
-//
-//        override val environmentHeader: (String, String) = ("environment", "unit test")
-//
-//        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-//      }
-//
-//      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-//        s"""
-//           |{
-//           |  "yearsToFry": 3,
-//           |  "nonQualifyingYears": 10,
-//           |  "dateOfEntry": "1969-08-01",
-//           |  "employmentDetails": [],
-//           |  "pre75CcCount": 250,
-//           |  "numberOfQualifyingYears": 36,
-//           |  "nonQualifyingYearsPayable": 5,
-//           |  "taxYears": [
-//           |    {
-//           |      "classThreePayableByPenalty": null,
-//           |      "classTwoOutstandingWeeks": null,
-//           |      "classTwoPayable": null,
-//           |      "qualifying": true,
-//           |      "underInvestigationFlag": false,
-//           |      "classTwoPayableBy": null,
-//           |      "coClassOnePaid": null,
-//           |      "classTwoPayableByPenalty": null,
-//           |      "coPrimaryPaidEarnings": null,
-//           |      "payable": false,
-//           |      "rattdTaxYear": "not a real year",
-//           |      "niEarnings": null,
-//           |      "amountNeeded": null,
-//           |      "primaryPaidEarnings": "1285.4500",
-//           |      "classThreePayable": null,
-//           |      "niEarningsEmployed": "70.6700",
-//           |      "otherCredits": [
-//           |        {
-//           |          "creditSourceType": 0,
-//           |          "ccType": 23,
-//           |          "numberOfCredits": 20
-//           |        },
-//           |        {
-//           |          "creditSourceType": 24,
-//           |          "ccType": 23,
-//           |          "numberOfCredits": 6
-//           |        }
-//           |      ],
-//           |      "niEarningsSelfEmployed": null,
-//           |      "classThreePayableBy": null,
-//           |      "niEarningsVoluntary": null
-//           |    }]
-//           |}
-//      """.stripMargin))))
-//
-//      ScalaFutures.whenReady(connector.getNIRecord(nino).failed) { ex =>
-//        ex shouldBe a[Exception]
-//        ex.getMessage shouldBe "/rattdTaxYear is not a valid integer"
-//      }
-//    }
-//  }
+  "getNIRecord" should {
+
+    val jsonNiRecord: JsValue = Json.parse(
+      s"""
+         |{
+         |  "yearsToFry": 3,
+         |  "nonQualifyingYears": 10,
+         |  "dateOfEntry": "1969-08-01",
+         |  "employmentDetails": [],
+         |  "pre75CcCount": 250,
+         |  "numberOfQualifyingYears": 36,
+         |  "nonQualifyingYearsPayable": 5,
+         |  "taxYears": [
+         |    {
+         |      "classThreePayableByPenalty": null,
+         |      "classTwoOutstandingWeeks": null,
+         |      "classTwoPayable": null,
+         |      "qualifying": true,
+         |      "underInvestigationFlag": false,
+         |      "classTwoPayableBy": null,
+         |      "coClassOnePaid": null,
+         |      "classTwoPayableByPenalty": null,
+         |      "coPrimaryPaidEarnings": null,
+         |      "payable": false,
+         |      "rattdTaxYear": "1975",
+         |      "niEarnings": null,
+         |      "amountNeeded": null,
+         |      "primaryPaidEarnings": "1285.4500",
+         |      "classThreePayable": null,
+         |      "niEarningsEmployed": "70.6700",
+         |      "otherCredits": [
+         |        {
+         |          "creditSourceType": 0,
+         |          "ccType": 23,
+         |          "numberOfCredits": 20
+         |        },
+         |        {
+         |          "creditSourceType": 24,
+         |          "ccType": 23,
+         |          "numberOfCredits": 6
+         |        }
+         |      ],
+         |      "niEarningsSelfEmployed": null,
+         |      "classThreePayableBy": null,
+         |      "niEarningsVoluntary": null
+         |    },
+         |    {
+         |      "classThreePayableByPenalty": null,
+         |      "classTwoOutstandingWeeks": null,
+         |      "classTwoPayable": null,
+         |      "qualifying": true,
+         |      "underInvestigationFlag": false,
+         |      "classTwoPayableBy": null,
+         |      "coClassOnePaid": null,
+         |      "classTwoPayableByPenalty": null,
+         |      "coPrimaryPaidEarnings": null,
+         |      "payable": false,
+         |      "rattdTaxYear": "1976",
+         |      "niEarnings": null,
+         |      "amountNeeded": null,
+         |      "primaryPaidEarnings": "932.1700",
+         |      "classThreePayable": null,
+         |      "niEarningsEmployed": "53.5000",
+         |      "otherCredits": [
+         |        {
+         |          "creditSourceType": 0,
+         |          "ccType": 23,
+         |          "numberOfCredits": 4
+         |        },
+         |        {
+         |          "creditSourceType": 24,
+         |          "ccType": 23,
+         |          "numberOfCredits": 30
+         |        }
+         |      ],
+         |      "niEarningsSelfEmployed": null,
+         |      "classThreePayableBy": null,
+         |      "niEarningsVoluntary": null
+         |    },
+         |    {
+         |      "classThreePayableByPenalty": null,
+         |      "classTwoOutstandingWeeks": null,
+         |      "classTwoPayable": null,
+         |      "qualifying": true,
+         |      "underInvestigationFlag": false,
+         |      "classTwoPayableBy": null,
+         |      "coClassOnePaid": null,
+         |      "classTwoPayableByPenalty": null,
+         |      "coPrimaryPaidEarnings": null,
+         |      "payable": false,
+         |      "rattdTaxYear": "1977",
+         |      "niEarnings": null,
+         |      "amountNeeded": null,
+         |      "primaryPaidEarnings": "1433.0400",
+         |      "classThreePayable": null,
+         |      "niEarningsEmployed": "82.1300",
+         |      "otherCredits": [
+         |        {
+         |          "creditSourceType": 24,
+         |          "ccType": 23,
+         |          "numberOfCredits": 28
+         |        }
+         |      ],
+         |      "niEarningsSelfEmployed": null,
+         |      "classThreePayableBy": null,
+         |      "niEarningsVoluntary": null
+         |    }
+         |  ],
+         |  "nino": "$nino"
+         |}""".stripMargin)
+
+    val niRecordUrl = s"/individuals/${nino.withoutSuffix}/pensions/ni"
+
+    "return an NiRecord object when successful" in {
+
+     server.stubFor(
+       get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(jsonNiRecord.toString()))
+     )
+
+     val expectedNiRecord = NIRecord(
+       qualifyingYears = 36,
+       List(
+         NITaxYear(Some(1975), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+         NITaxYear(Some(1976), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false)),
+         NITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
+       ))
+
+     val response: NIRecord = await(desConnector.getNIRecord(nino))
+     response shouldBe expectedNiRecord
+
+     server.verify(getRequestedFor(urlEqualTo(niRecordUrl))
+       .withHeader("Authorization", equalTo("Bearer testToken"))
+       .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+       .withHeader("Environment", equalTo("testEnvironment"))
+     )
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+      }
+
+    }
+
+   "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
+    val optJson: JsValue = Json.parse(jsonWithNoTaxYears)
+
+     server.stubFor(
+       get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(optJson.toString()))
+     )
+
+     val response: NIRecord = await(desConnector.getNIRecord(nino))
+     response shouldBe NIRecord(qualifyingYears = 36, List.empty)
+
+     withClue("timer did not stop") {
+       Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+     }
+   }
+
+    "return a failed future with a json validation exception when it cannot parse to a DesNIRecord" in {
+
+      val invalidJson = Json.parse(
+        s"""
+           |{
+           |  "yearsToFry": 3,
+           |  "nonQualifyingYears": 10,
+           |  "dateOfEntry": "1969-08-01",
+           |  "employmentDetails": [],
+           |  "pre75CcCount": 250,
+           |  "numberOfQualifyingYears": "36",
+           |  "nonQualifyingYearsPayable": "5",
+           |  "nino": "$nino"
+           |}
+      """.stripMargin)
+
+      server.stubFor(
+        get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(invalidJson.toString()))
+      )
+
+      val exception = intercept[desConnector.JsonValidationException]{
+        await(desConnector.getNIRecord(nino))
+      }
+
+      exception.getMessage shouldBe "/numberOfQualifyingYears - error.expected.jsnumber"
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+      }
+    }
+  }
 }

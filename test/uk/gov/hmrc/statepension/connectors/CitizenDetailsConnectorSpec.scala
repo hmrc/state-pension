@@ -41,7 +41,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    mockReset(mockMetrics, context)
+    mockReset(mockMetrics)
   }
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
