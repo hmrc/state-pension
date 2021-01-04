@@ -18,8 +18,8 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Matchers
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset => mockReset}
+import org.mockito.{Matchers, Mockito}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -27,6 +27,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.LOCKED
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
@@ -34,8 +35,14 @@ import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
 
   val nino = generateNino()
-  val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
+  val context = mock[Timer.Context]
   val url = s"/citizen-details/$nino/designatory-details/"
+  val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    mockReset(mockMetrics, context)
+  }
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .configure("microservice.services.citizen-details.port" -> server.port())
@@ -45,10 +52,6 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
 
   lazy val citizenDetailsConnector: CitizenDetailsConnector = app.injector.instanceOf[CitizenDetailsConnector]
 
-  val context = mock[Timer.Context]
-  when(context.stop()).thenReturn(0)
-  when(mockMetrics.startTimer(Matchers.any())).thenReturn{ context }
-
   "CitizenDetailsConnector" should {
     "return OK status when successful" in {
       server.stubFor(
@@ -57,6 +60,10 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
       await(resultF) shouldBe 200
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+      }
     }
 
     "return 423 status when the Upstream is 423" in {
@@ -66,6 +73,10 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
       await(resultF) shouldBe LOCKED
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+      }
     }
 
     "return NotFoundException for invalid nino" in {
@@ -74,7 +85,11 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       )
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      await(resultF.failed) shouldBe a [NotFoundException]
+      await(resultF.failed) shouldBe a[NotFoundException]
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+      }
     }
 
     "return 500 response code when the Upstream is 5XX" in {
@@ -83,7 +98,11 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       )
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      await(resultF.failed) shouldBe a [Upstream5xxResponse]
+      await(resultF.failed) shouldBe a[Upstream5xxResponse]
+
+      withClue("timer did not stop") {
+        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+      }
     }
   }
 }

@@ -41,6 +41,7 @@ class CitizenDetailsConnector @Inject()(http: WSHttp,
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
+  //TODO[REFACTOR] we do not seem to be adding metrics for success and failure
   def connectToGetPersonDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] = {
     val timerContext = metrics.startTimer(APIType.CitizenDetails)
     http.GET[HttpResponse](url(nino)) map {
