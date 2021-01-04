@@ -26,18 +26,25 @@ import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, Scenario}
 
 class ApplicationMetrics @Inject()(metrics: Metrics) {
 
-  val timers: Map[APIType, Timer] = Map(
-    APIType.Summary -> metrics.defaultRegistry.timer("summary-response-timer"),
-    APIType.NIRecord -> metrics.defaultRegistry.timer("nirecord-response-timer"),
-    APIType.Liabilities -> metrics.defaultRegistry.timer("liabilities-response-timer"),
-    APIType.CitizenDetails -> metrics.defaultRegistry.timer("citizen-details-timer")
-  )
+  val timers: APIType => Timer = {
+    case APIType.Summary        => metrics.defaultRegistry.timer("summary-response-timer")
+    case APIType.NIRecord       => metrics.defaultRegistry.timer("nirecord-response-timer")
+    case APIType.Liabilities    => metrics.defaultRegistry.timer("liabilities-response-timer")
+    case APIType.CitizenDetails => metrics.defaultRegistry.timer("citizen-details-timer")
+    case APIType.IfSummary      => metrics.defaultRegistry.timer("if-summary-response-timer")
+    case APIType.IfNIRecord     => metrics.defaultRegistry.timer("if-nirecord-response-timer")
+    case APIType.IfLiabilities  => metrics.defaultRegistry.timer("if-liabilities-response-timer")
+  }
 
-  val failedCounters: Map[APIType, Counter] = Map(
-    APIType.Summary -> metrics.defaultRegistry.counter("summary-failed-counter"),
-    APIType.NIRecord -> metrics.defaultRegistry.counter("nirecord-failed-counter"),
-    APIType.Liabilities -> metrics.defaultRegistry.counter("liabilities-failed-counter")
-  )
+  val failedCounters: APIType => Counter = {
+    case APIType.Summary        => metrics.defaultRegistry.counter("summary-failed-counter")
+    case APIType.NIRecord       => metrics.defaultRegistry.counter("nirecord-failed-counter")
+    case APIType.Liabilities    => metrics.defaultRegistry.counter("liabilities-failed-counter")
+    case APIType.CitizenDetails => metrics.defaultRegistry.counter("citizen-details-failed-counter")
+    case APIType.IfSummary      => metrics.defaultRegistry.counter("if-summary-failed-counter")
+    case APIType.IfNIRecord     => metrics.defaultRegistry.counter("if-nirecord-failed-counter")
+    case APIType.IfLiabilities  => metrics.defaultRegistry.counter("if-liabilities-failed-counter")
+  }
 
   def startTimer(api: APIType): Context = timers(api).time()
   def incrementFailedCounter(api: APIType): Unit = failedCounters(api).inc()
