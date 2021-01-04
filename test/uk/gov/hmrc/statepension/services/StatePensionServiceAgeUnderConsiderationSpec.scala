@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
@@ -33,7 +33,7 @@ import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
 
 import scala.concurrent.Future
 
-class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
+class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
   with OneAppPerSuite
   with ScalaFutures
   with MockitoSugar {

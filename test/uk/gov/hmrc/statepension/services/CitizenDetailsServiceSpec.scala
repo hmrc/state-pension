@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.{LOCKED, OK}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
 
 import scala.concurrent.Future
 
-class CitizenDetailsServiceSpec extends StatePensionUnitSpec with MockitoSugar {
+class CitizenDetailsServiceSpec extends StatePensionBaseSpec with MockitoSugar {
 
   val nino: Nino = generateNino()
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]

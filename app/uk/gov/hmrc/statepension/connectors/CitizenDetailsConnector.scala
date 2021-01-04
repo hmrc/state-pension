@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 

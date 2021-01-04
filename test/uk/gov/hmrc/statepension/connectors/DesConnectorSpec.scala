@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ import uk.gov.hmrc.http.{HttpGet, HttpResponse}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import uk.gov.hmrc.statepension.{StatePensionUnitSpec, WSHttp}
+import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WSHttp}
 
 import scala.language.postfixOps
 
-class DesConnectorSpec extends StatePensionUnitSpec with MockitoSugar with OneAppPerSuite {
+class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with OneAppPerSuite {
 
   val http: WSHttp = mock[WSHttp]
   val timerContext = mock[Timer.Context]
