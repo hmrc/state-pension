@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
 import org.mockito.{Matchers, Mockito}
@@ -27,11 +26,10 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.domain.nps.{APIType, AmountA2016, AmountB2016, NIRecord, NITaxYear, PensionAmounts, Summary}
+import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
-
 import scala.language.postfixOps
 
 class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
@@ -56,7 +54,6 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
   }
 
   lazy val desConnector = app.injector.instanceOf[DesConnector]
-  val jsonWithNoTaxYears: String = NIRecordFixture.exampleDesNiRecordJson(nino.nino)
 
   "getSummary" should {
 
@@ -214,176 +211,125 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
     }
   }
 
+  "getLiabilities" should {
 
-//  "getLiabilities" should {
-//    val connector = new DesConnector(http, metrics, environment, configuration) {
-//
-//      override val desBaseUrl: String = "test-url"
-//
-//      override val token: String = "token"
-//
-//      override val environmentHeader: (String, String) = ("environment", "unit test")
-//
-//      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-//    }
-//
-//    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-//      s"""
-//         |{
-//         |  "liabilities": [
-//         |    {
-//         |      "liabilityTypeEndDate": "1992-11-21",
-//         |      "liabilityOccurrenceNo": 1,
-//         |      "liabilityTypeStartDate": "1983-11-06",
-//         |      "liabilityTypeEndDateReason": "END DATE HELD",
-//         |      "liabilityType": 13,
-//         |      "nino": "$nino",
-//         |      "awardAmount": null
-//         |    },
-//         |    {
-//         |      "liabilityTypeEndDate": "2006-07-08",
-//         |      "liabilityOccurrenceNo": 2,
-//         |      "liabilityTypeStartDate": "1995-09-24",
-//         |      "liabilityTypeEndDateReason": "END DATE HELD",
-//         |      "liabilityType": 13,
-//         |      "nino": "$nino",
-//         |      "awardAmount": null
-//         |    },
-//         |    {
-//         |      "liabilityTypeEndDate": "2006-07-15",
-//         |      "liabilityOccurrenceNo": 3,
-//         |      "liabilityTypeStartDate": "2006-07-09",
-//         |      "liabilityTypeEndDateReason": "END DATE HELD",
-//         |      "liabilityType": 13,
-//         |      "nino": "$nino",
-//         |      "awardAmount": null
-//         |    },
-//         |    {
-//         |      "liabilityTypeEndDate": "2012-01-21",
-//         |      "liabilityOccurrenceNo": 4,
-//         |      "liabilityTypeStartDate": "2006-09-24",
-//         |      "liabilityTypeEndDateReason": "END DATE HELD",
-//         |      "liabilityType": 13,
-//         |      "nino": "$nino",
-//         |      "awardAmount": null
-//         |    }
-//         |  ]
-//         |}
-//      """.stripMargin))))
-//
-//    connector.getLiabilities(nino)
-//
-//    "make an http request to hod-url/individuals/ninoWithoutSuffix/pensions/liabilities" in {
-//      verify(http, times(1)).GET[HttpResponse](Matchers.eq(s"test-url/individuals/$ninoWithoutSuffix/pensions/liabilities"))(Matchers.any(), Matchers.any(), Matchers.any())
-//    }
-//
-//    "add the originator id to the header" ignore {
-//      val header = headerCarrier
-//      verify(http, times(1)).GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.eq(header.copy(extraHeaders = Seq("a_key" -> "a_value"))), Matchers.any())
-//    }
-//
-//    "parse the json and return a Future[List[DesLiability]" in {
-//
-//      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-//        LiabilitiesFixture.exampleLiabilitiesJson(nino.nino).stripMargin))))
-//
-//      val summary = await(connector.getLiabilities(nino))
-//      summary shouldBe List(
-//        Liability(Some(13)),
-//        Liability(Some(13)),
-//        Liability(Some(13)),
-//        Liability(Some(13))
-//      )
-//    }
-//
-//    "return a failed future with a json validation exception when it cannot parse to an DesLiabilities" in {
-//      val connector = new DesConnector(http, metrics, environment, configuration) {
-//
-//        override val desBaseUrl: String = "test-url"
-//
-//        override val token: String = "token"
-//
-//        override val environmentHeader: (String, String) = ("environment", "unit test")
-//
-//        override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-//      }
-//
-//      when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-//        s"""
-//           |{
-//           |  "liabilities": [
-//           |    {
-//           |      "liabilityTypeEndDate": "1992-11-21",
-//           |      "liabilityOccurrenceNo": 1,
-//           |      "liabilityTypeStartDate": "1983-11-06",
-//           |      "liabilityTypeEndDateReason": "END DATE HELD",
-//           |      "liabilityType": false,
-//           |      "nino": "$nino",
-//           |      "awardAmount": null
-//           |    },
-//           |    {
-//           |      "liabilityTypeEndDate": "2006-07-08",
-//           |      "liabilityOccurrenceNo": 2,
-//           |      "liabilityTypeStartDate": "1995-09-24",
-//           |      "liabilityTypeEndDateReason": "END DATE HELD",
-//           |      "liabilityType": 13,
-//           |      "nino": "$nino",
-//           |      "awardAmount": null
-//           |    },
-//           |    {
-//           |      "liabilityTypeEndDate": "2006-07-15",
-//           |      "liabilityOccurrenceNo": 3,
-//           |      "nino": "$nino",
-//           |      "awardAmount": null
-//           |    },
-//           |    {
-//           |      "liabilityTypeEndDate": "2012-01-21",
-//           |      "liabilityOccurrenceNo": 4,
-//           |      "liabilityTypeStartDate": "2006-09-24",
-//           |      "liabilityTypeEndDateReason": "END DATE HELD",
-//           |      "liabilityType": 13,
-//           |      "nino": "$nino",
-//           |      "awardAmount": null
-//           |    }
-//           |  ]
-//           |}
-//      """.stripMargin))))
-//
-//      ScalaFutures.whenReady(connector.getLiabilities(nino).failed) { ex =>
-//        ex shouldBe a[connector.JsonValidationException]
-//        ex.getMessage shouldBe "/liabilities(0)/liabilityType - error.expected.jsnumber"
-//      }
-//    }
-//  }
-//
-//  "return a future with a json list for empty DesLiability" in {
-//    val connector = new DesConnector(http, metrics, environment, configuration) {
-//
-//      override val desBaseUrl: String = "test-url"
-//
-//      override val token: String = "token"
-//
-//      override val environmentHeader: (String, String) = ("environment", "unit test")
-//
-//      override val serviceOriginatorId: (String, String) = ("a_key", "a_value")
-//    }
-//
-//    when(http.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(HttpResponse(200, Some(Json.parse(
-//      s"""
-//         |{
-//         |  "liabilities": [
-//         |    {
-//         |      }
-//         |      ]
-//         |}
-//      """.stripMargin))))
-//
-//    ScalaFutures.whenReady(connector.getLiabilities(nino)) { ldl =>
-//      ldl.length shouldBe 0
-//    }
-//  }
-//
-//
+    val liabilitiesUrl = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
+    "return a list of liabilities when successful" in {
+
+      val expectedJson: JsValue = Json.parse(
+        s"""
+           |{
+           |  "liabilities": [
+           |    {
+           |      "liabilityTypeEndDate": "1992-11-21",
+           |      "liabilityOccurrenceNo": 1,
+           |      "liabilityTypeStartDate": "1983-11-06",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-08",
+           |      "liabilityOccurrenceNo": 2,
+           |      "liabilityTypeStartDate": "1995-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-15",
+           |      "liabilityOccurrenceNo": 3,
+           |      "liabilityTypeStartDate": "2006-07-09",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2012-01-21",
+           |      "liabilityOccurrenceNo": 4,
+           |      "liabilityTypeStartDate": "2006-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    }
+           |  ]
+           |}
+      """.stripMargin)
+      server.stubFor(
+        get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody(expectedJson.toString()))
+      )
+      val response: List[Liability] = await(desConnector.getLiabilities(nino))
+      val liabilityType = 13
+      response shouldBe List(
+        Liability(Some(liabilityType)),
+        Liability(Some(liabilityType)),
+        Liability(Some(liabilityType)),
+        Liability(Some(liabilityType))
+      )
+      server.verify(getRequestedFor(urlEqualTo(liabilitiesUrl))
+        .withHeader("Authorization", equalTo("Bearer testToken"))
+        .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        .withHeader("Environment", equalTo("testEnvironment"))
+      )
+    }
+
+    "return a failed future with a json validation exception when it cannot parse to an DesLiabilities" in {
+      val invalidJson: JsValue = Json.parse(
+        s"""
+           |{
+           |  "liabilities": [
+           |    {
+           |      "liabilityTypeEndDate": "1992-11-21",
+           |      "liabilityOccurrenceNo": 1,
+           |      "liabilityTypeStartDate": "1983-11-06",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": false,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-08",
+           |      "liabilityOccurrenceNo": 2,
+           |      "liabilityTypeStartDate": "1995-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2006-07-15",
+           |      "liabilityOccurrenceNo": 3,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    },
+           |    {
+           |      "liabilityTypeEndDate": "2012-01-21",
+           |      "liabilityOccurrenceNo": 4,
+           |      "liabilityTypeStartDate": "2006-09-24",
+           |      "liabilityTypeEndDateReason": "END DATE HELD",
+           |      "liabilityType": 13,
+           |      "nino": "$nino",
+           |      "awardAmount": null
+           |    }
+           |  ]
+           |}
+      """.stripMargin)
+
+      server.stubFor(
+        get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody(invalidJson.toString()))
+      )
+
+      val exception = intercept[desConnector.JsonValidationException] {
+        await(desConnector.getLiabilities(nino))
+      }
+      exception.getMessage shouldBe "/liabilities(0)/liabilityType - error.expected.jsnumber"
+    }
+  }
+
   "getNIRecord" should {
 
     val jsonNiRecord: JsValue = Json.parse(
@@ -527,7 +473,8 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
     }
 
    "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
-    val optJson: JsValue = Json.parse(jsonWithNoTaxYears)
+     val jsonWithNoTaxYears: String = NIRecordFixture.exampleDesNiRecordJson(nino.nino)
+     val optJson: JsValue = Json.parse(jsonWithNoTaxYears)
 
      server.stubFor(
        get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(optJson.toString()))
