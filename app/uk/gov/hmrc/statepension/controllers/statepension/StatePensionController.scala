@@ -21,15 +21,14 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalSupport, Links}
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
@@ -42,7 +41,7 @@ trait StatePensionController
 
   val appContext: AppContext
   val statePensionService: StatePensionService
-  val customAuditConnector: StatePensionAuditConnector
+  val customAuditConnector: AuditConnector
   val authAction: AuthAction
 
   override val app: String = "State-Pension"

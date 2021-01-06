@@ -20,13 +20,13 @@ import com.google.inject.Inject
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps.APIType.{Liabilities, NIRecord, Summary}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-class DesConnector @Inject()(val http: WSHttp,
+class DesConnector @Inject()(val http: HttpClient,
                              val metrics: ApplicationMetrics,
                              environment: Environment,
                              val runModeConfiguration: Configuration) extends NpsConnector with ServicesConfig {

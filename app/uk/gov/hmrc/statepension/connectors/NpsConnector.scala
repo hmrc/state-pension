@@ -23,7 +23,7 @@ import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.statepension.WSHttp
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
@@ -33,7 +33,7 @@ import scala.util.{Failure, Success, Try}
 
 trait NpsConnector {
 
-  val http: WSHttp
+  val http: HttpClient
   val metrics: ApplicationMetrics
   val token: String
   val serviceOriginatorId: (String, String)

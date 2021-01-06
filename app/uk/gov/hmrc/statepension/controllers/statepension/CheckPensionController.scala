@@ -18,8 +18,8 @@ package uk.gov.hmrc.statepension.controllers.statepension
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 import uk.gov.hmrc.statepension.services.CheckPensionService
 
@@ -27,7 +27,7 @@ class CheckPensionController @Inject()(
                                         override val authAction: AuthAction,
                                         override val appContext: AppContext,
                                         override val statePensionService: CheckPensionService,
-                                        override val customAuditConnector: StatePensionAuditConnector
+                                        override val customAuditConnector: AuditConnector
                                       ) extends StatePensionController {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url

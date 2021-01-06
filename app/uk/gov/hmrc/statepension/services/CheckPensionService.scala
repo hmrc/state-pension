@@ -19,9 +19,9 @@ package uk.gov.hmrc.statepension.services
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.connectors.DesConnector
 import uk.gov.hmrc.statepension.domain.nps.Summary
-
 import scala.concurrent.Future
 
 class CheckPensionService @Inject()(
@@ -30,7 +30,7 @@ class CheckPensionService @Inject()(
                                      override val forecastingService: ForecastingService,
                                      override val rateService: RateService,
                                      override val metrics: ApplicationMetrics,
-                                     override val customAuditConnector: StatePensionAuditConnector
+                                     override val customAuditConnector: AuditConnector
                                    ) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     citizenDetailsService.checkManualCorrespondenceIndicator(nino)

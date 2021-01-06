@@ -27,8 +27,8 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{authProviderId, nino, trust
 import uk.gov.hmrc.auth.core.retrieve.{PAClientId, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.statepension.WSHttp
 
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
@@ -77,12 +77,3 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
 
 @ImplementedBy(classOf[AuthActionImpl])
 trait AuthAction extends ActionBuilder[Request] with ActionFilter[Request]
-
-class MicroserviceAuthConnector @Inject()(val http: WSHttp,
-                                          val runModeConfiguration: Configuration,
-                                          environment: Environment
-                                         ) extends PlayAuthConnector with ServicesConfig {
-  override val serviceUrl: String = baseUrl("auth")
-
-  override protected def mode: Mode = environment.mode
-}

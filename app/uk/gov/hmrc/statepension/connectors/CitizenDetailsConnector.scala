@@ -22,15 +22,15 @@ import play.api.http.Status.LOCKED
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
-import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.statepension.WSHttp
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class CitizenDetailsConnector @Inject()(http: WSHttp,
+class CitizenDetailsConnector @Inject()(http: HttpClient,
                                         metrics: ApplicationMetrics,
                                         environment: Environment,
                                         val runModeConfiguration: Configuration) extends ServicesConfig {
