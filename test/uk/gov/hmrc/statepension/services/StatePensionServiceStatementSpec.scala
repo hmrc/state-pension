@@ -25,9 +25,10 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Exclusion, Scenario, StatePension}
 
@@ -49,7 +50,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
-    override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+    override val customAuditConnector: AuditConnector = mock[AuditConnector]
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)
   }

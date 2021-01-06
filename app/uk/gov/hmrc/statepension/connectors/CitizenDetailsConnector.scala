@@ -41,7 +41,6 @@ class CitizenDetailsConnector @Inject()(http: HttpClient,
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
-  //TODO[REFACTOR] we do not seem to be adding metrics for success and failure
   def connectToGetPersonDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] = {
     val timerContext = metrics.startTimer(APIType.CitizenDetails)
     http.GET[HttpResponse](url(nino)) map {
@@ -51,11 +50,10 @@ class CitizenDetailsConnector @Inject()(http: HttpClient,
     } recover {
       case ex: Upstream4xxResponse if ex.upstreamResponseCode == LOCKED => timerContext.stop(); Success(ex.upstreamResponseCode)
       case ex: Throwable => timerContext.stop(); Failure(ex)
-    } flatMap (handleResult(url(nino), _))
+    } flatMap (handleResult(_))
   }
 
-  //TODO[Refactor] url is never used
-  private def handleResult[A](url: String, tryResult: Try[A]): Future[A] = {
+  private def handleResult[A](tryResult: Try[A]): Future[A] = {
     tryResult match {
       case Failure(ex) =>
         Future.failed(ex)

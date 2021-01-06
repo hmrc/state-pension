@@ -154,8 +154,8 @@ class AuthActionSpec
     }
   }
 
-  private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): MicroserviceAuthConnector = {
-    val connector = mock[MicroserviceAuthConnector]
+  private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): AuthConnector = {
+    val connector = mock[AuthConnector]
 
     when(connector.authorise[T](any(), any())(any(), any()))
       .thenReturn(authoriseResult)
@@ -164,7 +164,7 @@ class AuthActionSpec
   }
 
   private def testAuthActionWith[T](authResult: Future[T],
-                                    uri: String = goodUriWithNino): (Future[Result], MicroserviceAuthConnector) = {
+                                    uri: String = goodUriWithNino): (Future[Result], AuthConnector) = {
     val mockAuthConnector = newMockConnectorWithAuthResult(authResult)
     val authAction = new AuthActionImpl(mockAuthConnector)
 

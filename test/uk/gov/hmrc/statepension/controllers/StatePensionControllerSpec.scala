@@ -26,9 +26,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
@@ -52,7 +52,7 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
       override lazy val context: String = "test"
       override val appContext: AppContext = _appContext
       override val statePensionService: StatePensionService = spService
-      override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+      override val customAuditConnector: AuditConnector = mock[AuditConnector]
       override val authAction: AuthAction = FakeAuthAction
       override def endpointUrl(nino: Nino): String = s"/ni/$nino"
     }
