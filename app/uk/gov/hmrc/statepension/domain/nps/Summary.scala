@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.domain.nps
 import org.joda.time.{LocalDate, Period}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
-
+import play.api.libs.json.JodaReads._
 import scala.math.BigDecimal.RoundingMode
 
 final case class Summary(
