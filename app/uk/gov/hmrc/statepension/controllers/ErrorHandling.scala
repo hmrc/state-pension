@@ -21,19 +21,18 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait ErrorHandling {
-  self: BaseController =>
+  self: BackendController =>
 
   val app: String
 
   def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
-      case e: NotFoundException =>
+      case _: NotFoundException =>
         NotFound(Json.toJson(ErrorNotFound))
 
       case e: GatewayTimeoutException => Logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout

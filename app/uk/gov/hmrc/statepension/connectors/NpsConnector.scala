@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.connectors
 import java.util.UUID.randomUUID
 
 import play.api.data.validation.ValidationError
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
@@ -95,7 +95,7 @@ trait NpsConnector {
     }
   }
 
-  private def formatJsonErrors(errors: Seq[(JsPath, Seq[ValidationError])]): String = {
+  private def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String = {
     errors.map(p => p._1 + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
   }
 

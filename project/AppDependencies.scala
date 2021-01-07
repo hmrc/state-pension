@@ -22,11 +22,11 @@ object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "5.6.0",
-    "uk.gov.hmrc" %% "domain" % "5.10.0-play-25",
-    "uk.gov.hmrc" %% "play-hmrc-api" % "4.1.0-play-25",
-    "uk.gov.hmrc" %% "play-hal" % "2.1.0-play-25",
-    "uk.gov.hmrc" %% "auth-client"  %  "3.2.0-play-25"
+    "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "3.2.0",
+    "uk.gov.hmrc" %% "domain" % "5.10.0-play-26",
+    "uk.gov.hmrc" %% "play-hmrc-api" % "4.1.0-play-26",
+    "uk.gov.hmrc" %% "play-hal" % "2.1.0-play-26",
+    "uk.gov.hmrc" %% "auth-client"  %  "3.2.0-play-26"
   )
 
   val test: Seq[ModuleID] = Seq(

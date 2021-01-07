@@ -17,26 +17,47 @@
 package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
-import play.api.{Configuration, Environment}
-import play.api.Mode.Mode
-import uk.gov.hmrc.play.config.ServicesConfig
+import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class AppContext @Inject()(configuration: Configuration, environment: Environment) extends ServicesConfig {
-  lazy val appName = configuration.getString("appName").getOrElse(throw new RuntimeException("appName is not configured"))
-  lazy val apiGatewayContext = configuration.getString("api.gateway.context")
-    .getOrElse(throw new RuntimeException("api.gateway.context is not configured"))
-  lazy val access = configuration.getConfig("api.access")
-  lazy val status = configuration.getString("api.status")
-  lazy val connectToHOD = configuration.getBoolean("feature.connectToHOD").getOrElse(false)
-  lazy val rates: Configuration = configuration.getConfig("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
-  lazy val revaluation: Option[Configuration] = configuration.getConfig("rates.revaluation")
+// TODO[REFACTOR] need to use configuration to get at rates and revaluation which could be pushed to separate classes
+class AppContext @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
+  import servicesConfig._
 
-  val ifBaseUrl: String = baseUrl("if-hod")
-  val ifOriginatorIdKey: String = getConfString("if-hod.originatoridkey", "")
-  val ifOriginatorIdValue: String = getConfString("if-hod.originatoridvalue", "")
-  val ifEnvironment: String = getConfString("if-hod.environment", "")
-  val ifToken: String = getConfString("if-hod.token", "")
+  // TODO can this be injected
+  val appName = getString("appName")
+  val apiGatewayContext = getString("api.gateway.context")
 
-  override protected def mode: Mode = environment.mode
-  override protected def runModeConfiguration: Configuration = configuration
+  val access = configuration.getOptional[Configuration]("api.access")
+  val status = configuration.getOptional[String]("api.status")
+
+  //TODO is there a better way of doing this. Does get[A] throw an error
+  val rates: Configuration = configuration.getOptional[Configuration]("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
+  val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
+
+//  val ifBaseUrl: String = baseUrl("if-hod")
+//  val ifOriginatorIdKey: String = getConfString("if-hod.originatoridkey", "")
+//  val ifOriginatorIdValue: String = getConfString("if-hod.originatoridvalue", "")
+//  val ifEnvironment: String = getConfString("if-hod.environment", "")
+//  val ifToken: String = getConfString("if-hod.token", "")
+
+  val citizenDetailsBaseUrl: String = baseUrl("citizen-details")
+  val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
+  val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
+
+  //TODO test
+  private def connectorConfig(serviceName: String): ConnectorConfig = {
+
+    def getPrefixString(key: String) = getString(s"microservice.services.$key")
+
+    new ConnectorConfig(
+      serviceUrl = baseUrl(serviceName),
+      serviceOriginatorIdKey = getPrefixString(s"$serviceName.originatoridkey"),
+      serviceOriginatorIdValue = getPrefixString(s"$serviceName.originatoridvalue"),
+      environment = getPrefixString(s"$serviceName.environment"),
+      authorizationToken = getPrefixString(s"$serviceName.token")
+    )
+
+  }
+
 }

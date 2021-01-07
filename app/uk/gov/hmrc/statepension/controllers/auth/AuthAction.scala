@@ -17,25 +17,20 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.Mode.Mode
+import play.api.Logger
 import play.api.mvc.Results._
 import play.api.mvc._
-import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{authProviderId, nino, trustedHelper}
 import uk.gov.hmrc.auth.core.retrieve.{PAClientId, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.ServicesConfig
-
 import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit executionContext: ExecutionContext)
+class AuthActionImpl @Inject()(val authConnector: AuthConnector, val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
   extends AuthAction with AuthorisedFunctions {
-
   private val logger = Logger(this.getClass)
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
@@ -76,4 +71,4 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector)(implicit execut
 }
 
 @ImplementedBy(classOf[AuthActionImpl])
-trait AuthAction extends ActionBuilder[Request] with ActionFilter[Request]
+trait AuthAction extends ActionBuilder[Request, AnyContent] with ActionFilter[Request]
