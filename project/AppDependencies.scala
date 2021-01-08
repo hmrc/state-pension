@@ -24,6 +24,7 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "3.2.0",
     "uk.gov.hmrc" %% "domain" % "5.10.0-play-26",
+    //TODO can this be removed
     "uk.gov.hmrc" %% "play-hmrc-api" % "4.1.0-play-26",
     "uk.gov.hmrc" %% "play-hal" % "2.1.0-play-26",
     "uk.gov.hmrc" %% "auth-client"  %  "3.2.0-play-26",
@@ -38,7 +39,7 @@ object AppDependencies {
     "com.typesafe.play" %% "play-test" % PlayVersion.current,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1",
     "org.mockito" % "mockito-all" % "1.10.19",
-    "com.github.tomakehurst" % "wiremock" % "2.27.2",
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.26.1",
     "com.typesafe.play" %% "play-json-joda" % "2.6.10"
   ).map(_ % Test)
 

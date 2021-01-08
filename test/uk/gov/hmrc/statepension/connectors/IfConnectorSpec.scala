@@ -34,9 +34,9 @@ import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, S
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{NinoGenerator, WireMockHelper}
 
-class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar with NinoGenerator with BeforeAndAfterEach with GuiceOneAppPerSuite {
+class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with WireMockHelper with BeforeAndAfterEach {
 
-  val mockAppContext: AppContext = mock[AppContext]
+  val mockAppContext: AppContext = mock[AppContext](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
 
   lazy val ifConnector: IfConnector = GuiceApplicationBuilder()

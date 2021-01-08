@@ -48,15 +48,14 @@ class AppContext @Inject()(configuration: Configuration, servicesConfig: Service
 
   //TODO test
   private def connectorConfig(serviceName: String): ConnectorConfig = {
-
-    def getPrefixString(key: String) = getString(s"microservice.services.$key")
+    val empty = ""
 
     new ConnectorConfig(
       serviceUrl = baseUrl(serviceName),
-      serviceOriginatorIdKey = getPrefixString(s"$serviceName.originatoridkey"),
-      serviceOriginatorIdValue = getPrefixString(s"$serviceName.originatoridvalue"),
-      environment = getPrefixString(s"$serviceName.environment"),
-      authorizationToken = getPrefixString(s"$serviceName.token")
+      serviceOriginatorIdKey = getConfString(s"$serviceName.originatoridkey", empty),
+      serviceOriginatorIdValue = getConfString(s"$serviceName.originatoridvalue", empty),
+      environment = getConfString(s"$serviceName.environment", empty),
+      authorizationToken = getConfString(s"$serviceName.token", empty)
     )
 
   }

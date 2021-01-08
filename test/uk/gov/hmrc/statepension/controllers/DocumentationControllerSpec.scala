@@ -47,7 +47,7 @@ class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with
       override val revaluation: Option[Configuration] = None
     }
 
-    new DocumentationController(LazyHttpErrorHandler, appContext, controllerComponents, mockAssets).definition()(FakeRequest())
+    new DocumentationController(appContext, controllerComponents, mockAssets).definition()(FakeRequest())
 
   }
 

@@ -22,7 +22,6 @@ import org.mockito.{Matchers, Mockito}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -36,7 +35,6 @@ import uk.gov.hmrc.statepension.domain.nps._
 import scala.concurrent.Future
 
 class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
-  with OneAppPerSuite
   with ScalaFutures
   with MockitoSugar
   with BeforeAndAfterEach {

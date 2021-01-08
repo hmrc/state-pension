@@ -18,20 +18,22 @@ package uk.gov.hmrc.statepension.controllers.documentation
 
 import com.google.inject.Inject
 import controllers.Assets
-import play.api.http.HttpErrorHandler
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppContext}
 import uk.gov.hmrc.statepension.domain.APIAccess
 import uk.gov.hmrc.statepension.views._
 
-class DocumentationController @Inject()(errorHandler: HttpErrorHandler,
-                                        appContext: AppContext,
+class DocumentationController @Inject()(appContext: AppContext,
                                         controllerComponents: ControllerComponents,
-                                        assets: Assets)
-  extends uk.gov.hmrc.api.controllers.DocumentationController(controllerComponents, assets, errorHandler) {
+                                        assets: Assets) extends BackendController(controllerComponents){
 
-  override def definition(): Action[AnyContent] = Action {
+  def definition(): Action[AnyContent] = Action {
     Ok(txt.definition(buildAccess(), buildStatus())).as("application/json")
+  }
+
+  def conf(version: String, file: String): Action[AnyContent] = {
+    assets.at(s"/public/api/conf/$version", file)
   }
 
   private def buildAccess(): APIAccess = {
