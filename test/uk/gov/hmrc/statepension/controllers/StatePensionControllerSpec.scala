@@ -21,9 +21,10 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -34,27 +35,33 @@ import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
+import play.api.libs.json.JodaReads._
 
-class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSugar {
+
+class StatePensionControllerSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
 
   val nino: Nino = new Generator(new Random()).nextNino
 
+  val controllerComponents = Helpers.stubControllerComponents()
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  val _appContext: AppContext = app.injector.instanceOf[AppContext]
+  val _appContext: AppContext = inject[AppContext]
+  val fakeAuthAction: AuthAction = inject[FakeAuthAction]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController {
+    new StatePensionController(controllerComponents) {
       override val app: String = "Test State Pension"
       override lazy val context: String = "test"
       override val appContext: AppContext = _appContext
       override val statePensionService: StatePensionService = spService
       override val customAuditConnector: AuditConnector = mock[AuditConnector]
-      override val authAction: AuthAction = FakeAuthAction
+      override val authAction: AuthAction = fakeAuthAction
       override def endpointUrl(nino: Nino): String = s"/ni/$nino"
+      override val executionContext: ExecutionContext = controllerComponents.executionContext
+      override val parser = controllerComponents.parsers.default
     }
 
   val testStatePension = StatePension(

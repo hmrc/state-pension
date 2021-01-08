@@ -38,7 +38,8 @@ object AppDependencies {
     "com.typesafe.play" %% "play-test" % PlayVersion.current,
     "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1",
     "org.mockito" % "mockito-all" % "1.10.19",
-    "com.github.tomakehurst" % "wiremock" % "2.27.2"
+    "com.github.tomakehurst" % "wiremock" % "2.27.2",
+    "com.typesafe.play" %% "play-json-joda" % "2.6.10"
   ).map(_ % Test)
 
   val all: Seq[ModuleID] = compile ++ test

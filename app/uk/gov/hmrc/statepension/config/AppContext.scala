@@ -35,6 +35,7 @@ class AppContext @Inject()(configuration: Configuration, servicesConfig: Service
   val rates: Configuration = configuration.getOptional[Configuration]("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
   val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
 
+  //TODO remove
 //  val ifBaseUrl: String = baseUrl("if-hod")
 //  val ifOriginatorIdKey: String = getConfString("if-hod.originatoridkey", "")
 //  val ifOriginatorIdValue: String = getConfString("if-hod.originatoridvalue", "")

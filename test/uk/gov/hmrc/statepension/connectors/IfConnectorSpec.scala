@@ -50,13 +50,14 @@ class IfConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar wit
   val ifEnvironment: String = "ifEnvironment"
   val ifToken: String = "ifToken"
 
+  //TODO can this be cleaned
   override def beforeEach(): Unit = {
     super.beforeEach()
-    when(mockAppContext.ifBaseUrl).thenReturn(s"http://localhost:${server.port()}")
-    when(mockAppContext.ifOriginatorIdKey).thenReturn(originatorIdKey)
-    when(mockAppContext.ifOriginatorIdValue).thenReturn(ifOriginatorIdValue)
-    when(mockAppContext.ifEnvironment).thenReturn(ifEnvironment)
-    when(mockAppContext.ifToken).thenReturn(ifToken)
+    when(mockAppContext.ifConnectorConfig.serviceUrl).thenReturn(s"http://localhost:${server.port()}")
+    when(mockAppContext.ifConnectorConfig.serviceOriginatorIdKey).thenReturn(originatorIdKey)
+    when(mockAppContext.ifConnectorConfig.serviceOriginatorIdValue).thenReturn(ifOriginatorIdValue)
+    when(mockAppContext.ifConnectorConfig.environment).thenReturn(ifEnvironment)
+    when(mockAppContext.ifConnectorConfig.authorizationToken).thenReturn(ifToken)
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier()

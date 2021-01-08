@@ -16,33 +16,38 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import org.scalatestplus.play.OneAppPerSuite
-import play.api.{Configuration, Environment}
+import controllers.Assets
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Configuration
 import play.api.http.LazyHttpErrorHandler
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.controllers.auth.FakeAuthAction
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 
-class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
+class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar {
+
+  val mockServicesConfig = mock[ServicesConfig]
+  val controllerComponents = Helpers.stubControllerComponents()
+  val mockAssets = mock[Assets]
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
-    val appContext = new AppContext(app.configuration, Environment.simple()) {
-      override lazy val appName: String = ""
-      override lazy val apiGatewayContext: String = ""
-      override lazy val access: Option[Configuration] = apiConfig
-      override lazy val status: Option[String] = apiStatus
-      override lazy val connectToHOD: Boolean = false
-      override lazy val rates: Configuration = Configuration()
-      override lazy val revaluation: Option[Configuration] = None
+    val appContext = new AppContext(app.configuration, mockServicesConfig) {
+      override val appName: String = ""
+      override val apiGatewayContext: String = ""
+      override val access: Option[Configuration] = apiConfig
+      override val status: Option[String] = apiStatus
+      override val rates: Configuration = Configuration()
+      override val revaluation: Option[Configuration] = None
     }
 
-    new DocumentationController(LazyHttpErrorHandler, appContext).definition()(FakeRequest())
+    new DocumentationController(LazyHttpErrorHandler, appContext, controllerComponents, mockAssets).definition()(FakeRequest())
 
   }
 
