@@ -17,12 +17,9 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
-import play.api.Mode.Mode
 import play.api.http.Status.LOCKED
-import play.api.{Configuration, Environment}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, Upstream4xxResponse}
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -34,7 +31,6 @@ class CitizenDetailsConnector @Inject()(http: HttpClient,
                                         metrics: ApplicationMetrics,
                                         appContext: AppContext){
 
-  // TODO could this be injected
   val serviceUrl: String = appContext.citizenDetailsBaseUrl
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"

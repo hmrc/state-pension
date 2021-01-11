@@ -23,7 +23,6 @@ import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.nps.APIType.{IfLiabilities, IfNIRecord, IfSummary}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-//TODO can the connectorconfig be injected without the need for AppContext
 class IfConnector @Inject()(
                            val http: HttpClient,
                            val metrics: ApplicationMetrics,

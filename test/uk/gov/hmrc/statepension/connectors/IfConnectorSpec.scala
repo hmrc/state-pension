@@ -50,7 +50,6 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
   val ifEnvironment: String = "ifEnvironment"
   val ifToken: String = "ifToken"
 
-  //TODO can this be cleaned
   override def beforeEach(): Unit = {
     super.beforeEach()
     when(mockAppContext.ifConnectorConfig.serviceUrl).thenReturn(s"http://localhost:${server.port()}")

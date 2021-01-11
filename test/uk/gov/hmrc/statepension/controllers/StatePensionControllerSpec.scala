@@ -20,8 +20,8 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.libs.json.JodaReads._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
@@ -34,10 +34,8 @@ import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
-import play.api.libs.json.JodaReads._
 
 
 class StatePensionControllerSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {

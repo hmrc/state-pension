@@ -24,12 +24,12 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "3.2.0",
     "uk.gov.hmrc" %% "domain" % "5.10.0-play-26",
-    //TODO can this be removed
     "uk.gov.hmrc" %% "play-hmrc-api" % "4.1.0-play-26",
     "uk.gov.hmrc" %% "play-hal" % "2.1.0-play-26",
     "uk.gov.hmrc" %% "auth-client"  %  "3.2.0-play-26",
     "uk.gov.hmrc" %% "time" % "3.6.0",
-    "com.typesafe.play" %% "play-json-joda" % "2.6.10"
+    "com.typesafe.play" %% "play-json-joda" % "2.6.10",
+    "com.jsuereth" %% "scala-arm" % "2.0"
   )
 
   val test: Seq[ModuleID] = Seq(
