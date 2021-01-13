@@ -19,7 +19,6 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.{Matchers, Mockito}
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
