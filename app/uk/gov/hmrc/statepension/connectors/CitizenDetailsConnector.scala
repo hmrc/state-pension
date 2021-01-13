@@ -23,13 +23,12 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, Upstream4xxRes
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class CitizenDetailsConnector @Inject()(http: HttpClient,
                                         metrics: ApplicationMetrics,
-                                        appContext: AppContext){
+                                        appContext: AppContext)(implicit ec: ExecutionContext){
 
   val serviceUrl: String = appContext.citizenDetailsBaseUrl
 

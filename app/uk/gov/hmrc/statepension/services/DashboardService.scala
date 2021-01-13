@@ -21,15 +21,15 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.IfConnector
 import uk.gov.hmrc.statepension.domain.nps.Summary
-
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class DashboardService @Inject()(
                                   override val nps: IfConnector,
                                   override val forecastingService: ForecastingService,
                                   override val rateService: RateService,
                                   override val metrics: ApplicationMetrics,
-                                  override val customAuditConnector: AuditConnector
+                                  override val customAuditConnector: AuditConnector,
+                                  override val executionContext: ExecutionContext
                                 ) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     Future.successful(summary.manualCorrespondenceIndicator.getOrElse(false))

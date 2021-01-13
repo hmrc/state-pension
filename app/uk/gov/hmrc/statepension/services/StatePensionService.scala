@@ -17,6 +17,7 @@
 package uk.gov.hmrc.statepension.services
 
 import java.util.TimeZone
+
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -26,8 +27,7 @@ import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps.Summary
 import uk.gov.hmrc.statepension.events.Forecasting
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait StatePensionService {
 
@@ -36,6 +36,8 @@ trait StatePensionService {
   val rateService: RateService
   val metrics: ApplicationMetrics
   val customAuditConnector: AuditConnector
+  implicit val executionContext: ExecutionContext
+
   def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
   def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))

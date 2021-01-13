@@ -21,7 +21,8 @@ import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -32,12 +33,13 @@ import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
-  with OneAppPerSuite
+  with GuiceOneAppPerSuite
   with ScalaFutures
-  with MockitoSugar {
+  with MockitoSugar
+  with Injecting {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -50,6 +52,8 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
+
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)
   }
