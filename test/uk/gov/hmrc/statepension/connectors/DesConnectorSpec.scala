@@ -26,10 +26,13 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.{RequestId, SessionId}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
+
 import scala.language.postfixOps
 
 class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
@@ -37,6 +40,9 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
   val nino: Nino = generateNino()
   val ninoWithoutSuffix: String = nino.withoutSuffix
+
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSessionId")),
+    requestId = Some(RequestId("testRequestId")))
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .configure("microservice.services.des-hod.port" -> server.port(),
@@ -140,6 +146,8 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         .withHeader("Authorization", equalTo("Bearer testToken"))
         .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
         .withHeader("Environment", equalTo("testEnvironment"))
+        .withHeader("X-Request-ID", equalTo("testRequestId"))
+        .withHeader("X-Session-ID", equalTo("testSessionId"))
       )
 
       withClue("timer did not stop") {
@@ -274,6 +282,8 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         .withHeader("Authorization", equalTo("Bearer testToken"))
         .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
         .withHeader("Environment", equalTo("testEnvironment"))
+        .withHeader("X-Request-ID", equalTo("testRequestId"))
+        .withHeader("X-Session-ID", equalTo("testSessionId"))
       )
     }
 
@@ -464,6 +474,8 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
        .withHeader("Authorization", equalTo("Bearer testToken"))
        .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
        .withHeader("Environment", equalTo("testEnvironment"))
+       .withHeader("X-Request-ID", equalTo("testRequestId"))
+       .withHeader("X-Session-ID", equalTo("testSessionId"))
      )
 
       withClue("timer did not stop") {

@@ -28,6 +28,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, await, defaultAwaitTimeout}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.logging.{RequestId, SessionId}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse}
 import uk.gov.hmrc.statepension.config.AppContext
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
@@ -59,7 +60,8 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
     when(mockAppContext.ifConnectorConfig.authorizationToken).thenReturn(ifToken)
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSessionId")),
+    requestId = Some(RequestId("testRequestId")))
   val nino: Nino = generateNino()
 
   def stub(url: String, status: Int, body: String): StubMapping = server.stubFor(
@@ -84,8 +86,11 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
           .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
+          .withHeader("X-Request-ID", equalTo("testRequestId"))
+          .withHeader("X-Session-ID", equalTo("testSessionId"))
       )
     }
+
     "return the response object" when {
       "response json is valid" in {
         stubGetSummary(body = SummaryFixture.exampleSummaryJson)
@@ -127,6 +132,8 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
           .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
+          .withHeader("X-Request-ID", equalTo("testRequestId"))
+          .withHeader("X-Session-ID", equalTo("testSessionId"))
       )
     }
 
@@ -171,7 +178,9 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details"))
           .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
-          .withHeader("Environment", equalTo(ifEnvironment)))
+          .withHeader("Environment", equalTo(ifEnvironment))
+          .withHeader("X-Request-ID", equalTo("testRequestId"))
+          .withHeader("X-Session-ID", equalTo("testSessionId")))
     }
 
     "return the response object" when {
