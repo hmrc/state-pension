@@ -17,11 +17,11 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.domain.Forecast
 
-class ForecastingServiceSpec extends StatePensionUnitSpec {
+class ForecastingServiceSpec extends StatePensionBaseSpec {
 
   val testForecastingService = new ForecastingService(rateService = RateServiceBuilder.default)
 

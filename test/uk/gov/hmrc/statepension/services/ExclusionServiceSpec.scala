@@ -17,11 +17,11 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.Liability
 
-class ExclusionServiceSpec extends StatePensionUnitSpec {
+class ExclusionServiceSpec extends StatePensionBaseSpec {
 
   val exampleNow = new LocalDate(2017, 2, 16)
   val examplePensionDate = new LocalDate(2022, 2, 2)

@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class LiabilityTypeSpec extends StatePensionUnitSpec {
+class LiabilityTypeSpec extends StatePensionBaseSpec {
     "ISLE_OF_MAN" should {
       "be 5" in {
         LiabilityType.ISLE_OF_MAN shouldBe 5

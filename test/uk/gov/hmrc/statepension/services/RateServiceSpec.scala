@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.statepension.services
 
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 
-class RateServiceSpec extends StatePensionUnitSpec {
+class RateServiceSpec extends StatePensionBaseSpec {
 
   val testRateService: RateService = RateServiceBuilder.default
 

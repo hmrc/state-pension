@@ -17,9 +17,9 @@
 package uk.gov.hmrc.statepension.config
 
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class BindersSpec extends StatePensionUnitSpec {
+class BindersSpec extends StatePensionBaseSpec {
 
   "nino.bind" should {
 

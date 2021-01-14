@@ -17,10 +17,10 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.domain._
 
-class StatePensionSpec extends StatePensionUnitSpec {
+class StatePensionSpec extends StatePensionBaseSpec {
 
   "StatePensionAmount" should {
     "Weekly / Monthly / Annual Calculation" should {

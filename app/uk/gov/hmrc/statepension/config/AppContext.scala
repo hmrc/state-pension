@@ -17,26 +17,33 @@
 package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
-import play.api.{Configuration, Environment}
-import play.api.Mode.Mode
-import uk.gov.hmrc.play.config.ServicesConfig
+import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class AppContext @Inject()(configuration: Configuration, environment: Environment) extends ServicesConfig {
-  lazy val appName = configuration.getString("appName").getOrElse(throw new RuntimeException("appName is not configured"))
-  lazy val apiGatewayContext = configuration.getString("api.gateway.context")
-    .getOrElse(throw new RuntimeException("api.gateway.context is not configured"))
-  lazy val access = configuration.getConfig("api.access")
-  lazy val status = configuration.getString("api.status")
-  lazy val connectToHOD = configuration.getBoolean("feature.connectToHOD").getOrElse(false)
-  lazy val rates: Configuration = configuration.getConfig("rates.statePension").getOrElse(throw new RuntimeException("rates.statePension is missing"))
-  lazy val revaluation: Option[Configuration] = configuration.getConfig("rates.revaluation")
+class AppContext @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
+  import servicesConfig._
 
-  val ifBaseUrl: String = baseUrl("if-hod")
-  val ifOriginatorIdKey: String = getConfString("if-hod.originatoridkey", "")
-  val ifOriginatorIdValue: String = getConfString("if-hod.originatoridvalue", "")
-  val ifEnvironment: String = getConfString("if-hod.environment", "")
-  val ifToken: String = getConfString("if-hod.token", "")
+  val appName = getString("appName")
+  val apiGatewayContext = getString("api.gateway.context")
+  val access = configuration.getOptional[Configuration]("api.access")
+  val status = configuration.getOptional[String]("api.status")
+  val rates: Configuration = configuration.getOptional[Configuration]("rates.statePension")
+    .getOrElse(throw new RuntimeException("rates.statePension is missing"))
+  val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
 
-  override protected def mode: Mode = environment.mode
-  override protected def runModeConfiguration: Configuration = configuration
+  val citizenDetailsBaseUrl: String = baseUrl("citizen-details")
+  val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
+  val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
+
+  private def connectorConfig(serviceName: String): ConnectorConfig = {
+    val empty = ""
+
+    new ConnectorConfig(
+      serviceUrl = baseUrl(serviceName),
+      serviceOriginatorIdKey = getConfString(s"$serviceName.originatoridkey", empty),
+      serviceOriginatorIdValue = getConfString(s"$serviceName.originatoridvalue", empty),
+      environment = getConfString(s"$serviceName.environment", empty),
+      authorizationToken = getConfString(s"$serviceName.token", empty)
+    )
+  }
 }

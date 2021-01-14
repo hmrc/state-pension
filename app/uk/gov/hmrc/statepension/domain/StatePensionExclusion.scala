@@ -18,6 +18,9 @@ package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
 import play.api.libs.json._
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
+
 
 object Exclusion extends Enumeration {
   type Exclusion = Value

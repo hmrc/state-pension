@@ -28,7 +28,7 @@ object Binders {
     override def bind(key: String, value: String): Either[String, Nino] = {
       Try[Nino](Nino.apply(value)) match {
         case Success(nino) => Right(nino)
-        case Failure(e) => Left(ErrorResponses.CODE_INVALID_NINO)
+        case Failure(_) => Left(ErrorResponses.CODE_INVALID_NINO)
       }
     }
 

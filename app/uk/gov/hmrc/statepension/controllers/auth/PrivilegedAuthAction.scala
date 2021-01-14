@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.controllers.auth
 import com.google.inject.Inject
 import play.api.Logger
 import play.api.mvc.Results.{InternalServerError, Unauthorized}
-import play.api.mvc.{Request, Result}
+import play.api.mvc.{BodyParsers, Request, Result}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, AuthorisationException, AuthorisedFunctions}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,8 +28,9 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 import scala.concurrent.{ExecutionContext, Future}
 
 class PrivilegedAuthAction @Inject()(
-                                      val authConnector: AuthConnector
-                                    )(implicit executionContext: ExecutionContext)
+                                      val authConnector: AuthConnector,
+                                      val parser: BodyParsers.Default
+                                    )(implicit val executionContext: ExecutionContext)
   extends AuthAction with AuthorisedFunctions {
 
   private val logger = Logger(this.getClass)
