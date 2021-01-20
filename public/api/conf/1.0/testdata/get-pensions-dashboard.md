@@ -51,12 +51,12 @@
         </tr>
         <tr>
             <td><p>Taxpayer who will receive less than the full rate</p></td>
-            <td><p><code>BS793713C</code></p></td>
+            <td><p><code>LG007401A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
             <td><p>Taxpayer who will receive more than the full rate</p></td>
-            <td><p><code>YN315615A</code></p></td>
+            <td><p><code>AA002813A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
@@ -64,22 +64,22 @@
         </tr>
         <tr>
             <td><p>Taxpayer who has many years to contribute and will get the full rate</p></td>
-            <td><p><code>ZT860915B</code></p></td>
+            <td><p><code>LG000401A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
             <td><p>Taxpayer who has many years to contribute and will get less than the full rate</p></td>
-            <td><p><code>AB216913B</code></p></td>
+            <td><p><code>LG001301A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
             <td><p>Taxpayer who only has gaps which may get them some pension</p></td>
-            <td><p><code>ZX000060A</code></p></td>
+            <td><p><code>LG001901A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
             <td><p>Taxpayer who can not get any pension</p></td>
-            <td><p><code>AA000113A</code></p></td>
+            <td><p><code>LG002801</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
@@ -97,7 +97,7 @@
         </tr>
         <tr>
             <td><p>Taxpayer who has the Married Women's Reduced Rate Election flag</p></td>
-            <td><p><code>EA791213A</code></p></td>
+            <td><p><code>LG007201A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
@@ -110,7 +110,7 @@
         </tr>
         <tr>
             <td><p>Taxpayer who is not affected by proposed change to State Pension age</p></td>
-            <td><p><code>AR822514A</code></p></td>
+            <td><p><code>LG002201A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>                
          <tr>
