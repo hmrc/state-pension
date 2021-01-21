@@ -74,7 +74,7 @@
         </tr>
         <tr>
             <td><p>Taxpayer who only has gaps which may get them some pension</p></td>
-            <td><p><code>LG001901A</code></p></td>
+            <td><p><code>ZX000060A</code></p></td>
             <td><p>200 (OK) Payload as regular example above</p></td>
         </tr>
         <tr>
