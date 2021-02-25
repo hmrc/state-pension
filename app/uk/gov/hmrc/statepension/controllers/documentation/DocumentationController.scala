@@ -20,11 +20,11 @@ import com.google.inject.Inject
 import controllers.Assets
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppContext}
+import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppConfig}
 import uk.gov.hmrc.statepension.domain.APIAccess
 import uk.gov.hmrc.statepension.views._
 
-class DocumentationController @Inject()(appContext: AppContext,
+class DocumentationController @Inject()(appContext: AppConfig,
                                         controllerComponents: ControllerComponents,
                                         assets: Assets) extends BackendController(controllerComponents){
 

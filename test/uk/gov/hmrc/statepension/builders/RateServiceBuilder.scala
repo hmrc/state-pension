@@ -18,13 +18,13 @@ package uk.gov.hmrc.statepension.builders
 
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.services.RateService
 
 object RateServiceBuilder extends MockitoSugar {
 
   private def rateToConfig(pair: (Int, BigDecimal)): (String, Any) = pair._1.toString -> pair._2
-  val appContext = mock[AppContext]
+  val appContext = mock[AppConfig]
   def apply(rates: Map[Int, BigDecimal], revaluationStartingAmount: BigDecimal = 1, revaluationProtectedPayment: BigDecimal = 1): RateService = new RateService(appContext) {
     override lazy val ratesConfig: Configuration = Configuration.from(rates.map(rateToConfig))
     override lazy val revaluationConfig: Option[Configuration] = Some(Configuration.from(Map("startingAmount" -> revaluationStartingAmount, "protectedPayment" -> revaluationProtectedPayment)))

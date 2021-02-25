@@ -89,7 +89,8 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
           mainComponent = 155.65,
           rebateDerivedAmount = 0
         )
-      )
+      ),
+      manualCorrespondenceIndicator = None
     )
   }
 
@@ -230,7 +231,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
             rebateDerivedAmount = 0
           )
         ),
-        None
+        manualCorrespondenceIndicator = None
       )
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get

@@ -23,8 +23,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.NpsConnector
-import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain.nps.Summary
 import uk.gov.hmrc.statepension.events.Forecasting
 import scala.concurrent.{ExecutionContext, Future}
@@ -78,7 +78,7 @@ trait StatePensionService {
           exclusionReasons = exclusions,
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
-          statePensionAgeUnderConsideration = if (exclusions.contains(Exclusion.AmountDissonance) || exclusions.contains(Exclusion.IsleOfMan))
+          statePensionAgeUnderConsideration = if (exclusions.contains(AmountDissonance) || exclusions.contains(IsleOfMan))
             checkStatePensionAgeUnderConsideration(summary.dateOfBirth) else false
         ))
       } else {
@@ -143,16 +143,16 @@ trait StatePensionService {
   }
 
   private[services] def filterExclusions(exclusions: List[Exclusion]): Exclusion = {
-    if (exclusions.contains(Exclusion.Dead)) {
-      Exclusion.Dead
-    } else if (exclusions.contains(Exclusion.ManualCorrespondenceIndicator)) {
-      Exclusion.ManualCorrespondenceIndicator
-    } else if (exclusions.contains(Exclusion.PostStatePensionAge)) {
-      Exclusion.PostStatePensionAge
-    } else if (exclusions.contains(Exclusion.AmountDissonance)) {
-      Exclusion.AmountDissonance
-    } else if (exclusions.contains(Exclusion.IsleOfMan)) {
-      Exclusion.IsleOfMan
+    if (exclusions.contains(Dead)) {
+      Dead
+    } else if (exclusions.contains(ManualCorrespondenceIndicator)) {
+      ManualCorrespondenceIndicator
+    } else if (exclusions.contains(PostStatePensionAge)) {
+      PostStatePensionAge
+    } else if (exclusions.contains(AmountDissonance)) {
+      AmountDissonance
+    } else if (exclusions.contains(IsleOfMan)) {
+      IsleOfMan
     } else {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }

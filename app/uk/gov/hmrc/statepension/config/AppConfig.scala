@@ -20,13 +20,13 @@ import com.google.inject.Inject
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class AppContext @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
+class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
   import servicesConfig._
 
-  val appName = getString("appName")
-  val apiGatewayContext = getString("api.gateway.context")
-  val access = configuration.getOptional[Configuration]("api.access")
-  val status = configuration.getOptional[String]("api.status")
+  val appName: String = getString("appName")
+  val apiGatewayContext: String = getString("api.gateway.context")
+  val access: Option[Configuration] = configuration.getOptional[Configuration]("api.access")
+  val status: Option[String] = configuration.getOptional[String]("api.status")
   val rates: Configuration = configuration.getOptional[Configuration]("rates.statePension")
     .getOrElse(throw new RuntimeException("rates.statePension is missing"))
   val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
@@ -34,6 +34,9 @@ class AppContext @Inject()(configuration: Configuration, servicesConfig: Service
   val citizenDetailsBaseUrl: String = baseUrl("citizen-details")
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
+
+  val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
+  val copeReturnToServiceDays: Int = configuration.get[Int]("cope.returnToServiceDays")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     val empty = ""

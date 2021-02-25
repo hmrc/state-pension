@@ -30,19 +30,19 @@ import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, await, defaultAwaitTime
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.{RequestId, SessionId}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse}
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{NinoGenerator, WireMockHelper}
 
 class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with WireMockHelper with BeforeAndAfterEach {
 
-  val mockAppContext: AppContext = mock[AppContext](Mockito.RETURNS_DEEP_STUBS)
+  val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
 
   lazy val ifConnector: IfConnector = GuiceApplicationBuilder()
     .overrides(
-      bind[AppContext].toInstance(mockAppContext),
+      bind[AppConfig].toInstance(mockAppContext),
       bind[ApplicationMetrics].toInstance(mockApplicationMetrics)
     ).injector().instanceOf[IfConnector]
 

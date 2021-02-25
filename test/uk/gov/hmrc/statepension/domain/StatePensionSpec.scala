@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.domain.nps
+package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionBaseSpec

@@ -97,12 +97,14 @@ class SummarySpec extends UnitSpec {
             pre88COD = 123,
             post88COD = 123,
             graduatedRetirementBenefit = 123
-      ),
+          ),
           amountB2016 = AmountB2016(
             mainComponent = 12,
             rebateDerivedAmount = 34
           )
-        ), None)
+        ),
+        manualCorrespondenceIndicator = None
+      )
 
       Json.parse(jsonPayload).as[Summary] shouldBe result
     }
