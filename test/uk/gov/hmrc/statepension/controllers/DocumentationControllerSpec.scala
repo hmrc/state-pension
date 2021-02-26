@@ -26,7 +26,7 @@ import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 import resource._
 import scala.io.Source
@@ -39,7 +39,7 @@ class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
-    val appContext = new AppContext(app.configuration, serviceConfig) {
+    val appContext = new AppConfig(app.configuration, serviceConfig) {
       override val appName: String = ""
       override val apiGatewayContext: String = ""
       override val access: Option[Configuration] = apiConfig

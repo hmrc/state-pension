@@ -19,14 +19,14 @@ package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType.{Liabilities, NIRecord, Summary}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 class DesConnector @Inject()(val http: HttpClient,
                              val metrics: ApplicationMetrics,
-                             appContext: AppContext
+                             appContext: AppConfig
                              ) extends NpsConnector(appContext) {
 
   import appContext.desConnectorConfig._

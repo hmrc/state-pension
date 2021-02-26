@@ -97,7 +97,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         dateOfDeath = Some(new LocalDate(2000, 9, 13)),
         reducedRateElection = false,
         countryCode = 1,
-        PensionAmounts()
+        PensionAmounts(),
+        manualCorrespondenceIndicator = None
       )
 
 
@@ -176,7 +177,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         dateOfDeath = None,
         reducedRateElection = false,
         countryCode = 1,
-        PensionAmounts()
+        PensionAmounts(),
+        manualCorrespondenceIndicator = None
       )
 
       "return post state pension age exclusion" in {
@@ -270,7 +272,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "summary have RRE flag as true" in {
@@ -348,7 +351,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
           amountB2016 = AmountB2016(
             mainComponent = 155.64
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "return amount dissonance" in {

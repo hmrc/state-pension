@@ -20,7 +20,8 @@ import com.google.inject.Inject
 import play.api.mvc.{BodyParsers, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.ErrorHandling
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 import uk.gov.hmrc.statepension.services.CheckPensionService
 
@@ -28,13 +29,14 @@ import scala.concurrent.ExecutionContext
 
 class CheckPensionController @Inject()(
                                         override val authAction: AuthAction,
-                                        override val appContext: AppContext,
+                                        override val appContext: AppConfig,
                                         override val statePensionService: CheckPensionService,
                                         override val customAuditConnector: AuditConnector,
                                         override val controllerComponents: ControllerComponents,
                                         val parser: BodyParsers.Default,
-                                        val executionContext: ExecutionContext
-                                      ) extends StatePensionController(controllerComponents) {
+                                        val executionContext: ExecutionContext,
+                                        errorHandling: ErrorHandling
+                                      ) extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url
 }

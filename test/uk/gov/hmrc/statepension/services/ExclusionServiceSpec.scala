@@ -121,7 +121,7 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
     }
 
     "all the exclusion criteria are met" should {
-      "return a sorted list of Dead, PostSPA, MWRRE" in {
+      "return a sorted list of Dead, PostSPA, MWRRE, CopeProcessing" in {
         exclusionServiceBuilder(
           dateOfDeath = Some(new LocalDate(1999, 12, 31)),
           pensionDate = new LocalDate(2000, 1, 1),

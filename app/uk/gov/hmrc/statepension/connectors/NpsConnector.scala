@@ -23,14 +23,14 @@ import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-abstract class NpsConnector @Inject()(appContext: AppContext)(implicit ec: ExecutionContext){
+abstract class NpsConnector @Inject()(appContext: AppConfig)(implicit ec: ExecutionContext){
 
   val http: HttpClient
   val metrics: ApplicationMetrics

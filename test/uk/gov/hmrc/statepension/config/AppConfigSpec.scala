@@ -21,7 +21,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 
-class AppContextSpec extends PlaySpec {
+class AppConfigSpec extends PlaySpec {
 
   val injector: Injector = new GuiceApplicationBuilder()
     .configure(
@@ -34,11 +34,11 @@ class AppContextSpec extends PlaySpec {
     )
     .injector()
 
-  val appContext = injector.instanceOf[AppContext]
+  val appConfig = injector.instanceOf[AppConfig]
 
   "AppContext" must {
     "return the correct values for a ConnectorConfig" in {
-      val ifConnectorConfig: ConnectorConfig = appContext.ifConnectorConfig
+      val ifConnectorConfig: ConnectorConfig = appConfig.ifConnectorConfig
 
       behave like serviceUrl(ifConnectorConfig.serviceUrl)
       ifConnectorConfig.authorizationToken mustBe "testABC123"
