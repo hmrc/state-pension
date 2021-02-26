@@ -27,12 +27,13 @@ import uk.gov.hmrc.statepension.services.ApplicationMetrics
 class DesConnector @Inject()(val http: HttpClient,
                              val metrics: ApplicationMetrics,
                              appContext: AppContext
-                             ) extends NpsConnector {
+                             ) extends NpsConnector(appContext) {
 
   import appContext.desConnectorConfig._
 
   val desBaseUrl: String = serviceUrl
-  override val serviceOriginatorId: (String, String) = (serviceOriginatorIdKey, serviceOriginatorIdValue)
+  override val originatorIdKey: String = serviceOriginatorIdKey
+  override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
   override val token: String = authorizationToken
 

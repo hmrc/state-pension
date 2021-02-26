@@ -35,6 +35,8 @@ class AppContext @Inject()(configuration: Configuration, servicesConfig: Service
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
+  val dwpApplicationId: String = configuration.get[String]("api.access.whitelist.applicationIds.0")
+
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     val empty = ""
 

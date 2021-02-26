@@ -27,12 +27,13 @@ class IfConnector @Inject()(
                            val http: HttpClient,
                            val metrics: ApplicationMetrics,
                            appContext: AppContext
-                           ) extends NpsConnector {
+                           ) extends NpsConnector(appContext) {
 
   import appContext.ifConnectorConfig._
 
   val ifBaseUrl: String = serviceUrl
-  override val serviceOriginatorId: (String, String) = (serviceOriginatorIdKey, serviceOriginatorIdValue)
+  override val originatorIdKey: String = serviceOriginatorIdKey
+  override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
   override val token: String = authorizationToken
 
@@ -43,4 +44,5 @@ class IfConnector @Inject()(
   override val summaryMetricType: APIType = IfSummary
   override val liabilitiesMetricType: APIType = IfLiabilities
   override val niRecordMetricType: APIType = IfNIRecord
+
 }
