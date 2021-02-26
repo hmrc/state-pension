@@ -24,12 +24,14 @@ import uk.gov.hmrc.statepension.domain.nps.APIType.{Liabilities, NIRecord, Summa
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
+import scala.concurrent.ExecutionContext
+
 class DesConnector @Inject()(val http: HttpClient,
                              val metrics: ApplicationMetrics,
-                             appContext: AppConfig
-                             ) extends NpsConnector(appContext) {
+                             appConfig: AppConfig
+                             )(implicit ec: ExecutionContext) extends NpsConnector(appConfig) {
 
-  import appContext.desConnectorConfig._
+  import appConfig.desConnectorConfig._
 
   val desBaseUrl: String = serviceUrl
   override val originatorIdKey: String = serviceOriginatorIdKey

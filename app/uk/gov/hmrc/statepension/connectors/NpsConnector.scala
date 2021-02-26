@@ -30,7 +30,7 @@ import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-abstract class NpsConnector @Inject()(appContext: AppConfig)(implicit ec: ExecutionContext){
+abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext){
 
   val http: HttpClient
   val metrics: ApplicationMetrics
@@ -86,8 +86,8 @@ abstract class NpsConnector @Inject()(appContext: AppConfig)(implicit ec: Execut
   }
 
   private def setServiceOriginatorId(headerCarrier: HeaderCarrier, value: String): String = {
-    val appIdHeader: Seq[(String, String)] = headerCarrier.headers.filter(header => header._1 == "http_x_application_id")
-    if (appIdHeader.head._2 == appContext.dwpApplicationId) "DA_PFDWP"
+    val appIdHeader: Seq[(String, String)] = headerCarrier.headers.filter(header => header._1 == "x-application-id")
+    if (appIdHeader.head._2 == appConfig.dwpApplicationId) "DA_PFDWP"
     else value
   }
 
