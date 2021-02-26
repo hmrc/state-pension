@@ -102,7 +102,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
-          )
+          ),
+          manualCorrespondenceIndicator = None
         )
 
         "log a summary metric" in {
@@ -802,7 +803,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
-          )
+          ),
+          manualCorrespondenceIndicator = None
         )
 
         "when there is a starting amount of 0 it" should {
@@ -852,7 +854,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "the OldRules amounts" should {
@@ -1054,7 +1057,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             mainComponent = 66.37, // Net SP
             rebateDerivedAmount = 18.13
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
 
@@ -1113,7 +1117,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "the personal maximum amount" should {
@@ -1327,7 +1332,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             mainComponent = 40.02,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "return 0 for the current amount" in {

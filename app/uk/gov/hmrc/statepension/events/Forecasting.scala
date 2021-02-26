@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.events
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{AmountA2016, AmountB2016}
 
 object Forecasting {

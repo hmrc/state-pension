@@ -23,17 +23,19 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.JodaReads._
 import play.api.libs.json.Json
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
@@ -46,14 +48,14 @@ class StatePensionControllerSpec extends UnitSpec with GuiceOneAppPerSuite with 
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  val _appContext: AppContext = inject[AppContext]
+  val _appContext: AppConfig = inject[AppConfig]
   val fakeAuthAction: AuthAction = inject[FakeAuthAction]
+  val fakeErrorHandling: ErrorHandling = inject[ErrorHandling]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController(controllerComponents) {
-      override val app: String = "Test State Pension"
+    new StatePensionController(controllerComponents, fakeErrorHandling) {
       override lazy val context: String = "test"
-      override val appContext: AppContext = _appContext
+      override val appContext: AppConfig = _appContext
       override val statePensionService: StatePensionService = spService
       override val customAuditConnector: AuditConnector = mock[AuditConnector]
       override val authAction: AuthAction = fakeAuthAction
@@ -215,18 +217,6 @@ class StatePensionControllerSpec extends UnitSpec with GuiceOneAppPerSuite with 
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe true
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
-    }
-
-    "return BadRequest and message for Upstream BadRequest" in {
-      val mockStatePensionService = mock[StatePensionService]
-
-      when(mockStatePensionService.getStatement(any())(any()))
-        .thenReturn(Future.failed(new BadRequestException("Upstream 400")))
-
-      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
-
-      status(response) shouldBe 400
-      contentAsJson(response) shouldBe Json.parse("""{"code":"BAD_REQUEST","message":"Upstream Bad Request. Is this customer below State Pension Age?"}""")
     }
 
     "return 403 with an error message for an MCI exclusion" in {

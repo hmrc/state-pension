@@ -16,31 +16,42 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.Result
+import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.statepension.config.AppConfig
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+
+@ImplementedBy(classOf[CopeErrorHandling])
 trait ErrorHandling {
   self: BackendController =>
 
-  val app: String
+  val app: String = "State-Pension"
 
-  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result]
+}
+
+class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig) extends BackendController(cc) with ErrorHandling {
+  
+  override def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
-      case _: NotFoundException =>
-        NotFound(Json.toJson(ErrorNotFound))
-
+      case _: NotFoundException => NotFound(Json.toJson(ErrorNotFound))
       case e: GatewayTimeoutException => Logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
       case e: BadGatewayException => Logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case _: BadRequestException => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
+      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == 422 && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
+        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
+      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == 422 && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
+        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed))
       case e: Upstream4xxResponse => Logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
       case e: Upstream5xxResponse => Logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
-
       case e: Throwable =>
         Logger.error(s"$app Internal server error: ${e.getMessage}", e)
         InternalServerError(Json.toJson(ErrorInternalServerError))

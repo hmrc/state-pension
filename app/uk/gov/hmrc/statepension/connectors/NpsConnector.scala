@@ -58,7 +58,7 @@ trait NpsConnector {
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw,
       HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
-      .withExtraHeaders(serviceOriginatorId, environmentHeader, correlationId),  ec=global)
+      .withExtraHeaders(serviceOriginatorId, environmentHeader, correlationId), ec=global)
 
     responseF.map { httpResponse =>
       timerContext.stop()

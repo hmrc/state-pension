@@ -16,48 +16,47 @@
 
 package uk.gov.hmrc.statepension.controllers.statepension
 
-import com.google.inject.Singleton
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalSupport, Links}
-import uk.gov.hmrc.statepension.domain.Exclusion
+import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-abstract class StatePensionController(controllerComponents: ControllerComponents)
+abstract class StatePensionController @Inject()(controllerComponents: ControllerComponents, errorHandling: ErrorHandling)
   extends BackendController(controllerComponents)
     with HeaderValidator
-    with ErrorHandling
     with HalSupport
     with Links {
 
-  val appContext: AppContext
+  val appContext: AppConfig
   val statePensionService: StatePensionService
   val customAuditConnector: AuditConnector
   val authAction: AuthAction
 
-  override val app: String = "State-Pension"
   override lazy val context: String = appContext.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = (authAction andThen validateAccept(acceptHeaderValidationRules)).async {
     implicit request =>
-      errorWrapper(statePensionService.getStatement(nino).map {
+      errorHandling.errorWrapper(statePensionService.getStatement(nino).map {
 
-        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.Dead) =>
-          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.Dead),
+        case Left(exclusion) if exclusion.exclusionReasons.contains(Dead) =>
+          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Dead),
             exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
           Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
 
-        case Left(exclusion) if exclusion.exclusionReasons.contains(Exclusion.ManualCorrespondenceIndicator) =>
-          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Exclusion.ManualCorrespondenceIndicator),
+        case Left(exclusion) if exclusion.exclusionReasons.contains(ManualCorrespondenceIndicator) =>
+          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(ManualCorrespondenceIndicator),
             exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
           Forbidden(Json.toJson(ErrorResponses.ExclusionManualCorrespondence))
 

@@ -137,7 +137,8 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         dateOfDeath = None,
         countryCode = 1,
         amounts = expectedPensionAmounts,
-        manualCorrespondenceIndicator = None)
+        manualCorrespondenceIndicator = None
+      )
 
       val response: Summary = await(desConnector.getSummary(nino))
       response shouldBe expectedSummary
