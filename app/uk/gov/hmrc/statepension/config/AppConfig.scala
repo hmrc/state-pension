@@ -20,6 +20,9 @@ import com.google.inject.Inject
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import scala.collection.JavaConverters._
+
+
 class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
   import servicesConfig._
 
@@ -35,7 +38,11 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
-  val dwpApplicationId: String = configuration.get[String]("api.access.whitelist.applicationIds.0")
+
+  // dwpApplicationId is designed to match against the value that currently is the first element of the list in app-config-production.
+  // We are performing a match against that specific ID.
+  val dwpApplicationId: String = configuration.underlying.getStringList("api.access.whitelist.applicationIds").asScala.toList.headOption
+    .getOrElse(throw new RuntimeException("DWP applicationId isn't present"))
   val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
   val copeReturnToServiceDays: Int = configuration.get[Int]("cope.returnToServiceDays")
 

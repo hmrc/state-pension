@@ -62,7 +62,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw,
       HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
-      .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(headerCarrier, originatorIdValue)), environmentHeader, correlationId), ec)
+      .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
 
     responseF.map { httpResponse =>
       timerContext.stop()
@@ -85,11 +85,13 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
     }
   }
 
-  private def setServiceOriginatorId(headerCarrier: HeaderCarrier, value: String): String = {
-    val appIdHeader: Seq[(String, String)] = headerCarrier.headers.filter(header => header._1 == "x-application-id")
-    if (appIdHeader.head._2 == appConfig.dwpApplicationId) "DA_PFDWP"
+  private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
+    if (getHeaderValueByKey("x-application-id") == appConfig.dwpApplicationId) "DA_PFDWP"
     else value
   }
+
+  private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
+    headerCarrier.headers.toMap.getOrElse(key, "Undefined key")
 
   private def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String = {
     errors.map(p => p._1 + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
