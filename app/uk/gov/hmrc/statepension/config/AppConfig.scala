@@ -42,7 +42,8 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   // dwpApplicationId is designed to match against the value that currently is the first element of the list in app-config-production.
   // We are performing a match against that specific ID.
   val dwpApplicationId: String = configuration.underlying.getStringList("api.access.whitelist.applicationIds").asScala.toList.headOption
-    .getOrElse(throw new RuntimeException("DWP applicationId isn't present"))
+    .getOrElse("")
+  val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
   val copeReturnToServiceDays: Int = configuration.get[Int]("cope.returnToServiceDays")
 

@@ -86,10 +86,10 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
-    headerCarrier.headers.toMap.getOrElse(key, "Undefined key")
+    headerCarrier.headers.toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
-    if (getHeaderValueByKey("x-application-id") == appConfig.dwpApplicationId) "DA_PFDWP"
+    if (getHeaderValueByKey("x-application-id") == appConfig.dwpApplicationId) appConfig.dwpOriginatorId
     else value
   }
 

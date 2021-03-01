@@ -50,7 +50,8 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
                       "microservice.services.des-hod.originatoridkey" -> "testOriginatorKey",
                       "microservice.services.des-hod.originatoridvalue" -> "testOriginatorId",
                       "microservice.services.des-hod.environment" -> "testEnvironment",
-                      "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345"
+                      "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
+                      "cope.dwp.originatorId" -> "dwpId"
     )
     .overrides(
       bind[ApplicationMetrics].toInstance(mockMetrics)
@@ -548,7 +549,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
 
       server.verify(
         getRequestedFor(urlEqualTo(niRecordUrl))
-          .withHeader("testOriginatorKey", equalTo("DA_PFDWP"))
+          .withHeader("testOriginatorKey", equalTo("dwpId"))
       )
     }
 

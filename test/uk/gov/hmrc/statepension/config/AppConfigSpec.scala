@@ -36,7 +36,7 @@ class AppConfigSpec extends PlaySpec {
 
   val appConfig = injector.instanceOf[AppConfig]
 
-  "AppContext" must {
+  "AppConfig" must {
     "return the correct values for a ConnectorConfig" in {
       val ifConnectorConfig: ConnectorConfig = appConfig.ifConnectorConfig
 
@@ -45,6 +45,10 @@ class AppConfigSpec extends PlaySpec {
       ifConnectorConfig.environment mustBe "test"
       ifConnectorConfig.serviceOriginatorIdValue mustBe "testOriginatorIdValue"
       ifConnectorConfig.serviceOriginatorIdKey mustBe "testOriginatorId"
+    }
+
+    "dwpApplicationId must return empty String when not present" in {
+      appConfig.dwpApplicationId mustBe ""
     }
   }
 
