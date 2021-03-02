@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-
 class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
   import servicesConfig._
 
