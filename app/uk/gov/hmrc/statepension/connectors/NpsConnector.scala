@@ -89,8 +89,10 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
     headerCarrier.headers.toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
-    if (getHeaderValueByKey("x-application-id") == appConfig.dwpApplicationId) appConfig.dwpOriginatorId
-    else value
+   appConfig.dwpApplicationId match {
+      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
+      case _ => value
+    }
   }
 
   private def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String = {

@@ -46,10 +46,6 @@ class AppConfigSpec extends PlaySpec {
       ifConnectorConfig.serviceOriginatorIdValue mustBe "testOriginatorIdValue"
       ifConnectorConfig.serviceOriginatorIdKey mustBe "testOriginatorId"
     }
-
-    "dwpApplicationId must return empty String when not present" in {
-      appConfig.dwpApplicationId mustBe ""
-    }
   }
 
   def serviceUrl(serviceUrl: String): Assertion = {
