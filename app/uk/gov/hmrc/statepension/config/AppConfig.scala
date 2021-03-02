@@ -22,7 +22,6 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.collection.JavaConverters._
 
-
 class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
   import servicesConfig._
 
