@@ -36,7 +36,7 @@ class AppConfigSpec extends PlaySpec {
 
   val appConfig = injector.instanceOf[AppConfig]
 
-  "AppContext" must {
+  "AppConfig" must {
     "return the correct values for a ConnectorConfig" in {
       val ifConnectorConfig: ConnectorConfig = appConfig.ifConnectorConfig
 

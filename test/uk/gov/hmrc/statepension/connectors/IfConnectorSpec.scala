@@ -122,6 +122,7 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
   "getLiabilities" must {
     def stubLiabilities(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities", status, body)
+
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
       stubLiabilities(body = LiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
 

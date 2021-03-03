@@ -35,6 +35,9 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
+  def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
+
+  val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
   val copeReturnToServiceDays: Int = configuration.get[Int]("cope.returnToServiceDays")
 

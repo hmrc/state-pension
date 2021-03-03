@@ -18,23 +18,25 @@ package uk.gov.hmrc.statepension.connectors
 
 import java.util.UUID.randomUUID
 
+import com.google.inject.Inject
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-trait NpsConnector {
+abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext){
 
   val http: HttpClient
   val metrics: ApplicationMetrics
   val token: String
-  val serviceOriginatorId: (String, String)
+  val originatorIdKey: String
+  val originatorIdValue: String
   val environmentHeader: (String, String)
   def summaryUrl(nino: Nino): String
   def liabilitiesUrl(nino: Nino): String
@@ -43,6 +45,8 @@ trait NpsConnector {
   val summaryMetricType: APIType
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
+
+  val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
     connectToHOD[Summary](summaryUrl(nino), summaryMetricType)
@@ -58,7 +62,7 @@ trait NpsConnector {
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw,
       HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
-      .withExtraHeaders(serviceOriginatorId, environmentHeader, correlationId), ec=global)
+      .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
 
     responseF.map { httpResponse =>
       timerContext.stop()
@@ -78,6 +82,16 @@ trait NpsConnector {
         Future.failed(ex)
       case Success(value) =>
         Future.successful(value)
+    }
+  }
+
+  private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
+    headerCarrier.headers.toMap.getOrElse(key, "Header not found")
+
+  private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
+   appConfig.dwpApplicationId match {
+      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
+      case _ => value
     }
   }
 

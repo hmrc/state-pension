@@ -49,7 +49,11 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
                       "microservice.services.des-hod.token" -> "testToken",
                       "microservice.services.des-hod.originatoridkey" -> "testOriginatorKey",
                       "microservice.services.des-hod.originatoridvalue" -> "testOriginatorId",
-                      "microservice.services.des-hod.environment" -> "testEnvironment")
+                      "microservice.services.des-hod.environment" -> "testEnvironment",
+                      "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
+                      "api.access.type" -> "PRIVATE",
+                      "cope.dwp.originatorId" -> "dwpId"
+    )
     .overrides(
       bind[ApplicationMetrics].toInstance(mockMetrics)
     ).build()
@@ -531,5 +535,24 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
       }
     }
+
+    "return the correct headers for requests made by the DWP" in {
+      val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSessionId")),
+        requestId = Some(RequestId("testRequestId")))
+        .withExtraHeaders(("x-application-id", "abcdefg-12345-abddefg-12345"))
+      val requestBody: String = "{}"
+
+      server.stubFor(
+        get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(requestBody))
+      )
+
+      await(desConnector.getNIRecord(nino)(hc))
+
+      server.verify(
+        getRequestedFor(urlEqualTo(niRecordUrl))
+          .withHeader("testOriginatorKey", equalTo("dwpId"))
+      )
+    }
+
   }
 }

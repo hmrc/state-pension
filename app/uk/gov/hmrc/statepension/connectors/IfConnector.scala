@@ -23,16 +23,19 @@ import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.nps.APIType.{IfLiabilities, IfNIRecord, IfSummary}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-class IfConnector @Inject()(
-                           val http: HttpClient,
-                           val metrics: ApplicationMetrics,
-                           appContext: AppConfig
-                           ) extends NpsConnector {
+import scala.concurrent.ExecutionContext
 
-  import appContext.ifConnectorConfig._
+class IfConnector @Inject()(
+                             val http: HttpClient,
+                             val metrics: ApplicationMetrics,
+                             appConfig: AppConfig
+                           )(implicit ec: ExecutionContext) extends NpsConnector(appConfig) {
+
+  import appConfig.ifConnectorConfig._
 
   val ifBaseUrl: String = serviceUrl
-  override val serviceOriginatorId: (String, String) = (serviceOriginatorIdKey, serviceOriginatorIdValue)
+  override val originatorIdKey: String = serviceOriginatorIdKey
+  override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
   override val token: String = authorizationToken
 
