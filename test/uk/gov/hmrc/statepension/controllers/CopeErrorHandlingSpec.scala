@@ -16,26 +16,24 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import org.scalatest.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.http._
 import play.api.test.Helpers._
 import play.api.test.Injecting
-import play.api.inject.bind
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
+import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 
 import scala.concurrent.Future
 
-class CopeErrorHandlingSpec extends UnitSpec with GuiceOneAppPerSuite with Injecting with MockitoSugar {
-
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with MockitoSugar {
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .configure("cope.feature.enabled" -> true).build()

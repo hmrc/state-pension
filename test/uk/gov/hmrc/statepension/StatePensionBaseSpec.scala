@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.statepension
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
 
-trait StatePensionBaseSpec extends UnitSpec with NinoGenerator with BeforeAndAfterEach {
+trait StatePensionBaseSpec extends WordSpecLike with NinoGenerator with BeforeAndAfterEach {
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 }

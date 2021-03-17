@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{Matchers, Mockito}
+import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -110,16 +111,14 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
         NIRecord(qualifyingYears = 36, List())
       ))
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
-        whenReady(statePensionF) { statePension =>
-          statePension.statePensionAgeUnderConsideration shouldBe false
-        }
+        statePension.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log a summary metric" in {
@@ -162,16 +161,14 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
         NIRecord(qualifyingYears = 36, List())
       ))
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
           regularStatement
         ))
 
-        whenReady(statePensionF) { statePension =>
-          statePension.statePensionAgeUnderConsideration shouldBe true
-        }
+        statePension.statePensionAgeUnderConsideration shouldBe true
       }
 
       "log a summary metric" in {
@@ -234,7 +231,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
         manualCorrespondenceIndicator = None
       )
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
 
@@ -246,9 +243,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
           NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
 
-        whenReady(statePensionF) { statePension =>
-          statePension.statePensionAgeUnderConsideration shouldBe true
-        }
+        statePension.statePensionAgeUnderConsideration shouldBe true
       }
 
       "log a summary metric" in {
@@ -290,7 +285,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
@@ -301,9 +296,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 36, List())
           ))
 
-        whenReady(statePensionF) { statePension =>
-          statePension.statePensionAgeUnderConsideration shouldBe true
-        }
+        statePension.statePensionAgeUnderConsideration shouldBe true
       }
 
       "log a summary metric" in {
@@ -344,7 +337,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
@@ -355,9 +348,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 36, List())
           ))
 
-        whenReady(statePensionF) { statePension =>
-          statePension.statePensionAgeUnderConsideration shouldBe false
-        }
+        statePension.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log a summary metric" in {
