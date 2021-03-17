@@ -21,9 +21,11 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.http.{Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -39,7 +41,7 @@ trait ErrorHandling {
 }
 
 class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig) extends BackendController(cc) with ErrorHandling {
-  
+
   override def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
       case _: NotFoundException => NotFound(Json.toJson(ErrorNotFound))

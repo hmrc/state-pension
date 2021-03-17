@@ -29,6 +29,7 @@ import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalS
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
+import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
