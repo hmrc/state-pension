@@ -21,8 +21,7 @@ import java.util.UUID.randomUUID
 import com.google.inject.Inject
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -86,7 +85,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
-    headerCarrier.headers.toMap.getOrElse(key, "Header not found")
+    headerCarrier.headers(List(key)).toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
    appConfig.dwpApplicationId match {
