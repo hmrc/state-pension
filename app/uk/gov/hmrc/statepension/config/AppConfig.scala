@@ -23,8 +23,8 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
   import servicesConfig._
 
-  val appName: String = getString("appName")
-  val apiGatewayContext: String = getString("api.gateway.context")
+  val appName: String = configuration.get[String]("appName")
+  val apiGatewayContext: String = configuration.get[String]("api.gateway.context")
   val access: Option[Configuration] = configuration.getOptional[Configuration]("api.access")
   val status: Option[String] = configuration.getOptional[String]("api.status")
   val rates: Configuration = configuration.getOptional[Configuration]("rates.statePension")

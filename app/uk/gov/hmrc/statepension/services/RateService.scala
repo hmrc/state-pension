@@ -29,7 +29,7 @@ class RateService @Inject()(appContext: AppConfig) {
   val revaluationRates: RevaluationRates = RevaluationRates(revaluationConfig)
 
   private[services] lazy val ratesTable: Map[Int, BigDecimal] = {
-      ratesConfig.keys.map(k => k.toInt -> ratesConfig.getString(k).fold[BigDecimal](0)(BigDecimal(_))).toMap
+    ratesConfig.keys.map(key => key.toInt -> ratesConfig.getOptional[String](key).fold[BigDecimal](0)(BigDecimal(_))).toMap
   }
 
   val MAX_YEARS: Int = ratesTable.keys.max
