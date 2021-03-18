@@ -44,3 +44,8 @@ lazy val microservice = Project(appName, file("."))
       Resolver.jcenterRepo
     )
   )
+
+dependencyOverrides ++= Seq(
+  "com.fasterxml.jackson.core" % "jackson-core" % "2.10.5",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.5.1"
+)
