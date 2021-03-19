@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.{reset => mockReset}
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -33,7 +33,12 @@ import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
-class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
+class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
+  with ScalaFutures
+  with IntegrationPatience
+  with MockitoSugar
+  with GuiceOneAppPerSuite
+  with WireMockHelper {
 
   val nino = generateNino()
   val context = mock[Timer.Context]

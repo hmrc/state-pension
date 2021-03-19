@@ -242,7 +242,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_MANUAL_CORRESPONDENCE","message":"The customer cannot access the service, they should contact HMRC"}""")
     }
 
-    "return 403 with an error message for a Dead exclusion" in {
+    "return 403 with an error message for a   Dead exclusion" in {
       val mockStatePensionService = mock[StatePensionService]
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(
