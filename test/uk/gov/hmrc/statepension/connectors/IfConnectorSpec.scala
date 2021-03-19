@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
@@ -34,7 +34,13 @@ import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, S
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{NinoGenerator, WireMockHelper}
 
-class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with WireMockHelper with BeforeAndAfterEach {
+class IfConnectorSpec extends PlaySpec
+  with MockitoSugar
+  with ScalaFutures
+  with IntegrationPatience
+  with NinoGenerator
+  with WireMockHelper
+  with BeforeAndAfterEach {
 
   val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)

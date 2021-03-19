@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -33,10 +32,14 @@ import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 
-import scala.concurrent.Future
-
-class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
+class DesConnectorSpec extends StatePensionBaseSpec
+  with GuiceOneAppPerSuite
+  with MockitoSugar
+  with ScalaFutures
+  with IntegrationPatience
+  with WireMockHelper {
 
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
   val nino: Nino = generateNino()
