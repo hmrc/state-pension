@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import java.util.UUID.randomUUID
-
 import com.google.inject.Inject
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
@@ -26,6 +24,7 @@ import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
+import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -85,10 +84,10 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
-    headerCarrier.headers(List(key)).toMap.getOrElse(key, "Header not found")
+    headerCarrier.extraHeaders.toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
-   appConfig.dwpApplicationId match {
+    appConfig.dwpApplicationId match {
       case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
       case _ => value
     }

@@ -48,4 +48,3 @@ class DesConnector @Inject()(val http: HttpClient,
   override def niRecordUrl(nino: Nino): String = s"$desBaseUrl/individuals/${nino.withoutSuffix}/pensions/ni"
 
 }
-

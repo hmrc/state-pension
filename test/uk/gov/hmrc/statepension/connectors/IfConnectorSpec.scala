@@ -108,18 +108,19 @@ class IfConnectorSpec extends PlaySpec
       "response json is invalid" in {
         stubGetSummary()
 
-        intercept[ifConnector.JsonValidationException] {
-          ifConnector.getSummary(nino).futureValue
-        }
+        val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
       }
     }
 
     "return Upstream5xxException" when {
       "response status is 5xx" in {
         stubGetSummary(INTERNAL_SERVER_ERROR)
-        intercept[Upstream5xxResponse] {
-          ifConnector.getSummary(nino).futureValue
-        }
+
+        val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[Upstream5xxResponse])
       }
     }
   }
@@ -155,9 +156,9 @@ class IfConnectorSpec extends PlaySpec
       "response json is invalid" in {
         stubLiabilities(body = """{"liabilities": {}}""")
 
-        intercept[ifConnector.JsonValidationException]{
-          ifConnector.getLiabilities(nino).futureValue
-        }
+        val thrown: Throwable = ifConnector.getLiabilities(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
       }
     }
 
@@ -165,9 +166,9 @@ class IfConnectorSpec extends PlaySpec
       "response status is 5xx" in {
         stubLiabilities(status = INTERNAL_SERVER_ERROR)
 
-        intercept[Upstream5xxResponse]{
-          ifConnector.getLiabilities(nino).futureValue
-        }
+        val thrown: Throwable = ifConnector.getLiabilities(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[Upstream5xxResponse])
       }
     }
   }
@@ -200,18 +201,20 @@ class IfConnectorSpec extends PlaySpec
     "return JsonValidationException" when {
       "response json is invalid" in {
         stubNiRecord(body = """{"taxYears":{}}""")
-        intercept[ifConnector.JsonValidationException] {
-          ifConnector.getNIRecord(nino).futureValue
-        }
+
+        val thrown: Throwable = ifConnector.getNIRecord(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
       }
     }
 
     "return Upstream5xxException" when {
       "response status is 5xx" in {
         stubNiRecord(status = INTERNAL_SERVER_ERROR)
-        intercept[Upstream5xxResponse] {
-          ifConnector.getNIRecord(nino).futureValue
-        }
+
+        val thrown: Throwable = ifConnector.getNIRecord(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[Upstream5xxResponse])
       }
     }
   }
