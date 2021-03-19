@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.controllers.auth
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -53,10 +53,10 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
   def setupAuthConnector(result: Future[Unit]): OngoingStubbing[Future[Unit]] =
     when(mockAuthConnector.authorise(
-      Matchers.eq(AuthProviders(PrivilegedApplication)),
-      Matchers.eq(EmptyRetrieval))(
-      Matchers.any[HeaderCarrier],
-      Matchers.any[ExecutionContext]
+      ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
+      ArgumentMatchers.eq(EmptyRetrieval))(
+      ArgumentMatchers.any[HeaderCarrier],
+      ArgumentMatchers.any[ExecutionContext]
     )).thenReturn(result)
 
 
@@ -71,10 +71,10 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
       Harness.onPageLoad()(request).futureValue
 
       verify(mockAuthConnector).authorise(
-        Matchers.eq(AuthProviders(PrivilegedApplication)),
-        Matchers.eq(EmptyRetrieval))(
-        Matchers.any[HeaderCarrier],
-        Matchers.any[ExecutionContext]
+        ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
+        ArgumentMatchers.eq(EmptyRetrieval))(
+        ArgumentMatchers.any[HeaderCarrier],
+        ArgumentMatchers.any[ExecutionContext]
       )
     }
 

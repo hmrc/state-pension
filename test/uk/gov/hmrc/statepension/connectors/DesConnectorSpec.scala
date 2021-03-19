@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatestplus.mockito.MockitoSugar
@@ -34,6 +34,7 @@ import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
+import scala.concurrent.Future
 
 class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
 
@@ -156,7 +157,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       )
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.Summary))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
       }
     }
 
@@ -219,7 +220,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       exception.getMessage shouldBe "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.Summary))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
       }
     }
   }
@@ -484,7 +485,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
      )
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.NIRecord))).stop()
       }
 
     }
@@ -501,7 +502,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
      response shouldBe NIRecord(qualifyingYears = 36, List.empty)
 
      withClue("timer did not stop") {
-       Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+       Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.NIRecord))).stop()
      }
    }
 
@@ -532,7 +533,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       exception.getMessage shouldBe "/numberOfQualifyingYears - error.expected.jsnumber"
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.NIRecord))).stop()
       }
     }
 

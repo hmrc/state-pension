@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatestplus.mockito.MockitoSugar

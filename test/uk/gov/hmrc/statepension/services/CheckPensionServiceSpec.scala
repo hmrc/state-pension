@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
@@ -60,18 +60,18 @@ class CheckPensionServiceSpec extends PlaySpec with MockitoSugar with NinoGenera
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockDesConnector.getSummary(Matchers.any())(Matchers.any()))
+    when(mockDesConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(summary))
-    when(mockDesConnector.getLiabilities(Matchers.any())(Matchers.any()))
+    when(mockDesConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(List()))
-    when(mockDesConnector.getNIRecord(Matchers.any())(Matchers.any()))
+    when(mockDesConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
   "getStatement" must {
     "return StatePension data" when {
       "citizen details returns false for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(false))
 
         val result = sut.getStatement(generateNino()).futureValue
@@ -81,7 +81,7 @@ class CheckPensionServiceSpec extends PlaySpec with MockitoSugar with NinoGenera
 
     "return MCI exclusion" when {
       "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(Matchers.any())(Matchers.any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(true))
 
         val result = sut.getStatement(generateNino()).futureValue

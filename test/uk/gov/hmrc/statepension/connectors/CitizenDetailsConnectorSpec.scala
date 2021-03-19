@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.{reset => mockReset}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -63,7 +63,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       resultF.futureValue shouldBe 200
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
 
@@ -76,7 +76,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       resultF.futureValue shouldBe LOCKED
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
 
@@ -89,7 +89,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       resultF.failed.futureValue shouldBe a[NotFoundException]
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
 
@@ -102,7 +102,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       resultF.failed.futureValue shouldBe a[Upstream5xxResponse]
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
   }

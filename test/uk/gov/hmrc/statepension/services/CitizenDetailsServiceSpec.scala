@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -38,14 +38,14 @@ class CitizenDetailsServiceSpec extends StatePensionBaseSpec with MockitoSugar {
 
   "CitizenDetailsService" should {
     "return ManualCorrespondenceIndicator status is false when Response is 200" in {
-      when(mockCitizenDetailsConnector.connectToGetPersonDetails(Matchers.any())(Matchers.any())).thenReturn(
+      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(OK)
       )
       val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc)
       resultF.futureValue shouldBe false
     }
     "return ManualCorrespondenceIndicator status is true when Response is 423" in {
-      when(mockCitizenDetailsConnector.connectToGetPersonDetails(Matchers.any())(Matchers.any())) thenReturn
+      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn
         Future.successful(LOCKED)
 
       val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc)
