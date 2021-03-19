@@ -134,6 +134,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
+        service().getStatement(generateNino()).futureValue.left.get
+
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.Dead)
         )
@@ -198,6 +200,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
 
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+
+        service().getStatement(generateNino()).futureValue.left.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.PostStatePensionAge)
@@ -268,12 +272,13 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       }
 
       "log a summary metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(summary1))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary1))
 
         when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
           NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
+
+        service().getStatement(generateNino()).futureValue.right.get
 
         verify(mockMetrics, times(1)).summary(
           ArgumentMatchers.eq[BigDecimal](155.65),
@@ -345,6 +350,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
+        service().getStatement(generateNino()).futureValue.left.get
+
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.AmountDissonance)
         )
@@ -360,7 +367,6 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
     }
 
     "the customer has contributed national insurance in the isle of man" should {
-
 
       "return isle of man exclusion" in {
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
@@ -397,6 +403,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "log an exclusion metric" in {
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+
+        service().getStatement(generateNino()).futureValue.left.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.IsleOfMan)
@@ -445,6 +453,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
 
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+
+        service(true).getStatement(generateNino()).futureValue.left.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.ManualCorrespondenceIndicator)

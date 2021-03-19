@@ -24,7 +24,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.JodaReads._
 import play.api.libs.json.Json
-import play.api.mvc.{AnyContent, AnyContentAsEmpty, BodyParser, ControllerComponents}
+import play.api.mvc.{AnyContent, AnyContentAsEmpty, BodyParser, ControllerComponents, Result}
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -33,6 +33,7 @@ import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
+import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 
@@ -59,7 +60,9 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       override val statePensionService: StatePensionService = spService
       override val customAuditConnector: AuditConnector = mock[AuditConnector]
       override val authAction: AuthAction = fakeAuthAction
+
       override def endpointUrl(nino: Nino): String = s"/ni/$nino"
+
       override val executionContext: ExecutionContext = controllerComponents.executionContext
       override val parser: BodyParser[AnyContent] = controllerComponents.parsers.default
     }
@@ -73,15 +76,18 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       StatePensionAmount(Some(4), Some(1), 155.65),
       StatePensionAmount(None, None, 0.25),
       StatePensionAmount(None, None, 161.18),
-      OldRules(basicStatePension = 119.30,
-        additionalStatePension=39.22,
-        graduatedRetirementBenefit=2.66),
-      NewRules(grossStatePension=155.40,
-        rebateDerivedAmount= 0.25
+      OldRules(
+        basicStatePension = 119.30,
+        additionalStatePension = 39.22,
+        graduatedRetirementBenefit = 2.66
+      ),
+      NewRules(
+        grossStatePension = 155.40,
+        rebateDerivedAmount = 0.25
       )
     ),
     67,
-    new LocalDate(2019, 7 ,1),
+    new LocalDate(2019, 7, 1),
     "2018-19",
     30,
     pensionSharingOrder = false,
@@ -142,7 +148,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     "return 200 with a Response for RRE" in {
       val mockStatePensionService = mock[StatePensionService]
 
-      val testStatePensionRRE = testStatePension.copy(reducedRateElection=true, reducedRateElectionCurrentWeeklyAmount=Some(155.65))
+      val testStatePensionRRE = testStatePension.copy(reducedRateElection = true, reducedRateElectionCurrentWeeklyAmount = Some(155.65))
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePensionRRE)))
 
@@ -180,7 +186,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     "return 200 with a Response for Customers with date of birth within the correct range for state pension age under consideration flag" in {
       val mockStatePensionService = mock[StatePensionService]
 
-      val testStatePensionAgeUnderConsideration = testStatePension.copy(statePensionAgeUnderConsideration=true)
+      val testStatePensionAgeUnderConsideration = testStatePension.copy(statePensionAgeUnderConsideration = true)
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePensionAgeUnderConsideration)))
 
@@ -220,16 +226,19 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(
         Left(
-          StatePensionExclusion(List(Exclusion.ManualCorrespondenceIndicator),
-            0,
-            new LocalDate(2050, 1, 1),
-            false)
+          StatePensionExclusion(
+            exclusionReasons = List(ManualCorrespondenceIndicator),
+            pensionAge = 0,
+            pensionDate = new LocalDate(2050, 1, 1),
+            statePensionAgeUnderConsideration = false
+          )
         ))
       )
 
       val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
+
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_MANUAL_CORRESPONDENCE","message":"The customer cannot access the service, they should contact HMRC"}""")
     }
 
@@ -256,11 +265,11 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(
         Left(StatePensionExclusion(
-            List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
-            0,
-            new LocalDate(2050, 1, 1),
-            false
-          )
+          List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
+          0,
+          new LocalDate(2050, 1, 1),
+          false
+        )
         ))
       )
 

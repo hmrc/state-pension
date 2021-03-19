@@ -113,7 +113,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          //val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          service.getStatement(generateNino()).futureValue.right.get
 
           verify(mockMetrics, Mockito.atLeastOnce()).summary(
             ArgumentMatchers.eq[BigDecimal](161.18),
@@ -967,6 +967,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
         when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
+        service.getStatement(generateNino()).futureValue.right.get
+
         verify(mockMetrics, times(1)).summary(
           ArgumentMatchers.eq[BigDecimal](134.75),
           ArgumentMatchers.eq[BigDecimal](121.41),
@@ -1220,6 +1222,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
 
       "log a summary metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
+
+        service.getStatement(generateNino()).futureValue.right.get
 
         verify(mockMetrics, times(1)).summary(
           ArgumentMatchers.eq[BigDecimal](134.75),

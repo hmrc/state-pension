@@ -72,8 +72,8 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
         get(urlEqualTo(url)).willReturn(aResponse().withStatus(LOCKED))
       )
 
-      val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      resultF.futureValue shouldBe LOCKED
+      val result = citizenDetailsConnector.connectToGetPersonDetails(nino).futureValue
+      result shouldBe LOCKED
 
       withClue("timer did not stop") {
         Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
