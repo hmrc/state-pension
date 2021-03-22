@@ -44,6 +44,8 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
 
+  implicit val legacyRawReads = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
+
   val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
@@ -58,7 +60,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
-    val responseF = http.GET[HttpResponse](url)(HttpReads.Implicits.readRaw,
+    val responseF = http.GET[HttpResponse](url)(legacyRawReads,
       HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
       .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
 
