@@ -58,7 +58,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
-    val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw,
+    val responseF = http.GET[HttpResponse](url)(HttpReads.Implicits.readRaw,
       HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
       .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
 
