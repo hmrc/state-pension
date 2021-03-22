@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.controllers.statepension
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.api.controllers.HeaderValidator
+import uk.gov.hmrc.api.controllers.{ErrorResponse, HeaderValidator}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -29,7 +29,6 @@ import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalS
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
-import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -54,12 +53,12 @@ abstract class StatePensionController @Inject()(controllerComponents: Controller
         case Left(exclusion) if exclusion.exclusionReasons.contains(Dead) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Dead),
             exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
-          Forbidden(Json.toJson(ErrorResponses.ExclusionDead))
+          Forbidden(Json.toJson[ErrorResponse](ErrorResponses.ExclusionDead))
 
         case Left(exclusion) if exclusion.exclusionReasons.contains(ManualCorrespondenceIndicator) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, List(ManualCorrespondenceIndicator),
             exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
-          Forbidden(Json.toJson(ErrorResponses.ExclusionManualCorrespondence))
+          Forbidden(Json.toJson[ErrorResponse](ErrorResponses.ExclusionManualCorrespondence))
 
         case Left(exclusion) =>
           customAuditConnector.sendEvent(StatePensionExclusion(nino, exclusion.exclusionReasons,
