@@ -17,13 +17,13 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.Inject
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.Results.{InternalServerError, Unauthorized}
 import play.api.mvc.{BodyParsers, Request, Result}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, AuthorisationException, AuthorisedFunctions}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,13 +31,10 @@ class PrivilegedAuthAction @Inject()(
                                       val authConnector: AuthConnector,
                                       val parser: BodyParsers.Default
                                     )(implicit val executionContext: ExecutionContext)
-  extends AuthAction with AuthorisedFunctions {
-
-  private val logger = Logger(this.getClass)
+  extends AuthAction with AuthorisedFunctions with Logging {
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
-    implicit val hc: HeaderCarrier =
-      HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(AuthProviders(PrivilegedApplication)){
       Future.successful(None)

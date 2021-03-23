@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.Matchers._
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class CountrySpec extends UnitSpec{
+class CountrySpec extends StatePensionBaseSpec {
 
   "Not Specified should be 0" in {
     Country.NOT_SPECIFIED shouldBe 0

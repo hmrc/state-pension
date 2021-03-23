@@ -21,8 +21,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.Exclusion
 
-import scala.language.postfixOps
-
 object StatePensionExclusion{
   def apply(nino: Nino, exclusionReasons: List[Exclusion], pensionAge: Int,
             pensionDate: LocalDate, statePensionAgeUnderConsideration: Boolean)(implicit hc: HeaderCarrier): StatePensionExclusion =

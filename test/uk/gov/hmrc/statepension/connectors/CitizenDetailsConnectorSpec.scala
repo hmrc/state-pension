@@ -18,8 +18,10 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.{reset => mockReset}
-import org.mockito.{Matchers, Mockito}
+import org.scalatest.Matchers._
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -31,7 +33,12 @@ import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
-class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
+class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
+  with ScalaFutures
+  with IntegrationPatience
+  with MockitoSugar
+  with GuiceOneAppPerSuite
+  with WireMockHelper {
 
   val nino = generateNino()
   val context = mock[Timer.Context]
@@ -58,10 +65,10 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       )
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      await(resultF) shouldBe 200
+      resultF.futureValue shouldBe 200
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
 
@@ -70,11 +77,11 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
         get(urlEqualTo(url)).willReturn(aResponse().withStatus(LOCKED))
       )
 
-      val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      await(resultF) shouldBe LOCKED
+      val result = citizenDetailsConnector.connectToGetPersonDetails(nino).futureValue
+      result shouldBe LOCKED
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
 
@@ -84,10 +91,10 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       )
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      await(resultF.failed) shouldBe a[NotFoundException]
+      resultF.failed.futureValue shouldBe a[NotFoundException]
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
 
@@ -97,10 +104,10 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec with MockitoSugar
       )
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      await(resultF.failed) shouldBe a[Upstream5xxResponse]
+      resultF.failed.futureValue shouldBe a[Upstream5xxResponse]
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.CitizenDetails))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()
       }
     }
   }

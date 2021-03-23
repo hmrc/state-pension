@@ -16,17 +16,15 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import java.util.UUID.randomUUID
-
 import com.google.inject.Inject
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
+import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -46,6 +44,8 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
 
+  implicit val legacyRawReads = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
+
   val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
@@ -60,7 +60,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
-    val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw,
+    val responseF = http.GET[HttpResponse](url)(legacyRawReads,
       HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
       .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
 
@@ -86,10 +86,10 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
-    headerCarrier.headers.toMap.getOrElse(key, "Header not found")
+    headerCarrier.extraHeaders.toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
-   appConfig.dwpApplicationId match {
+    appConfig.dwpApplicationId match {
       case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
       case _ => value
     }

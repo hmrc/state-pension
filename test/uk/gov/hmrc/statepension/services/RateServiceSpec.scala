@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
+import org.scalatest.Matchers._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 

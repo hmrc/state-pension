@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.statepension.controllers.auth
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, when}
 import org.mockito.stubbing.OngoingStubbing
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{Action, AnyContent, Request}
-import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED, await, defaultAwaitTimeout, status}
+import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
@@ -52,10 +53,10 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
   def setupAuthConnector(result: Future[Unit]): OngoingStubbing[Future[Unit]] =
     when(mockAuthConnector.authorise(
-      Matchers.eq(AuthProviders(PrivilegedApplication)),
-      Matchers.eq(EmptyRetrieval))(
-      Matchers.any[HeaderCarrier],
-      Matchers.any[ExecutionContext]
+      ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
+      ArgumentMatchers.eq(EmptyRetrieval))(
+      ArgumentMatchers.any[HeaderCarrier],
+      ArgumentMatchers.any[ExecutionContext]
     )).thenReturn(result)
 
 
@@ -67,13 +68,13 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
     "make a call to auth for privileged application" in {
       setupAuthConnector(Future.successful(()))
 
-      await(Harness.onPageLoad()(request))
+      Harness.onPageLoad()(request).futureValue
 
       verify(mockAuthConnector).authorise(
-        Matchers.eq(AuthProviders(PrivilegedApplication)),
-        Matchers.eq(EmptyRetrieval))(
-        Matchers.any[HeaderCarrier],
-        Matchers.any[ExecutionContext]
+        ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
+        ArgumentMatchers.eq(EmptyRetrieval))(
+        ArgumentMatchers.any[HeaderCarrier],
+        ArgumentMatchers.any[ExecutionContext]
       )
     }
 
@@ -81,7 +82,7 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
       "user is authenticated" in {
         setupAuthConnector(Future.successful(()))
 
-        val result = Harness.onPageLoad()(request)
+        val result: Future[Result] = Harness.onPageLoad()(request)
 
         status(result) mustBe OK
       }

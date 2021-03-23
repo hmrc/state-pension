@@ -18,7 +18,9 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
-import org.mockito.{Matchers, Mockito}
+import org.mockito.{ArgumentMatchers, Mockito}
+import org.scalatest.Matchers._
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -26,16 +28,18 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.{RequestId, SessionId}
+import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
-import scala.language.postfixOps
-
-class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with GuiceOneAppPerSuite with WireMockHelper {
+class DesConnectorSpec extends StatePensionBaseSpec
+  with GuiceOneAppPerSuite
+  with MockitoSugar
+  with ScalaFutures
+  with IntegrationPatience
+  with WireMockHelper {
 
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
   val nino: Nino = generateNino()
@@ -144,7 +148,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         manualCorrespondenceIndicator = None
       )
 
-      val response: Summary = await(desConnector.getSummary(nino))
+      val response: Summary = desConnector.getSummary(nino).futureValue
       response shouldBe expectedSummary
 
       server.verify(getRequestedFor(urlEqualTo(summaryUrl))
@@ -156,7 +160,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       )
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.Summary))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
       }
     }
 
@@ -212,14 +216,14 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(invalidJson.toString()))
       )
 
-      val exception = intercept[desConnector.JsonValidationException]{
-        await(desConnector.getSummary(nino))
-      }
+      val exceptionMessage: String = "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
+      val thrown: Throwable = desConnector.getSummary(nino).failed.futureValue
 
-      exception.getMessage shouldBe "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
+      assert(thrown.isInstanceOf[desConnector.JsonValidationException])
+      assert(thrown.getMessage === exceptionMessage)
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.Summary))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
       }
     }
   }
@@ -275,7 +279,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
       server.stubFor(
         get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody(expectedJson.toString()))
       )
-      val response: List[Liability] = await(desConnector.getLiabilities(nino))
+      val response: List[Liability] = desConnector.getLiabilities(nino).futureValue
       val liabilityType = 13
       response shouldBe List(
         Liability(Some(liabilityType)),
@@ -338,10 +342,11 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody(invalidJson.toString()))
       )
 
-      val exception = intercept[desConnector.JsonValidationException] {
-        await(desConnector.getLiabilities(nino))
-      }
-      exception.getMessage shouldBe "/liabilities(0)/liabilityType - error.expected.jsnumber"
+      val exceptionMessage: String = "/liabilities(0)/liabilityType - error.expected.jsnumber"
+      val thrown: Throwable = desConnector.getLiabilities(nino).failed.futureValue
+
+      assert(thrown.isInstanceOf[desConnector.JsonValidationException])
+      assert(thrown.getMessage === exceptionMessage)
     }
   }
 
@@ -472,7 +477,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
          NITaxYear(Some(1977), qualifying = Some(true), underInvestigation = Some(false), payableFlag = Some(false))
        ))
 
-     val response: NIRecord = await(desConnector.getNIRecord(nino))
+     val response: NIRecord = desConnector.getNIRecord(nino).futureValue
      response shouldBe expectedNiRecord
 
      server.verify(getRequestedFor(urlEqualTo(niRecordUrl))
@@ -484,7 +489,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
      )
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.NIRecord))).stop()
       }
 
     }
@@ -497,11 +502,11 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
        get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(optJson.toString()))
      )
 
-     val response: NIRecord = await(desConnector.getNIRecord(nino))
+     val response: NIRecord = desConnector.getNIRecord(nino).futureValue
      response shouldBe NIRecord(qualifyingYears = 36, List.empty)
 
      withClue("timer did not stop") {
-       Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+       Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.NIRecord))).stop()
      }
    }
 
@@ -525,14 +530,14 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(invalidJson.toString()))
       )
 
-      val exception = intercept[desConnector.JsonValidationException]{
-        await(desConnector.getNIRecord(nino))
-      }
+      val exceptionMessage: String = "/numberOfQualifyingYears - error.expected.jsnumber"
+      val thrown: Throwable = desConnector.getNIRecord(nino).failed.futureValue
 
-      exception.getMessage shouldBe "/numberOfQualifyingYears - error.expected.jsnumber"
+      assert(thrown.isInstanceOf[desConnector.JsonValidationException])
+      assert(thrown.getMessage === exceptionMessage)
 
       withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(Matchers.eq(APIType.NIRecord))).stop()
+        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.NIRecord))).stop()
       }
     }
 
@@ -546,7 +551,7 @@ class DesConnectorSpec extends StatePensionBaseSpec with MockitoSugar with Guice
         get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(requestBody))
       )
 
-      await(desConnector.getNIRecord(nino)(hc))
+      desConnector.getNIRecord(nino)(hc).futureValue
 
       server.verify(
         getRequestedFor(urlEqualTo(niRecordUrl))

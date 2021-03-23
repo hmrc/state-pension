@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.statepension.domain
 
+import org.scalatest.Matchers._
 import play.api.libs.json.{JsError, JsString, JsSuccess}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-
-class StatePensionExclusionSpec extends UnitSpec {
+class StatePensionExclusionSpec extends StatePensionBaseSpec {
 
   val jsonExclusionList: List[(JsString, Exclusion)] = List(
     (JsString("Dead"), Exclusion.Dead),

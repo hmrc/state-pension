@@ -6,6 +6,13 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "state-pension"
 
+scalaVersion := "2.12.13"
+
+scalacOptions ++= Seq(
+  "-Xmaxerrs", "1000", // Maximum errors to print
+  "-Xmaxwarns", "1000" // Maximum warnings to print
+)
+
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
