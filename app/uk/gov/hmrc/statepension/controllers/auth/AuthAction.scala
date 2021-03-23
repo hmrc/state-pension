@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.Results._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
@@ -30,8 +30,7 @@ import scala.concurrent.Future.successful
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionImpl @Inject()(val authConnector: AuthConnector, val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
-  extends AuthAction with AuthorisedFunctions {
-  private val logger = Logger(this.getClass)
+  extends AuthAction with AuthorisedFunctions with Logging {
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
