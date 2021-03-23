@@ -17,8 +17,8 @@ lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
     ScoverageKeys.coverageMinimum := 90.21,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true
+    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageHighlighting := false
   )
 }
 
