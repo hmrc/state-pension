@@ -17,6 +17,7 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
+import org.scalatest.Matchers._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.Liability
@@ -69,7 +70,7 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
       }
     }
 
-   "the amount dissonance criteria is met" when  {
+    "the amount dissonance criteria is met" when  {
       "the startingAmount and calculatedStartingAmount are the same" should {
         "return no exclusions" in {
           exclusionServiceBuilder(startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil

@@ -17,27 +17,30 @@
 package uk.gov.hmrc.statepension.controllers
 
 import controllers.Assets
+import org.scalatest.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
-import play.api.mvc.Result
-import play.api.test.Helpers._
-import play.api.test.{FakeRequest, Helpers, Injecting}
+import play.api.mvc.{ControllerComponents, Result}
+import play.api.test.Helpers.{contentAsJson, contentAsString, status, stubControllerComponents, _}
+import play.api.test.{FakeRequest, Injecting}
+import resource._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
-import resource._
+
+import scala.concurrent.Future
 import scala.io.Source
 
-class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
+class DocumentationControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
 
-  val controllerComponents = Helpers.stubControllerComponents()
-  val serviceConfig = inject[ServicesConfig]
-  val assets = inject[Assets]
+  val controllerComponents: ControllerComponents = stubControllerComponents()
+  val serviceConfig: ServicesConfig = inject[ServicesConfig]
+  val assets: Assets = inject[Assets]
 
-  def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
+  def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Future[Result] = {
 
     val appContext = new AppConfig(app.configuration, serviceConfig) {
       override val appName: String = ""
@@ -55,7 +58,7 @@ class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with
 
     "return PRIVATE and no Whitelist IDs if there is no application config" in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = None)
+      val result: Future[Result] = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
@@ -118,7 +121,7 @@ class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with
 
     "return PUBLISHED if the application config says STABLE" in {
 
-      val result = getDefinitionResultFromConfig(apiStatus = Some("STABLE"))
+      val result: Future[Result] = getDefinitionResultFromConfig(apiStatus = Some("STABLE"))
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("STABLE"))
     }

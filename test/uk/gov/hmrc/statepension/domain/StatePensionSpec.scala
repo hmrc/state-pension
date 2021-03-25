@@ -17,8 +17,8 @@
 package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
+import org.scalatest.Matchers._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
-import uk.gov.hmrc.statepension.domain._
 
 class StatePensionSpec extends StatePensionBaseSpec {
 

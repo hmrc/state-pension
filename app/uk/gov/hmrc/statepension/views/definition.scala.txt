@@ -1,7 +1,6 @@
 @import uk.gov.hmrc.statepension.domain.APIAccess
 @import play.api.libs.json.Json
 
-
 @(access: APIAccess, status: String)
 {
   "scopes": [

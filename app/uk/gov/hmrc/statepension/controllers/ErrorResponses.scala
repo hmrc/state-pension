@@ -18,8 +18,6 @@ package uk.gov.hmrc.statepension.controllers
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.api.controllers.ErrorResponse
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.statepension.config.AppConfig
 
 object ErrorResponses {

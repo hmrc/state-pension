@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads, __}
 
-case class NIRecord(qualifyingYears: Int = 0, taxYears: List[NITaxYear]) {
+case class NIRecord(qualifyingYears: Int = 0, taxYears: List[NITaxYear]) extends Logging {
   val payableGapsPre2016: Int = taxYears.filter(_.startTaxYear.exists(_ < 2016)).count(_.payable)
   val payableGapsPost2016: Int = taxYears.filter(_.startTaxYear.exists(_ >= 2016)).count(_.payable)
   val qualifyingYearsPost2016: Int = taxYears.filter(_.startTaxYear.exists(_ >= 2016)).count(_.qualifying.get)
@@ -29,7 +29,7 @@ case class NIRecord(qualifyingYears: Int = 0, taxYears: List[NITaxYear]) {
   def purge(finalRelevantStartYear: Int): NIRecord = {
     val filteredYears = taxYears.filter(_.startTaxYear.get <= finalRelevantStartYear)
     val purgedYears = taxYears.filter(_.startTaxYear.get > finalRelevantStartYear)
-    if (purgedYears.nonEmpty) Logger.warn(s"Purged years (FRY $finalRelevantStartYear): ${purgedYears.map(_.startTaxYear).mkString(",")}")
+    if (purgedYears.nonEmpty) logger.warn(s"Purged years (FRY $finalRelevantStartYear): ${purgedYears.map(_.startTaxYear).mkString(",")}")
 
     this.copy(
       qualifyingYears = qualifyingYears - purgedYears.count(_.qualifying.get),

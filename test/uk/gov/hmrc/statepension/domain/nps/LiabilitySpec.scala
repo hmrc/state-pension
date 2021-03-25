@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
+import org.scalatest.Matchers._
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class LiabilitySpec extends UnitSpec {
+class LiabilitySpec extends StatePensionBaseSpec {
 
   "Liability" should {
     "deserialise correctly" in {

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import akka.util.Timeout
-import org.mockito.Matchers.{any, eq => MockitoEq}
+import org.mockito.ArgumentMatchers.{any, eq => MockitoEq}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.BeforeAndAfter
 import org.scalatestplus.mockito.MockitoSugar

@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.config
 
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import org.scalatest.Matchers._
 
 class BindersSpec extends StatePensionBaseSpec {
 

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import play.Logger
+import play.api.Logging
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain.nps.{Liability, LiabilityType}
@@ -30,7 +30,7 @@ case class ExclusionService(dateOfDeath: Option[LocalDate],
                             startingAmount: BigDecimal,
                             calculatedStartingAmount: BigDecimal,
                             liabilities: List[Liability],
-                            manualCorrespondenceOnly: Boolean) {
+                            manualCorrespondenceOnly: Boolean) extends Logging {
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
@@ -50,7 +50,7 @@ case class ExclusionService(dateOfDeath: Option[LocalDate],
 
   private val checkAmountDissonance = (exclusionList: List[Exclusion]) =>
     if (startingAmount != calculatedStartingAmount) {
-      Logger.warn(s"Dissonance Found!: Entitlement - $entitlement Starting - $startingAmount Components - $calculatedStartingAmount")
+      logger.warn(s"Dissonance Found!: Entitlement - $entitlement Starting - $startingAmount Components - $calculatedStartingAmount")
       AmountDissonance :: exclusionList
     } else {
       exclusionList

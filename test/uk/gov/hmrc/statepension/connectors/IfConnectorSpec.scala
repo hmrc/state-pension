@@ -21,21 +21,26 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, await, defaultAwaitTimeout}
+import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.logging.{RequestId, SessionId}
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, Upstream5xxResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{NinoGenerator, WireMockHelper}
 
-class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with WireMockHelper with BeforeAndAfterEach {
+class IfConnectorSpec extends PlaySpec
+  with MockitoSugar
+  with ScalaFutures
+  with IntegrationPatience
+  with NinoGenerator
+  with WireMockHelper
+  with BeforeAndAfterEach {
 
   val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
@@ -79,7 +84,7 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
       stubGetSummary(body = SummaryFixture.exampleSummaryJson)
 
-      await(ifConnector.getSummary(nino))
+      ifConnector.getSummary(nino).futureValue
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/summary"))
@@ -95,7 +100,7 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
       "response json is valid" in {
         stubGetSummary(body = SummaryFixture.exampleSummaryJson)
 
-        await(ifConnector.getSummary(nino)) mustBe SummaryFixture.exampleSummary
+        ifConnector.getSummary(nino).futureValue mustBe SummaryFixture.exampleSummary
       }
     }
 
@@ -103,18 +108,19 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
       "response json is invalid" in {
         stubGetSummary()
 
-        intercept[ifConnector.JsonValidationException] {
-          await(ifConnector.getSummary(nino))
-        }
+        val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
       }
     }
 
     "return Upstream5xxException" when {
       "response status is 5xx" in {
         stubGetSummary(INTERNAL_SERVER_ERROR)
-        intercept[Upstream5xxResponse] {
-          await(ifConnector.getSummary(nino))
-        }
+
+        val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[Upstream5xxResponse])
       }
     }
   }
@@ -126,7 +132,7 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
       stubLiabilities(body = LiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
 
-      await(ifConnector.getLiabilities(nino))
+      ifConnector.getLiabilities(nino).futureValue
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities"))
@@ -142,7 +148,7 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
       "response json is valid" in {
         stubLiabilities(body = LiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
 
-        await(ifConnector.getLiabilities(nino)) mustBe LiabilitiesFixture.exampleLiabilities
+        ifConnector.getLiabilities(nino).futureValue mustBe LiabilitiesFixture.exampleLiabilities
       }
     }
 
@@ -150,9 +156,9 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
       "response json is invalid" in {
         stubLiabilities(body = """{"liabilities": {}}""")
 
-        intercept[ifConnector.JsonValidationException]{
-          await(ifConnector.getLiabilities(nino))
-        }
+        val thrown: Throwable = ifConnector.getLiabilities(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
       }
     }
 
@@ -160,9 +166,9 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
       "response status is 5xx" in {
         stubLiabilities(status = INTERNAL_SERVER_ERROR)
 
-        intercept[Upstream5xxResponse]{
-          await(ifConnector.getLiabilities(nino))
-        }
+        val thrown: Throwable = ifConnector.getLiabilities(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[Upstream5xxResponse])
       }
     }
   }
@@ -173,7 +179,7 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
       stubNiRecord(body = NIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
 
-      await(ifConnector.getNIRecord(nino))
+      ifConnector.getNIRecord(nino).futureValue
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details"))
@@ -188,25 +194,27 @@ class IfConnectorSpec extends PlaySpec with MockitoSugar with NinoGenerator with
       "response json is valid" in {
         stubNiRecord(body = NIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
 
-        await(ifConnector.getNIRecord(nino)) mustBe NIRecordFixture.exampleDesNiRecord
+        ifConnector.getNIRecord(nino).futureValue mustBe NIRecordFixture.exampleDesNiRecord
       }
     }
 
     "return JsonValidationException" when {
       "response json is invalid" in {
         stubNiRecord(body = """{"taxYears":{}}""")
-        intercept[ifConnector.JsonValidationException] {
-          await(ifConnector.getNIRecord(nino))
-        }
+
+        val thrown: Throwable = ifConnector.getNIRecord(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
       }
     }
 
     "return Upstream5xxException" when {
       "response status is 5xx" in {
         stubNiRecord(status = INTERNAL_SERVER_ERROR)
-        intercept[Upstream5xxResponse] {
-          await(ifConnector.getNIRecord(nino))
-        }
+
+        val thrown: Throwable = ifConnector.getNIRecord(nino).failed.futureValue
+
+        assert(thrown.isInstanceOf[Upstream5xxResponse])
       }
     }
   }
