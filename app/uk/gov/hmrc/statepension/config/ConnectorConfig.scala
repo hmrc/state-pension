@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension
+package uk.gov.hmrc.statepension.config
 
-import uk.gov.hmrc.http.HeaderCarrier
-
-trait StatePensionUnitSpec extends uk.gov.hmrc.play.test.UnitSpec with NinoGenerator {
-
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
-}
+class ConnectorConfig(val serviceUrl: String,
+                      val serviceOriginatorIdKey: String,
+                      val serviceOriginatorIdValue: String,
+                      val environment: String,
+                      val authorizationToken: String)

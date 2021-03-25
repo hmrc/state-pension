@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
+import org.scalatest.Matchers._
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class NITaxYearSpec extends UnitSpec {
+class NITaxYearSpec extends StatePensionBaseSpec {
 
   val trueYear: NITaxYear = Json.parse(
   """

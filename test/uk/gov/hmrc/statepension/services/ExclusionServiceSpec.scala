@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import org.scalatest.Matchers._
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.Liability
 
-class ExclusionServiceSpec extends StatePensionUnitSpec {
+class ExclusionServiceSpec extends StatePensionBaseSpec {
 
   val exampleNow = new LocalDate(2017, 2, 16)
   val examplePensionDate = new LocalDate(2022, 2, 2)
@@ -69,7 +70,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
       }
     }
 
-   "the amount dissonance criteria is met" when  {
+    "the amount dissonance criteria is met" when  {
       "the startingAmount and calculatedStartingAmount are the same" should {
         "return no exclusions" in {
           exclusionServiceBuilder(startingAmount = 155.65, calculatedStartingAmount = 155.65).getExclusions shouldBe Nil
@@ -121,7 +122,7 @@ class ExclusionServiceSpec extends StatePensionUnitSpec {
     }
 
     "all the exclusion criteria are met" should {
-      "return a sorted list of Dead, PostSPA, MWRRE" in {
+      "return a sorted list of Dead, PostSPA, MWRRE, CopeProcessing" in {
         exclusionServiceBuilder(
           dateOfDeath = Some(new LocalDate(1999, 12, 31)),
           pensionDate = new LocalDate(2000, 1, 1),

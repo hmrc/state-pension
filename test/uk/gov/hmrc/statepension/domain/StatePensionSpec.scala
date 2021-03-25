@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.domain.nps
+package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
-import uk.gov.hmrc.statepension.domain._
+import org.scalatest.Matchers._
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class StatePensionSpec extends StatePensionUnitSpec {
+class StatePensionSpec extends StatePensionBaseSpec {
 
   "StatePensionAmount" should {
     "Weekly / Monthly / Annual Calculation" should {

@@ -16,27 +16,25 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import java.util.UUID.randomUUID
-
-import play.api.data.validation.ValidationError
-import play.api.libs.json.{JsPath, Reads}
+import com.google.inject.Inject
+import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.logging.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.statepension.WSHttp
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import java.util.UUID.randomUUID
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-trait NpsConnector {
+abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext){
 
-  val http: WSHttp
+  val http: HttpClient
   val metrics: ApplicationMetrics
   val token: String
-  val serviceOriginatorId: (String, String)
+  val originatorIdKey: String
+  val originatorIdValue: String
   val environmentHeader: (String, String)
   def summaryUrl(nino: Nino): String
   def liabilitiesUrl(nino: Nino): String
@@ -46,19 +44,9 @@ trait NpsConnector {
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
 
-  private def correlationId(implicit hc: HeaderCarrier): (String, String) = {
-    val CorrelationIdPattern = """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
-    val correlationId = hc.requestId match {
-      case Some(requestId) => requestId.value match {
-        case CorrelationIdPattern(prefix) => prefix + "-" + randomUUID.toString.substring(24)
-        case _ => randomUUID.toString
-      }
-      case _ => randomUUID.toString
+  implicit val legacyRawReads = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
 
-    }
-
-    "CorrelationId" -> correlationId
-  }
+  val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
     connectToHOD[Summary](summaryUrl(nino), summaryMetricType)
@@ -71,8 +59,10 @@ trait NpsConnector {
 
   private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
-    val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, HeaderCarrier(Some(Authorization(s"Bearer $token")))
-      .withExtraHeaders(serviceOriginatorId, environmentHeader, correlationId),  ec=global)
+    val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
+    val responseF = http.GET[HttpResponse](url)(legacyRawReads,
+      HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
+      .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
 
     responseF.map { httpResponse =>
       timerContext.stop()
@@ -95,7 +85,17 @@ trait NpsConnector {
     }
   }
 
-  private def formatJsonErrors(errors: Seq[(JsPath, Seq[ValidationError])]): String = {
+  private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
+    headerCarrier.extraHeaders.toMap.getOrElse(key, "Header not found")
+
+  private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
+    appConfig.dwpApplicationId match {
+      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
+      case _ => value
+    }
+  }
+
+  private def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String = {
     errors.map(p => p._1 + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
   }
 

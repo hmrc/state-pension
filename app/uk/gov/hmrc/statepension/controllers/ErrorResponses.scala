@@ -16,14 +16,23 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import org.joda.time.LocalDate
 import uk.gov.hmrc.api.controllers.ErrorResponse
+import uk.gov.hmrc.statepension.config.AppConfig
 
 object ErrorResponses {
   val CODE_INVALID_NINO = "ERROR_NINO_INVALID"
   val CODE_MANUAL_CORRESPONDENCE = "EXCLUSION_MANUAL_CORRESPONDENCE"
   val CODE_DEAD = "EXCLUSION_DEAD"
+  val CODE_COPE_PROCESSING = "EXCLUSION_COPE_PROCESSING"
+  val CODE_COPE_PROCESSING_FAILED = "EXCLUSION_COPE_PROCESSING_FAILED"
 
-  object ErrorNinoInvalid extends ErrorResponse(400, CODE_INVALID_NINO, "The provided NINO is not valid")
-  object ExclusionManualCorrespondence extends ErrorResponse(403, CODE_MANUAL_CORRESPONDENCE, "The customer cannot access the service, they should contact HMRC")
-  object ExclusionDead extends ErrorResponse(403, CODE_DEAD, "The customer needs to contact the National Insurance helpline")
+  case object ExclusionCopeProcessing {
+    def apply(appConfig: AppConfig): ErrorResponseCopeProcessing =
+      ErrorResponseCopeProcessing(CODE_COPE_PROCESSING, LocalDate.now().plusDays(appConfig.copeReturnToServiceDays))
+  }
+  object ExclusionCopeProcessingFailed extends ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED)
+  case object ErrorNinoInvalid extends ErrorResponse(400, CODE_INVALID_NINO, "The provided NINO is not valid")
+  case object ExclusionManualCorrespondence extends ErrorResponse(403, CODE_MANUAL_CORRESPONDENCE, "The customer cannot access the service, they should contact HMRC")
+  case object ExclusionDead extends ErrorResponse(403, CODE_DEAD, "The customer needs to contact the National Insurance helpline")
 }

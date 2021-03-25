@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,28 @@ package uk.gov.hmrc.statepension.services
 
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{never, times, verify, when}
-import org.mockito.{Matchers, Mockito}
-import org.scalatest.BeforeAndAfterEach
+import org.mockito.{ArgumentMatchers, Mockito}
+import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Exclusion, Scenario, StatePension}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class StatePensionServiceStatementSpec extends StatePensionUnitSpec
-  with OneAppPerSuite
+class StatePensionServiceStatementSpec extends StatePensionBaseSpec
+  with GuiceOneAppPerSuite
   with ScalaFutures
   with MockitoSugar
-  with BeforeAndAfterEach {
+  with Injecting {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -49,7 +51,9 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
-    override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+    override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
+
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)
   }
@@ -57,10 +61,10 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
   override def beforeEach: Unit = {
     Mockito.reset(mockNpsConnector, mockMetrics)
 
-    when(mockNpsConnector.getLiabilities(Matchers.any())(Matchers.any()))
+    when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(List()))
 
-    when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+    when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(
         NIRecord(qualifyingYears = 20, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)),
           NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
@@ -98,379 +102,351 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
-          )
+          ),
+          manualCorrespondenceIndicator = None
         )
 
         "log a summary metric" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          service.getStatement(generateNino()).futureValue.right.get
 
           verify(mockMetrics, Mockito.atLeastOnce()).summary(
-            Matchers.eq[BigDecimal](161.18),
-            Matchers.eq[BigDecimal](161.18),
-            Matchers.eq(false),
-            Matchers.eq(Scenario.Reached),
-            Matchers.eq[BigDecimal](161.18),
-            Matchers.eq(0),
-            Matchers.eq(None),
-            Matchers.eq[BigDecimal](161.18),
-            Matchers.eq[BigDecimal](119.3),
-            Matchers.eq[BigDecimal](39.22),
-            Matchers.eq[BigDecimal](2.66),
-            Matchers.eq[BigDecimal](155.65),
-            Matchers.eq[BigDecimal](0),
-            Matchers.eq(false),
-            Matchers.eq(None),
-            Matchers.eq(false)
+            ArgumentMatchers.eq[BigDecimal](161.18),
+            ArgumentMatchers.eq[BigDecimal](161.18),
+            ArgumentMatchers.eq(false),
+            ArgumentMatchers.eq(Scenario.Reached),
+            ArgumentMatchers.eq[BigDecimal](161.18),
+            ArgumentMatchers.eq(0),
+            ArgumentMatchers.eq(None),
+            ArgumentMatchers.eq[BigDecimal](161.18),
+            ArgumentMatchers.eq[BigDecimal](119.3),
+            ArgumentMatchers.eq[BigDecimal](39.22),
+            ArgumentMatchers.eq[BigDecimal](2.66),
+            ArgumentMatchers.eq[BigDecimal](155.65),
+            ArgumentMatchers.eq[BigDecimal](0),
+            ArgumentMatchers.eq(false),
+            ArgumentMatchers.eq(None),
+            ArgumentMatchers.eq(false)
           )
         }
 
         "not log an exclusion metric" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          //val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          verify(mockMetrics, never).exclusion(Matchers.any())
+          verify(mockMetrics, never).exclusion(ArgumentMatchers.any())
         }
 
         "return earningsIncludedUpTo of 2016-4-5" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.earningsIncludedUpTo shouldBe new LocalDate(2016, 4, 5)
-          }
+          statement.earningsIncludedUpTo shouldBe new LocalDate(2016, 4, 5)
         }
 
         "return qualifying years of 36" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.numberOfQualifyingYears shouldBe 36
-          }
+          statement.numberOfQualifyingYears shouldBe 36
         }
 
         "return pension date of 2019-9-6" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.pensionDate shouldBe new LocalDate(2019, 9, 6)
-          }
+          statement.pensionDate shouldBe new LocalDate(2019, 9, 6)
         }
 
         "return oldRules additionalStatePension as 39.22" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.amounts.oldRules.additionalStatePension shouldBe 39.22
-          }
+          statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
 
         "return oldRules graduatedRetirementsBenefit as 2.66" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
-          }
+          statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
         }
 
         "return oldRules basicStatePension as 119.3" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
-            .thenReturn(Future.successful(regularStatement))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.amounts.oldRules.basicStatePension shouldBe 119.3
-          }
+          statement.amounts.oldRules.basicStatePension shouldBe 119.3
         }
 
         "return newRules grossStatePension as 155.65" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.amounts.newRules.grossStatePension shouldBe 155.65
-          }
+          statement.amounts.newRules.grossStatePension shouldBe 155.65
         }
 
         "return newRules rebateDerivedAmount as 0.00" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.amounts.newRules.rebateDerivedAmount shouldBe 0.00
-          }
+          statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
 
         "return RRECurrentWeeklyAmount as None" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.reducedRateElectionCurrentWeeklyAmount shouldBe None
-          }
+          statement.reducedRateElectionCurrentWeeklyAmount shouldBe None
         }
 
         "return reducedRateElection as false" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.reducedRateElection shouldBe false
-          }
+          statement.reducedRateElection shouldBe false
         }
 
         "return statePensionAgeUnderConsideration as false" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.statePensionAgeUnderConsideration shouldBe false
-          }
+          statement.statePensionAgeUnderConsideration shouldBe false
         }
 
         "return final relevant year" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.finalRelevantYear shouldBe "2018-19"
-          }
+          statement.finalRelevantYear shouldBe "2018-19"
         }
 
         "when there is a pensionSharingOrder return true" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement.copy(pensionSharingOrderSERPS = true)))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe true
+          service.getStatement(generateNino()).futureValue.right.get.pensionSharingOrder shouldBe true
         }
 
         "when there is no pensionSharingOrder return false" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement.copy(pensionSharingOrderSERPS = false)))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).right.get.pensionSharingOrder shouldBe false
+          service.getStatement(generateNino()).futureValue.right.get.pensionSharingOrder shouldBe false
         }
 
         "return pension age of 65" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.pensionAge shouldBe 65
-          }
+          statement.pensionAge shouldBe 65
         }
 
         "return full state pension rate of 155.65" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          whenReady(statement) { sp =>
-            sp.currentFullWeeklyPensionAmount shouldBe 155.65
-          }
+          statement.currentFullWeeklyPensionAmount shouldBe 155.65
         }
 
         "when there is a protected payment of some value return true" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(
               regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0))
             ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe false
+          service.getStatement(generateNino()).futureValue.right.get.amounts.protectedPayment shouldBe false
         }
 
         "when there is a protected payment of 0 return false" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(
               regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66))
             ))
 
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).right.get.amounts.protectedPayment shouldBe true
+          service.getStatement(generateNino()).futureValue.right.get.amounts.protectedPayment shouldBe true
         }
 
         "when there is a rebate derived amount of 12.34 it" should {
 
           "return a weekly cope amount of 12.34" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.cope.weeklyAmount shouldBe 12.34
           }
 
           "return a monthly cope amount of 53.66" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.cope.monthlyAmount shouldBe 53.66
           }
 
           "return an annual cope amount of 643.88" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.cope.annualAmount shouldBe 643.88
           }
 
           "return a weekly starting amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.starting.weeklyAmount shouldBe 161.18
           }
 
           "return a monthly starting amount of 700.85" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.starting.monthlyAmount shouldBe 700.85
           }
 
           "return an annual starting amount of 8410.14" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.starting.annualAmount shouldBe 8410.14
           }
@@ -479,46 +455,46 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         "when there is a rebate derived amount of 0 it" should {
 
           "return a weekly cope amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.cope.weeklyAmount shouldBe 0
           }
 
           "return a monthly cope amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.cope.monthlyAmount shouldBe 0
           }
 
           "return an annual cope amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(
                 regularStatement.copy(amounts = regularStatement.amounts.copy(
                   amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0)))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.cope.annualAmount shouldBe 0
           }
@@ -527,7 +503,7 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         "when there is all amounts of 0 it" should {
 
           "return a weekly starting amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
               regularStatement.copy(amounts = regularStatement.amounts.copy(
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
@@ -550,16 +526,16 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
             ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.starting.weeklyAmount shouldBe 0
           }
 
           "return a monthly starting amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
               regularStatement.copy(amounts = regularStatement.amounts.copy(
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
@@ -582,16 +558,16 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
             ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.starting.monthlyAmount shouldBe 0
           }
 
           "return an annual starting amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
               regularStatement.copy(amounts = regularStatement.amounts.copy(
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
@@ -614,10 +590,10 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               ))
             ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.starting.annualAmount shouldBe 0
           }
@@ -626,100 +602,100 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         "when there is an entitlement of 161.18 it" should {
 
           "return a weekly current amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.current.weeklyAmount shouldBe 161.18
           }
 
           "return a monthly current amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.current.monthlyAmount shouldBe 700.85
           }
 
           "return an annual current amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
-            service.getStatement(generateNino()).right.get.amounts.current.annualAmount shouldBe 8410.14
+            statement.amounts.current.annualAmount shouldBe 8410.14
           }
         }
 
         "the forecast" should {
           "return a weekly current amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.forecast.weeklyAmount shouldBe 161.18
           }
 
           "return a monthly current amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
             statement.amounts.forecast.monthlyAmount shouldBe 700.85
           }
 
           "return an annual current amount of 161.18" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.forecast.annualAmount shouldBe 8410.14
           }
 
           "return years to work 0 as they have reached" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18))
               ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.forecast.yearsToWork.get shouldBe 0
           }
@@ -728,40 +704,40 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
         "when there is an entitlement of 0 it" should {
 
           "return a weekly current amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
               regularStatement.copy(amounts = PensionAmounts())
             ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.current.weeklyAmount shouldBe 0
           }
 
           "return a monthly current amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
               regularStatement.copy(amounts = PensionAmounts())
             ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.current.monthlyAmount shouldBe 0
           }
 
           "return an annual current amount of 0" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
               regularStatement.copy(amounts = PensionAmounts())
             ))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).right.get
+            val statement = service.getStatement(generateNino()).futureValue.right.get
 
             statement.amounts.current.annualAmount shouldBe 0
           }
@@ -798,19 +774,20 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
               mainComponent = 155.65,
               rebateDerivedAmount = 0
             )
-          )
+          ),
+          manualCorrespondenceIndicator = None
         )
 
         "when there is a starting amount of 0 it" should {
 
           "return an AmountDissonance exclusion" in {
-            when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(regularStatement))
 
-            when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+            when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).left
+            val statement = service.getStatement(generateNino()).futureValue.left
 
             statement.get.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
             statement.get.pensionAge shouldBe 65
@@ -848,48 +825,49 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "the OldRules amounts" should {
         "return additionalPension amount of 39.22" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
 
         "return graduatedRetirementBenefit amount of 2.66" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
         }
 
         "return basicStatePension amount of 2.66" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.oldRules.basicStatePension shouldBe 79.53
         }
@@ -897,29 +875,29 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
 
       "the NewRules amounts" should {
         "return grossStatePension amount of 88.94" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.newRules.grossStatePension shouldBe 88.94
         }
 
         "return rebateDerivedAmount amount of 0.00" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
@@ -928,57 +906,57 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
       "the forecast amount" should {
 
         "return a weekly forecast amount of 134.75" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.forecast.weeklyAmount shouldBe 134.75
         }
 
         "return a monthly forecast amount of 585.92" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.forecast.monthlyAmount shouldBe 585.92
         }
 
         "return an annual forecast amount of 7031.06" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.forecast.annualAmount shouldBe 7031.06
         }
 
         "return years to work of 3 and that is how long is left" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             regularStatement
           ))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.forecast.yearsToWork.get shouldBe 3
         }
@@ -986,40 +964,33 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
       }
 
       "log a summary metric" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          regularStatement
-        ))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
-        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any())).thenReturn(Future.successful(
-          NIRecord(qualifyingYears = 20, List())
-        ))
+        service.getStatement(generateNino()).futureValue.right.get
 
-        val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
-
-        whenReady(statement) { summary =>
-          verify(mockMetrics, times(1)).summary(
-            Matchers.eq[BigDecimal](134.75),
-            Matchers.eq[BigDecimal](121.41),
-            Matchers.eq(false),
-            Matchers.eq(Scenario.ContinueWorkingNonMax),
-            Matchers.eq[BigDecimal](134.75),
-            Matchers.eq(3),
-            Matchers.eq(None),
-            Matchers.eq[BigDecimal](121.41),
-            Matchers.eq[BigDecimal](79.53),
-            Matchers.eq[BigDecimal](39.22),
-            Matchers.eq[BigDecimal](2.66),
-            Matchers.eq[BigDecimal](88.94),
-            Matchers.eq[BigDecimal](0),
-            Matchers.eq(false),
-            Matchers.eq(None),
-            Matchers.eq(false)
-          )
-        }
+        verify(mockMetrics, times(1)).summary(
+          ArgumentMatchers.eq[BigDecimal](134.75),
+          ArgumentMatchers.eq[BigDecimal](121.41),
+          ArgumentMatchers.eq(false),
+          ArgumentMatchers.eq(Scenario.ContinueWorkingNonMax),
+          ArgumentMatchers.eq[BigDecimal](134.75),
+          ArgumentMatchers.eq(3),
+          ArgumentMatchers.eq(None),
+          ArgumentMatchers.eq[BigDecimal](121.41),
+          ArgumentMatchers.eq[BigDecimal](79.53),
+          ArgumentMatchers.eq[BigDecimal](39.22),
+          ArgumentMatchers.eq[BigDecimal](2.66),
+          ArgumentMatchers.eq[BigDecimal](88.94),
+          ArgumentMatchers.eq[BigDecimal](0),
+          ArgumentMatchers.eq(false),
+          ArgumentMatchers.eq(None),
+          ArgumentMatchers.eq(false)
+        )
       }
 
       "not log an exclusion metric" in {
-        verify(mockMetrics, never).exclusion(Matchers.any())
+        verify(mockMetrics, never).exclusion(ArgumentMatchers.any())
       }
     }
 
@@ -1050,31 +1021,32 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             mainComponent = 66.37, // Net SP
             rebateDerivedAmount = 18.13
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
 
       "the NewRules amounts" should {
         "return grossStatePension amount of 84.50" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.newRules.grossStatePension shouldBe 84.50
         }
 
         "return rebateDerivedAmount amount of 18.13" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
-          val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.newRules.rebateDerivedAmount shouldBe 18.13
         }
@@ -1109,62 +1081,63 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             mainComponent = 88.94,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "the personal maximum amount" should {
 
         "return a weekly personal max amount of 142.71" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.maximum.weeklyAmount shouldBe 142.71
         }
 
         "return a monthly personal max amount of 620.53" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.maximum.monthlyAmount shouldBe 620.53
         }
 
         "return an annual personal max amount of 7446.40" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.maximum.annualAmount shouldBe 7446.40
         }
 
         "return 2 gaps to fill" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.maximum.gapsToFill shouldBe Some(2)
         }
 
         "return 3 years to work" in {
-          when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+          when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
           statement.amounts.maximum.yearsToWork shouldBe Some(3)
         }
       }
 
       "summary have totalAP as 41.88" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.totalAP shouldBe 41.88
@@ -1172,10 +1145,10 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
       }
 
       "summary have additionalStatePension as 39.22" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.additionalStatePension shouldBe 39.22
@@ -1183,10 +1156,10 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
       }
 
       "summary have graduatedRetirementBenefit as 2.66" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.graduatedRetirementBenefit shouldBe 2.66
@@ -1194,10 +1167,10 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
       }
 
       "summary have basicStatePension as 79.53" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(Matchers.any())(Matchers.any())
+        lazy val summaryF: Future[Summary] = mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())
 
         whenReady(summaryF) { summary =>
           summary.amounts.amountA2016.basicStatePension shouldBe 79.53
@@ -1205,94 +1178,77 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
       }
 
       "statePension have additionalStatePension as 39.22" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-        whenReady(statement) { statePension =>
-          statePension.amounts.oldRules.additionalStatePension shouldBe 39.22
-
-        }
+        statement.amounts.oldRules.additionalStatePension shouldBe 39.22
       }
 
       "statePension have graduatedRetirementBenefit as 2.66" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-        whenReady(statement) { statePension =>
-          statePension.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
-        }
+        statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
       }
 
       "statePension have basicStatePension as 79.53" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-        whenReady(statement) { statePension =>
-          statePension.amounts.oldRules.basicStatePension shouldBe 79.53
-        }
+        statement.amounts.oldRules.basicStatePension shouldBe 79.53
       }
 
       "statePension have grossStatePension as 88.94" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-        whenReady(statement) { statePension =>
-          statePension.amounts.newRules.grossStatePension shouldBe 88.94
-        }
+        statement.amounts.newRules.grossStatePension shouldBe 88.94
       }
 
       "statePension have rebateDerivedAmount as 0.00" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-        whenReady(statement) { statePension =>
-          statePension.amounts.newRules.rebateDerivedAmount shouldBe 0.00
-        }
+        statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
       }
 
       "log a summary metric" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
+        service.getStatement(generateNino()).futureValue.right.get
 
-        whenReady(statement) { statePension =>
-          verify(mockMetrics, times(1)).summary(
-            Matchers.eq[BigDecimal](134.75),
-            Matchers.eq[BigDecimal](121.41),
-            Matchers.eq(false),
-            Matchers.eq(Scenario.FillGaps),
-            Matchers.eq[BigDecimal](142.71),
-            Matchers.eq(3),
-            Matchers.eq(None),
-            Matchers.eq[BigDecimal](121.41),
-            Matchers.eq[BigDecimal](79.53),
-            Matchers.eq[BigDecimal](39.22),
-            Matchers.eq[BigDecimal](2.66),
-            Matchers.eq[BigDecimal](88.94),
-            Matchers.eq[BigDecimal](0),
-            Matchers.eq(false),
-            Matchers.eq(None),
-            Matchers.eq(false)
-          )
-        }
+        verify(mockMetrics, times(1)).summary(
+          ArgumentMatchers.eq[BigDecimal](134.75),
+          ArgumentMatchers.eq[BigDecimal](121.41),
+          ArgumentMatchers.eq(false),
+          ArgumentMatchers.eq(Scenario.FillGaps),
+          ArgumentMatchers.eq[BigDecimal](142.71),
+          ArgumentMatchers.eq(3),
+          ArgumentMatchers.eq(None),
+          ArgumentMatchers.eq[BigDecimal](121.41),
+          ArgumentMatchers.eq[BigDecimal](79.53),
+          ArgumentMatchers.eq[BigDecimal](39.22),
+          ArgumentMatchers.eq[BigDecimal](2.66),
+          ArgumentMatchers.eq[BigDecimal](88.94),
+          ArgumentMatchers.eq[BigDecimal](0),
+          ArgumentMatchers.eq(false),
+          ArgumentMatchers.eq(None),
+          ArgumentMatchers.eq(false)
+        )
       }
 
       "not log an exclusion metric" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        verify(mockMetrics, never).exclusion(Matchers.any())
+        verify(mockMetrics, never).exclusion(ArgumentMatchers.any())
       }
     }
 
@@ -1323,20 +1279,16 @@ class StatePensionServiceStatementSpec extends StatePensionUnitSpec
             mainComponent = 40.02,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "return 0 for the current amount" in {
-        when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
+        when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(NIRecord(qualifyingYears = 9, List())))
 
-        when(mockNpsConnector.getNIRecord(Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(NIRecord(qualifyingYears = 9, List())))
-
-        lazy val statement: Future[StatePension] = service.getStatement(generateNino()).right.get
-        whenReady(statement) { statement =>
-          statement.amounts.current.weeklyAmount shouldBe 0
-        }
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        statement.amounts.current.weeklyAmount shouldBe 0
       }
     }
   }

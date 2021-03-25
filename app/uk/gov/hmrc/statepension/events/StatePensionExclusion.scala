@@ -21,15 +21,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.Exclusion
 
-import scala.language.postfixOps
-
 object StatePensionExclusion{
-  def apply(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int,
+  def apply(nino: Nino, exclusionReasons: List[Exclusion], pensionAge: Int,
             pensionDate: LocalDate, statePensionAgeUnderConsideration: Boolean)(implicit hc: HeaderCarrier): StatePensionExclusion =
     new StatePensionExclusion(nino, exclusionReasons, pensionAge, pensionDate, statePensionAgeUnderConsideration)
 }
 
-class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int, pensionDate: LocalDate,
+class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion], pensionAge: Int, pensionDate: LocalDate,
                             statePensionAgeUnderConsideration: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePensionExclusion", nino,
     Map(

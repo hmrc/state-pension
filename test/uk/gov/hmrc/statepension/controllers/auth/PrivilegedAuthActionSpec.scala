@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,38 +16,47 @@
 
 package uk.gov.hmrc.statepension.controllers.auth
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, when}
 import org.mockito.stubbing.OngoingStubbing
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.mvc.{Action, AnyContent, Controller, Request}
-import play.api.test.FakeRequest
-import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED, await, defaultAwaitTimeout, status}
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED, defaultAwaitTimeout, status}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, InternalError}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val authAction: PrivilegedAuthAction = new PrivilegedAuthAction(mockAuthConnector)
+  val controllerComponents = Helpers.stubControllerComponents()
 
-  object Harness extends Controller {
+  val injector = new GuiceApplicationBuilder()
+    .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+    .injector()
+
+  val authAction: PrivilegedAuthAction = injector.instanceOf[PrivilegedAuthAction]
+
+  object Harness extends BackendController(controllerComponents) {
     def onPageLoad(): Action[AnyContent] = authAction(_ => Ok)
   }
 
   def setupAuthConnector(result: Future[Unit]): OngoingStubbing[Future[Unit]] =
     when(mockAuthConnector.authorise(
-      Matchers.eq(AuthProviders(PrivilegedApplication)),
-      Matchers.eq(EmptyRetrieval))(
-      Matchers.any[HeaderCarrier],
-      Matchers.any[ExecutionContext]
+      ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
+      ArgumentMatchers.eq(EmptyRetrieval))(
+      ArgumentMatchers.any[HeaderCarrier],
+      ArgumentMatchers.any[ExecutionContext]
     )).thenReturn(result)
 
 
@@ -59,13 +68,13 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
     "make a call to auth for privileged application" in {
       setupAuthConnector(Future.successful(()))
 
-      await(Harness.onPageLoad()(request))
+      Harness.onPageLoad()(request).futureValue
 
       verify(mockAuthConnector).authorise(
-        Matchers.eq(AuthProviders(PrivilegedApplication)),
-        Matchers.eq(EmptyRetrieval))(
-        Matchers.any[HeaderCarrier],
-        Matchers.any[ExecutionContext]
+        ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
+        ArgumentMatchers.eq(EmptyRetrieval))(
+        ArgumentMatchers.any[HeaderCarrier],
+        ArgumentMatchers.any[ExecutionContext]
       )
     }
 
@@ -73,7 +82,7 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
       "user is authenticated" in {
         setupAuthConnector(Future.successful(()))
 
-        val result = Harness.onPageLoad()(request)
+        val result: Future[Result] = Harness.onPageLoad()(request)
 
         status(result) mustBe OK
       }

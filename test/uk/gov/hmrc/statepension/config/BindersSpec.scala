@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 package uk.gov.hmrc.statepension.config
 
 import play.api.mvc.PathBindable
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import org.scalatest.Matchers._
 
-class BindersSpec extends StatePensionUnitSpec {
+class BindersSpec extends StatePensionBaseSpec {
 
   "nino.bind" should {
 

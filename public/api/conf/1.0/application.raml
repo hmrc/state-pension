@@ -90,6 +90,14 @@ uses:
                     description: Death recorded, the customer needs to contact the National Insurance Helpline
                     value:
                       code: EXCLUSION_DEAD
+                  ExcCopePro:
+                    description: Cope data has an open work item meaning that the customer cannot enter the service and must come back at a later date.
+                    value:
+                      code: EXCLUSION_COPE_PROCESSING
+                  ExcCopeProFail:
+                    description: Cope data has a closed work item against it meaning that the customer cannot enter the service and is advised to contact DWP.
+                    value:
+                      code: EXCLUSION_COPE_PROCESSING_FAILED
           404:
             body:
               application/json:
@@ -185,6 +193,14 @@ uses:
                         description: Death recorded, the customer needs to contact the National Insurance Helpline
                         value:
                           code: EXCLUSION_DEAD
+                      ExcCopePro:
+                        description: Cope data has an open work item meaning that the customer cannot enter the service and must come back at a later date.
+                        value:
+                          code: EXCLUSION_COPE_PROCESSING
+                      ExcCopeProFail:
+                        description: Cope data has a closed work item against it meaning that the customer cannot enter the service and is advised to contact DWP.
+                        value:
+                          code: EXCLUSION_COPE_PROCESSING_FAILED
               404:
                 body:
                   application/json:

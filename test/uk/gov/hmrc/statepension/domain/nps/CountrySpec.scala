@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.Matchers._
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
-class CountrySpec extends UnitSpec{
+class CountrySpec extends StatePensionBaseSpec {
 
   "Not Specified should be 0" in {
     Country.NOT_SPECIFIED shouldBe 0

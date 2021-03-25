@@ -17,23 +17,27 @@
 package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.WSHttp
-import uk.gov.hmrc.statepension.config.AppContext
+import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.nps.APIType.{IfLiabilities, IfNIRecord, IfSummary}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
+import scala.concurrent.ExecutionContext
+
 class IfConnector @Inject()(
-                           val http: WSHttp,
-                           val metrics: ApplicationMetrics,
-                           appContext: AppContext
-                           ) extends NpsConnector {
+                             val http: HttpClient,
+                             val metrics: ApplicationMetrics,
+                             appConfig: AppConfig
+                           )(implicit ec: ExecutionContext) extends NpsConnector(appConfig) {
 
-  val ifBaseUrl: String = appContext.ifBaseUrl
+  import appConfig.ifConnectorConfig._
 
-  override val serviceOriginatorId: (String, String) = (appContext.ifOriginatorIdKey, appContext.ifOriginatorIdValue)
-  override val environmentHeader: (String, String) = ("Environment", appContext.ifEnvironment)
-  override val token: String = appContext.ifToken
+  val ifBaseUrl: String = serviceUrl
+  override val originatorIdKey: String = serviceOriginatorIdKey
+  override val originatorIdValue: String =  serviceOriginatorIdValue
+  override val environmentHeader: (String, String) = ("Environment", environment)
+  override val token: String = authorizationToken
 
   override def summaryUrl(nino: Nino): String = s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary"
   override def liabilitiesUrl(nino: Nino): String =  s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities"

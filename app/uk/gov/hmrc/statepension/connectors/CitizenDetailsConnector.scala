@@ -17,28 +17,23 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
-import play.api.Mode.Mode
-import play.api.http.Status.LOCKED
-import play.api.{Configuration, Environment}
+import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse}
-import uk.gov.hmrc.play.config.ServicesConfig
-import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.statepension.WSHttp
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CitizenDetailsConnector @Inject()(http: WSHttp,
+class CitizenDetailsConnector @Inject()(http: HttpClient,
                                         metrics: ApplicationMetrics,
-                                        environment: Environment,
-                                        val runModeConfiguration: Configuration) extends ServicesConfig {
+                                        appContext: AppConfig)(implicit ec: ExecutionContext){
 
-  val serviceUrl: String = baseUrl("citizen-details")
+  implicit val legacyRawReads = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
 
-  protected def mode: Mode = environment.mode
+  val serviceUrl: String = appContext.citizenDetailsBaseUrl
 
   private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
@@ -50,11 +45,15 @@ class CitizenDetailsConnector @Inject()(http: WSHttp,
         Success(personResponse.status)
     } recover {
       case ex: Upstream4xxResponse if ex.upstreamResponseCode == LOCKED => timerContext.stop(); Success(ex.upstreamResponseCode)
+      case ex: Upstream4xxResponse if ex.upstreamResponseCode == NOT_FOUND => {
+        timerContext.stop()
+        Failure(new NotFoundException("Nino was not found."))
+      }
       case ex: Throwable => timerContext.stop(); Failure(ex)
-    } flatMap (handleResult(url(nino), _))
+    } flatMap (handleResult(_))
   }
 
-  private def handleResult[A](url: String, tryResult: Try[A]): Future[A] = {
+  private def handleResult[A](tryResult: Try[A]): Future[A] = {
     tryResult match {
       case Failure(ex) =>
         Future.failed(ex)

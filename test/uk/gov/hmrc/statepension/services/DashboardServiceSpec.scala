@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.NinoGenerator
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{IfConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.IfConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
@@ -46,7 +47,7 @@ class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator
       bind[ForecastingService].toInstance(new ForecastingService(rateService = RateServiceBuilder.default)),
       bind[RateService].toInstance(RateServiceBuilder.default),
       bind[ApplicationMetrics].toInstance(mockMetrics),
-      bind[StatePensionAuditConnector].toInstance(mock[StatePensionAuditConnector])
+      bind[AuditConnector].toInstance(mock[AuditConnector])
     )
     .injector()
     .instanceOf[DashboardService]
@@ -56,29 +57,29 @@ class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockIfConnector.getLiabilities(Matchers.any())(Matchers.any()))
+    when(mockIfConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(List()))
-    when(mockIfConnector.getNIRecord(Matchers.any())(Matchers.any()))
+    when(mockIfConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
   "getStatement" must {
     "return StatePension data" when {
       "Summary data has false for MCI check" in {
-        when(mockIfConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockIfConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
 
-        val result = await(sut.getStatement(generateNino()))
+        val result = sut.getStatement(generateNino()).futureValue
         result mustBe a [Right[_, _]]
       }
     }
 
     "return MCI exclusion" when {
       "summary data has true for MCI check" in {
-        when(mockIfConnector.getSummary(Matchers.any())(Matchers.any()))
+        when(mockIfConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(true))))
 
-        val result = await(sut.getStatement(generateNino()))
+        val result = sut.getStatement(generateNino()).futureValue
         result.left.value.exclusionReasons mustBe List(Exclusion.ManualCorrespondenceIndicator)
       }
     }
