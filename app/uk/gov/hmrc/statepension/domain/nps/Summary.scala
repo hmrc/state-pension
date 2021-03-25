@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.domain.nps
 import org.joda.time.{LocalDate, Period}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
-
+import play.api.libs.json.JodaReads._
 import scala.math.BigDecimal.RoundingMode
 
 final case class Summary(

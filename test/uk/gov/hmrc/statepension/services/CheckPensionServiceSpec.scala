@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.NinoGenerator
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.DesConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
@@ -49,7 +50,7 @@ class CheckPensionServiceSpec extends PlaySpec with MockitoSugar with NinoGenera
       bind[ForecastingService].toInstance(new ForecastingService(rateService = RateServiceBuilder.default)),
       bind[RateService].toInstance(RateServiceBuilder.default),
       bind[ApplicationMetrics].toInstance(mockMetrics),
-      bind[StatePensionAuditConnector].toInstance(mock[StatePensionAuditConnector])
+      bind[AuditConnector].toInstance(mock[AuditConnector])
     )
     .injector()
     .instanceOf[CheckPensionService]

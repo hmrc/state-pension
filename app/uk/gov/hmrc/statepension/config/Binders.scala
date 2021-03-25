@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ object Binders {
     override def bind(key: String, value: String): Either[String, Nino] = {
       Try[Nino](Nino.apply(value)) match {
         case Success(nino) => Right(nino)
-        case Failure(e) => Left(ErrorResponses.CODE_INVALID_NINO)
+        case Failure(_) => Left(ErrorResponses.CODE_INVALID_NINO)
       }
     }
 

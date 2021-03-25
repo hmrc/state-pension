@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,41 +20,48 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.libs.json.JodaReads._
 import play.api.libs.json.Json
-import play.api.test.FakeRequest
+import play.api.mvc.Result
 import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSugar {
+
+class StatePensionControllerSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
 
   val nino: Nino = new Generator(new Random()).nextNino
 
+  val controllerComponents = Helpers.stubControllerComponents()
   val emptyRequest = FakeRequest()
   val emptyRequestWithHeader = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  val _appContext: AppContext = app.injector.instanceOf[AppContext]
+  val _appContext: AppConfig = inject[AppConfig]
+  val fakeAuthAction: AuthAction = inject[FakeAuthAction]
+  val fakeErrorHandling: ErrorHandling = inject[ErrorHandling]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController {
-      override val app: String = "Test State Pension"
+    new StatePensionController(controllerComponents, fakeErrorHandling) {
       override lazy val context: String = "test"
-      override val appContext: AppContext = _appContext
+      override val appContext: AppConfig = _appContext
       override val statePensionService: StatePensionService = spService
-      override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
-      override val authAction: AuthAction = FakeAuthAction
+      override val customAuditConnector: AuditConnector = mock[AuditConnector]
+      override val authAction: AuthAction = fakeAuthAction
       override def endpointUrl(nino: Nino): String = s"/ni/$nino"
+      override val executionContext: ExecutionContext = controllerComponents.executionContext
+      override val parser = controllerComponents.parsers.default
     }
 
   val testStatePension = StatePension(
@@ -210,18 +217,6 @@ class StatePensionControllerSpec extends UnitSpec with OneAppPerSuite with Mocki
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe true
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
-    }
-
-    "return BadRequest and message for Upstream BadRequest" in {
-      val mockStatePensionService = mock[StatePensionService]
-
-      when(mockStatePensionService.getStatement(any())(any()))
-        .thenReturn(Future.failed(new BadRequestException("Upstream 400")))
-
-      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
-
-      status(response) shouldBe 400
-      contentAsJson(response) shouldBe Json.parse("""{"code":"BAD_REQUEST","message":"Upstream Bad Request. Is this customer below State Pension Age?"}""")
     }
 
     "return 403 with an error message for an MCI exclusion" in {

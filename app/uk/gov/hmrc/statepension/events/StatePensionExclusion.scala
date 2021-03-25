@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import uk.gov.hmrc.statepension.domain.Exclusion
 import scala.language.postfixOps
 
 object StatePensionExclusion{
-  def apply(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int,
+  def apply(nino: Nino, exclusionReasons: List[Exclusion], pensionAge: Int,
             pensionDate: LocalDate, statePensionAgeUnderConsideration: Boolean)(implicit hc: HeaderCarrier): StatePensionExclusion =
     new StatePensionExclusion(nino, exclusionReasons, pensionAge, pensionDate, statePensionAgeUnderConsideration)
 }
 
-class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion.Exclusion], pensionAge: Int, pensionDate: LocalDate,
+class StatePensionExclusion(nino: Nino, exclusionReasons: List[Exclusion], pensionAge: Int, pensionDate: LocalDate,
                             statePensionAgeUnderConsideration: Boolean) (implicit hc: HeaderCarrier)
   extends BusinessEvent("StatePensionExclusion", nino,
     Map(

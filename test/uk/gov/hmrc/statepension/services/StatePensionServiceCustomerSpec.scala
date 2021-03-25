@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,27 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.{Matchers, Mockito}
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
-import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain._
+import uk.gov.hmrc.statepension.domain.nps._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
-  with OneAppPerSuite
+class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
   with ScalaFutures
   with MockitoSugar
-  with BeforeAndAfterEach {
-
+  with GuiceOneAppPerSuite
+  with Injecting {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -52,7 +52,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
-    override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+    override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
+
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(mci)
   }
@@ -95,7 +97,8 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         dateOfDeath = Some(new LocalDate(2000, 9, 13)),
         reducedRateElection = false,
         countryCode = 1,
-        PensionAmounts()
+        PensionAmounts(),
+        manualCorrespondenceIndicator = None
       )
 
 
@@ -144,7 +147,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
           .thenReturn(Future.successful(summary))
 
         lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
-        whenReady(exclusionF) { exclusion =>
+        whenReady(exclusionF) { _ =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.Dead)
           )
@@ -155,7 +158,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
 
-        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
@@ -175,7 +177,8 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         dateOfDeath = None,
         reducedRateElection = false,
         countryCode = 1,
-        PensionAmounts()
+        PensionAmounts(),
+        manualCorrespondenceIndicator = None
       )
 
       "return post state pension age exclusion" in {
@@ -269,7 +272,8 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
             mainComponent = 35.58,
             rebateDerivedAmount = 0
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
 
       "summary have RRE flag as true" in {
@@ -347,10 +351,9 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
           amountB2016 = AmountB2016(
             mainComponent = 155.64
           )
-        )
+        ),
+        manualCorrespondenceIndicator = None
       )
-
-      lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
       "return amount dissonance" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
@@ -407,7 +410,6 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
       "not log a summary metric" in {
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
 
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
@@ -492,7 +494,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
           ))
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
-        lazy val exclusionF: Future[StatePensionExclusion] = service().getStatement(generateNino()).left.get
+
         verify(mockMetrics, never).summary(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(),
           Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any(), Matchers.any())
@@ -544,7 +546,7 @@ class StatePensionServiceCustomerSpec extends StatePensionUnitSpec
         when(mockNpsConnector.getSummary(Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(summary))
         lazy val exclusionF: Future[StatePensionExclusion] = service(true).getStatement(generateNino()).left.get
-        whenReady(exclusionF) { exclusion =>
+        whenReady(exclusionF) { _ =>
           verify(mockMetrics, times(1)).exclusion(
             Matchers.eq(Exclusion.ManualCorrespondenceIndicator)
           )

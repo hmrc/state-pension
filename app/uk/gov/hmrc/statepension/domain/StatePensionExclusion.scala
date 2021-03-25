@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,41 @@ package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
 import play.api.libs.json._
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 
-object Exclusion extends Enumeration {
-  type Exclusion = Value
-  val IsleOfMan = Value
-  val Dead = Value
-  val AmountDissonance = Value
-  val PostStatePensionAge = Value
-  val ManualCorrespondenceIndicator = Value
+trait Exclusion
 
-  implicit val formats = new Format[Exclusion] {
-    def reads(json: JsValue): JsResult[Exclusion] = JsSuccess(Exclusion.withName(json.as[String]) )
-    def writes(exclusion: Exclusion): JsValue = JsString(exclusion.toString)
+object Exclusion {
+
+  case object IsleOfMan extends Exclusion
+  case object Dead extends Exclusion
+  case object AmountDissonance extends Exclusion
+  case object PostStatePensionAge extends Exclusion
+  case object ManualCorrespondenceIndicator extends Exclusion
+
+  implicit object ExclusionFormat extends Format[Exclusion] {
+    override def reads(json: JsValue): JsResult[Exclusion] =
+      json match {
+        case JsString("Dead") => JsSuccess(Exclusion.Dead)
+        case JsString("AmountDissonance") => JsSuccess(Exclusion.AmountDissonance)
+        case JsString("IsleOfMan") => JsSuccess(Exclusion.IsleOfMan)
+        case JsString("PostStatePensionAge") => JsSuccess(Exclusion.PostStatePensionAge)
+        case JsString("ManualCorrespondenceIndicator") => JsSuccess(Exclusion.ManualCorrespondenceIndicator)
+        case _ => JsError("Exclusion not valid!")
+      }
+
+    override def writes(ex: Exclusion): JsValue = JsString(ex.toString)
   }
+
 }
 
-case class StatePensionExclusion(exclusionReasons: List[Exclusion.Exclusion],
+
+case class StatePensionExclusion(exclusionReasons: List[Exclusion],
                                  pensionAge: Int,
                                  pensionDate: LocalDate,
                                  statePensionAgeUnderConsideration: Boolean)
 
 object StatePensionExclusion {
-  implicit val formats = Json.format[StatePensionExclusion]
+  implicit val formats: OFormat[StatePensionExclusion] = Json.format[StatePensionExclusion]
 }

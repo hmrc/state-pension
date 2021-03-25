@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,26 @@
 package uk.gov.hmrc.statepension.controllers.statepension
 
 import com.google.inject.Inject
+import play.api.mvc.{BodyParsers, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.connectors.StatePensionAuditConnector
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.ErrorHandling
 import uk.gov.hmrc.statepension.controllers.auth.PrivilegedAuthAction
 import uk.gov.hmrc.statepension.services.DashboardService
 
+import scala.concurrent.ExecutionContext
+
 class DashboardController @Inject()(
                                      override val authAction: PrivilegedAuthAction,
-                                     override val appContext: AppContext,
+                                     override val appContext: AppConfig,
                                      override val statePensionService: DashboardService,
-                                     override val customAuditConnector: StatePensionAuditConnector
-                                   ) extends StatePensionController {
+                                     override val customAuditConnector: AuditConnector,
+                                     override val controllerComponents: ControllerComponents,
+                                     errorHandling: ErrorHandling,
+                                     val parser: BodyParsers.Default,
+                                     val executionContext: ExecutionContext
+                                   ) extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.DashboardController.get(nino).url
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,25 @@ import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{Matchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
+import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
-  with OneAppPerSuite
+class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
+  with GuiceOneAppPerSuite
   with ScalaFutures
-  with MockitoSugar {
+  with MockitoSugar
+  with Injecting {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -48,7 +51,9 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
-    override val customAuditConnector: StatePensionAuditConnector = mock[StatePensionAuditConnector]
+    override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
+
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)
   }
@@ -84,7 +89,8 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
           mainComponent = 155.65,
           rebateDerivedAmount = 0
         )
-      )
+      ),
+      manualCorrespondenceIndicator = None
     )
   }
 
@@ -225,7 +231,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionUnitSpec
             rebateDerivedAmount = 0
           )
         ),
-        None
+        manualCorrespondenceIndicator = None
       )
 
       lazy val statePensionF: Future[StatePension] = service.getStatement(generateNino()).right.get

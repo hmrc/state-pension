@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,16 @@ package uk.gov.hmrc.statepension.services
 
 import java.util.TimeZone
 
-import com.google.inject.Inject
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.statepension.connectors.{DesConnector, NpsConnector, StatePensionAuditConnector}
-import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.domain.nps.{Country, Summary}
+import uk.gov.hmrc.statepension.domain.Exclusion._
+import uk.gov.hmrc.statepension.domain.nps.Summary
 import uk.gov.hmrc.statepension.events.Forecasting
-
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait StatePensionService {
 
@@ -38,7 +35,9 @@ trait StatePensionService {
   val forecastingService: ForecastingService
   val rateService: RateService
   val metrics: ApplicationMetrics
-  val customAuditConnector: StatePensionAuditConnector
+  val customAuditConnector: AuditConnector
+  implicit val executionContext: ExecutionContext
+
   def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
   def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
@@ -79,7 +78,7 @@ trait StatePensionService {
           exclusionReasons = exclusions,
           pensionAge = summary.statePensionAge,
           pensionDate = summary.statePensionAgeDate,
-          statePensionAgeUnderConsideration = if (exclusions.contains(Exclusion.AmountDissonance) || exclusions.contains(Exclusion.IsleOfMan))
+          statePensionAgeUnderConsideration = if (exclusions.contains(AmountDissonance) || exclusions.contains(IsleOfMan))
             checkStatePensionAgeUnderConsideration(summary.dateOfBirth) else false
         ))
       } else {
@@ -144,16 +143,16 @@ trait StatePensionService {
   }
 
   private[services] def filterExclusions(exclusions: List[Exclusion]): Exclusion = {
-    if (exclusions.contains(Exclusion.Dead)) {
-      Exclusion.Dead
-    } else if (exclusions.contains(Exclusion.ManualCorrespondenceIndicator)) {
-      Exclusion.ManualCorrespondenceIndicator
-    } else if (exclusions.contains(Exclusion.PostStatePensionAge)) {
-      Exclusion.PostStatePensionAge
-    } else if (exclusions.contains(Exclusion.AmountDissonance)) {
-      Exclusion.AmountDissonance
-    } else if (exclusions.contains(Exclusion.IsleOfMan)) {
-      Exclusion.IsleOfMan
+    if (exclusions.contains(Dead)) {
+      Dead
+    } else if (exclusions.contains(ManualCorrespondenceIndicator)) {
+      ManualCorrespondenceIndicator
+    } else if (exclusions.contains(PostStatePensionAge)) {
+      PostStatePensionAge
+    } else if (exclusions.contains(AmountDissonance)) {
+      AmountDissonance
+    } else if (exclusions.contains(IsleOfMan)) {
+      IsleOfMan
     } else {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.domain
+package uk.gov.hmrc.statepension
 
-case class Forecast(amount: BigDecimal, yearsToWork: Int)
+import org.scalatest.BeforeAndAfterEach
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.test.UnitSpec
 
-object Forecast
+trait StatePensionBaseSpec extends UnitSpec with NinoGenerator with BeforeAndAfterEach {
+  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+}

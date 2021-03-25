@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,23 @@ import akka.util.Timeout
 import org.mockito.Matchers.{any, eq => MockitoEq}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.BeforeAndAfter
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
-import play.api.mvc.{Action, AnyContent, Controller, Result}
-import play.api.test.FakeRequest
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.{Action, AnyContent, Result}
 import play.api.test.Helpers.status
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.{GGCredId, PAClientId, ~}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.controllers.auth.AuthActionSpec.retrievalsTestingSyntax
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -44,7 +46,9 @@ class AuthActionSpec
     with BeforeAndAfter
     with MockitoSugar {
 
-  class AuthActionTestHarness(authAction: AuthAction) extends Controller {
+  val controllerComponents = Helpers.stubControllerComponents()
+
+  class AuthActionTestHarness(authAction: AuthAction) extends BackendController(controllerComponents) {
     def onPageLoad(): Action[AnyContent] = authAction { request =>
       Ok
     }
@@ -154,8 +158,8 @@ class AuthActionSpec
     }
   }
 
-  private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): MicroserviceAuthConnector = {
-    val connector = mock[MicroserviceAuthConnector]
+  private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): AuthConnector = {
+    val connector = mock[AuthConnector]
 
     when(connector.authorise[T](any(), any())(any(), any()))
       .thenReturn(authoriseResult)
@@ -164,9 +168,14 @@ class AuthActionSpec
   }
 
   private def testAuthActionWith[T](authResult: Future[T],
-                                    uri: String = goodUriWithNino): (Future[Result], MicroserviceAuthConnector) = {
+                                    uri: String = goodUriWithNino): (Future[Result], AuthConnector) = {
     val mockAuthConnector = newMockConnectorWithAuthResult(authResult)
-    val authAction = new AuthActionImpl(mockAuthConnector)
+
+    val injector = new GuiceApplicationBuilder()
+      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+      .injector()
+
+    val authAction = injector.instanceOf[AuthAction]
 
     val testHarness = new AuthActionTestHarness(authAction)
 

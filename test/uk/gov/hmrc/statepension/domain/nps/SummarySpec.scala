@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,12 +97,14 @@ class SummarySpec extends UnitSpec {
             pre88COD = 123,
             post88COD = 123,
             graduatedRetirementBenefit = 123
-      ),
+          ),
           amountB2016 = AmountB2016(
             mainComponent = 12,
             rebateDerivedAmount = 34
           )
-        ), None)
+        ),
+        manualCorrespondenceIndicator = None
+      )
 
       Json.parse(jsonPayload).as[Summary] shouldBe result
     }

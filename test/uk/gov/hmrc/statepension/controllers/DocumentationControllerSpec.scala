@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,39 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import org.scalatestplus.play.OneAppPerSuite
-import play.api.{Configuration, Environment}
-import play.api.http.LazyHttpErrorHandler
+import controllers.Assets
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Configuration
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers, Injecting}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.statepension.config.AppContext
-import uk.gov.hmrc.statepension.controllers.auth.FakeAuthAction
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
+import resource._
+import scala.io.Source
 
-class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
+class DocumentationControllerSpec extends UnitSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
+
+  val controllerComponents = Helpers.stubControllerComponents()
+  val serviceConfig = inject[ServicesConfig]
+  val assets = inject[Assets]
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Result = {
 
-    val appContext = new AppContext(app.configuration, Environment.simple()) {
-      override lazy val appName: String = ""
-      override lazy val apiGatewayContext: String = ""
-      override lazy val access: Option[Configuration] = apiConfig
-      override lazy val status: Option[String] = apiStatus
-      override lazy val connectToHOD: Boolean = false
-      override lazy val rates: Configuration = Configuration()
-      override lazy val revaluation: Option[Configuration] = None
+    val appContext = new AppConfig(app.configuration, serviceConfig) {
+      override val appName: String = ""
+      override val apiGatewayContext: String = ""
+      override val access: Option[Configuration] = apiConfig
+      override val status: Option[String] = apiStatus
+      override val rates: Configuration = Configuration()
+      override val revaluation: Option[Configuration] = None
     }
 
-    new DocumentationController(LazyHttpErrorHandler, appContext).definition()(FakeRequest())
-
+    new DocumentationController(appContext, controllerComponents, assets).definition()(FakeRequest())
   }
 
   "/definition access" should {
@@ -116,6 +121,24 @@ class DocumentationControllerSpec extends UnitSpec with OneAppPerSuite {
       val result = getDefinitionResultFromConfig(apiStatus = Some("STABLE"))
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "status" shouldBe JsDefined(JsString("STABLE"))
+    }
+  }
+
+  "conf" should {
+
+    def getResource(path: String): String = {
+      managed(Source.fromInputStream(getClass.getResourceAsStream(path)))
+        .acquireAndGet(_.getLines().mkString("\n"))
+    }
+
+    "return the correct conf for a given version and path" in {
+      implicit val materializer = app.materializer
+      val expectedRaml: String = getResource("/public/api/conf/1.0/application.raml")
+
+      val documentationController = inject[DocumentationController]
+      val result = documentationController.conf("1.0", "/application.raml")(FakeRequest())
+      status(result) shouldBe OK
+      contentAsString(result).trim shouldBe expectedRaml.trim
     }
   }
 }

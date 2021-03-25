@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.statepension.services
 
-import uk.gov.hmrc.statepension.StatePensionUnitSpec
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 
-class RateServiceSpec extends StatePensionUnitSpec {
+class RateServiceSpec extends StatePensionBaseSpec {
 
   val testRateService: RateService = RateServiceBuilder.default
 

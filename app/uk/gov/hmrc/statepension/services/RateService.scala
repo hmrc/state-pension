@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import play.api.Configuration
-import uk.gov.hmrc.statepension.config.{AppContext, RevaluationRates}
+import uk.gov.hmrc.statepension.config.{AppConfig, RevaluationRates}
 
 import scala.math.BigDecimal.RoundingMode
 
-class RateService @Inject()(appContext: AppContext) {
+class RateService @Inject()(appContext: AppConfig) {
   lazy val ratesConfig: Configuration = appContext.rates
   lazy val revaluationConfig: Option[Configuration] = appContext.revaluation
 

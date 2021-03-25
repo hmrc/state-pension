@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import com.codahale.metrics.Timer.Context
 import com.codahale.metrics.{Counter, Histogram, Timer}
 import com.google.inject.Inject
 import com.kenshoo.play.metrics.Metrics
-import uk.gov.hmrc.statepension.domain.Exclusion.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.APIType
+import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, Scenario}
 
 class ApplicationMetrics @Inject()(metrics: Metrics) {
@@ -107,11 +107,11 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
   }
 
   val exclusionMeters: Map[Exclusion, Counter] = Map(
-    Exclusion.Dead -> metrics.defaultRegistry.counter("exclusion-dead"),
-    Exclusion.IsleOfMan -> metrics.defaultRegistry.counter("exclusion-isle-of-man"),
-    Exclusion.AmountDissonance -> metrics.defaultRegistry.counter("amount-dissonance"),
-    Exclusion.PostStatePensionAge -> metrics.defaultRegistry.counter("exclusion-post-spa"),
-    Exclusion.ManualCorrespondenceIndicator -> metrics.defaultRegistry.counter("exclusion-manual-correspondence")
+    Dead -> metrics.defaultRegistry.counter("exclusion-dead"),
+    IsleOfMan -> metrics.defaultRegistry.counter("exclusion-isle-of-man"),
+    AmountDissonance -> metrics.defaultRegistry.counter("amount-dissonance"),
+    PostStatePensionAge -> metrics.defaultRegistry.counter("exclusion-post-spa"),
+    ManualCorrespondenceIndicator -> metrics.defaultRegistry.counter("exclusion-manual-correspondence")
   )
 
   def exclusion(exclusion: Exclusion): Unit = exclusionMeters(exclusion).inc()
