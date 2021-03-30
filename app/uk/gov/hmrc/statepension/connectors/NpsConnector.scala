@@ -17,6 +17,7 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
+import play.api.Logging
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse}
@@ -28,7 +29,7 @@ import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext){
+abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
 
   val http: HttpClient
   val metrics: ApplicationMetrics
@@ -89,8 +90,11 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
     headerCarrier.extraHeaders.toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
+    logger.debug("NpsConnector.setServiceOriginatorId dwpApplicationId: " + appConfig.dwpApplicationId)
+    logger.debug("NpsConnector.setServiceOriginatorId value" + value)
+
     appConfig.dwpApplicationId match {
-      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
+      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => value
       case _ => value
     }
   }
@@ -101,4 +105,3 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
 
   class JsonValidationException(message: String) extends Exception(message)
 }
-
