@@ -87,7 +87,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
         val result = copeErrorHandling.errorWrapper(Future.failed(new Upstream4xxResponse("CLOSED_COPE_WORK_ITEM", 422, 500)))
 
         status(result) shouldBe 403
-        contentAsJson(result) shouldBe Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed)
+        contentAsJson(result) shouldBe Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)
       }
     }
 

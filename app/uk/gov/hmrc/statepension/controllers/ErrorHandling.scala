@@ -20,7 +20,7 @@ import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
-import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
+import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
@@ -52,7 +52,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == 422 && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == 422 && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
-        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed))
+        Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
       case e: Upstream4xxResponse => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
       case e: Upstream5xxResponse => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
       case e: Throwable =>
