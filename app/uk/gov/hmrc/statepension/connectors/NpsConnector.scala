@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HeaderNames, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics

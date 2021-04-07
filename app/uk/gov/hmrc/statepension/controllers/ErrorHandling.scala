@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, NotFoundException}
@@ -45,7 +45,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
   override def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
-      case _: NotFoundException => NotFound(Json.toJson(ErrorNotFound))
+      case e: Upstream4xxResponse if e.upstreamResponseCode == 404 => NotFound(Json.toJson(ErrorNotFound: ErrorResponse))
       case e: GatewayTimeoutException => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
       case e: BadGatewayException => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case _: BadRequestException => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))

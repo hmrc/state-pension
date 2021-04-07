@@ -24,7 +24,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.Injecting
-import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
+import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
@@ -42,10 +42,10 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
 
   "errorWrapper" must {
     "return NotFound when NotFoundException is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(new NotFoundException("Not Found")))
+      val result = copeErrorHandling.errorWrapper(Future.failed(Upstream4xxResponse("NOT_FOUND", 404, 404)))
 
       status(result) shouldBe 404
-      contentAsJson(result) shouldBe Json.toJson(ErrorNotFound)
+      contentAsJson(result) shouldBe Json.toJson(ErrorNotFound: ErrorResponse)
     }
 
     "return GateWayTimeout when GatewayTimeoutException is passed" in  {
