@@ -45,7 +45,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
       val result = copeErrorHandling.errorWrapper(Future.failed(Upstream4xxResponse("NOT_FOUND", 404, 404)))
 
       status(result) shouldBe 404
-      contentAsJson(result) shouldBe Json.toJson(ErrorNotFound: ErrorResponse)
+      contentAsJson(result) shouldBe Json.toJson[ErrorResponse](ErrorNotFound)
     }
 
     "return GateWayTimeout when GatewayTimeoutException is passed" in  {

@@ -45,13 +45,13 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
   override def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
-      case e: Upstream4xxResponse if e.upstreamResponseCode == 404 => NotFound(Json.toJson(ErrorNotFound: ErrorResponse))
+      case e: Upstream4xxResponse if e.upstreamResponseCode == NOT_FOUND => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
       case e: GatewayTimeoutException => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
       case e: BadGatewayException => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case _: BadRequestException => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
-      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == 422 && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
+      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == UNPROCESSABLE_ENTITY && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
-      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == 422 && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
+      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == UNPROCESSABLE_ENTITY && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
       case e: Upstream4xxResponse => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
       case e: Upstream5xxResponse => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
