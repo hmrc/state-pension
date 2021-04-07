@@ -64,10 +64,10 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
     val updatedHeaderCarrier = HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
       .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId)
 
-    logger.info("HeaderCarrier info: " + updatedHeaderCarrier.toString)
+    logger.error("HeaderCarrier info: " + updatedHeaderCarrier.toString)
 
     val responseF = http.GET[HttpResponse](url)(HttpReads.readRaw, updatedHeaderCarrier, ec)
-    
+
     responseF.map { httpResponse =>
       timerContext.stop()
       Try(httpResponse.json.validate[A]).flatMap( jsResult =>
