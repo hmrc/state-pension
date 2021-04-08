@@ -18,11 +18,11 @@ package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
 import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse, WithStatusCode}
-import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
