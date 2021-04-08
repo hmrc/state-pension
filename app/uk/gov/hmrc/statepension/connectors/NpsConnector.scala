@@ -68,7 +68,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
       serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
     )
 
-    val responseF = http.GET[HttpResponse](url, Seq(), headers)(legacyRawReads, headerCarrier, ec)
+    val responseF = http.GET[HttpResponse](url, Seq(), headers)
 
     responseF.map { httpResponse =>
       timerContext.stop()
