@@ -24,7 +24,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.Injecting
-import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
+import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
@@ -42,22 +42,29 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
 
   "errorWrapper" must {
     "return NotFound when NotFoundException is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(new NotFoundException("Not Found")))
+      List(
+        new NotFoundException("NOT_FOUND"),
+        UpstreamErrorResponse("NOT_FOUND", NOT_FOUND)
+      ) foreach {
+        exception =>
+          val result = copeErrorHandling.errorWrapper(Future.failed(exception))
 
-      status(result) shouldBe 404
-      contentAsJson(result) shouldBe Json.toJson(ErrorNotFound)
+          status(result) shouldBe 404
+          contentAsJson(result) shouldBe Json.toJson[ErrorResponse](ErrorNotFound)
+      }
+
     }
 
     "return GateWayTimeout when GatewayTimeoutException is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(new GatewayTimeoutException("Gateway Timeout")))
+      val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("GATEWAY_TIMEOUT", GATEWAY_TIMEOUT)))
 
       status(result) shouldBe 504
     }
 
     "return BadGateway" when {
-      List(new BadGatewayException("BadGateway"),
-        new Upstream4xxResponse("4xx Response", 401, 502),
-        new Upstream5xxResponse("5xx Response", 500, 500)
+      List(
+        UpstreamErrorResponse("4xx Response", 401, 502),
+        UpstreamErrorResponse("5xx Response", 500, 500)
       ) foreach {
         exception =>
           s"${exception.getMessage} is passed" in  {
@@ -69,7 +76,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
     }
 
     "return Bad Request when BadRequestException is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(new BadRequestException("Bad Request")))
+      val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("BAD_REQUEST", BAD_REQUEST)))
 
       status(result) shouldBe 400
       contentAsJson(result) shouldBe Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))
@@ -77,14 +84,14 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
 
     "return Forbidden" when {
       "Upstream4xxResponse is returned with 422 status and NO_OPEN_COPE_WORK_ITEM message from DES" in  {
-        val result = copeErrorHandling.errorWrapper(Future.failed(new Upstream4xxResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)))
+        val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)))
 
         status(result) shouldBe 403
         contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessing(inject[AppConfig]))
       }
 
       "Upstream4xxResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in  {
-        val result = copeErrorHandling.errorWrapper(Future.failed(new Upstream4xxResponse("CLOSED_COPE_WORK_ITEM", 422, 500)))
+        val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("CLOSED_COPE_WORK_ITEM", 422, 500)))
 
         status(result) shouldBe 403
         contentAsJson(result) shouldBe Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)

@@ -17,9 +17,10 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
+import play.api.Logging
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpReads, HttpResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -28,7 +29,7 @@ import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext){
+abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
 
   val http: HttpClient
   val metrics: ApplicationMetrics
@@ -60,9 +61,14 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
-    val responseF = http.GET[HttpResponse](url)(legacyRawReads,
-      HeaderCarrier(Some(Authorization(s"Bearer $token")), sessionId = headerCarrier.sessionId, requestId = headerCarrier.requestId)
-      .withExtraHeaders(serviceOriginatorId(setServiceOriginatorId(originatorIdValue)), environmentHeader, correlationId), ec)
+    val headers = Seq(
+      HeaderNames.authorisation -> s"Bearer $token",
+      correlationId,
+      environmentHeader,
+      serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
+    )
+
+    val responseF = http.GET[HttpResponse](url, Seq(), headers)
 
     responseF.map { httpResponse =>
       timerContext.stop()
