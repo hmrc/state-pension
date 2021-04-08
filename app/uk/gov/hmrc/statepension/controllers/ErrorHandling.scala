@@ -21,10 +21,10 @@ import play.api.Logging
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse, WithStatusCode}
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.http.{Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,16 +45,17 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
   override def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
-      case e: Upstream4xxResponse if e.upstreamResponseCode == NOT_FOUND => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
-      case e: GatewayTimeoutException => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
-      case e: BadGatewayException => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
-      case _: BadRequestException => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
-      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == UNPROCESSABLE_ENTITY && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
+      case WithStatusCode(NOT_FOUND, _)       => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
+      case _: NotFoundException               => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
+      case WithStatusCode(GATEWAY_TIMEOUT, e) => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
+      case WithStatusCode(BAD_GATEWAY, e)     => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
+      case WithStatusCode(BAD_REQUEST, _)     => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
+      case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
-      case e: Upstream4xxResponse if appConfig.copeFeatureEnabled && e.upstreamResponseCode == UNPROCESSABLE_ENTITY && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
+      case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
-      case e: Upstream4xxResponse => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
-      case e: Upstream5xxResponse => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
+      case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
+      case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
       case e: Throwable =>
         logger.error(s"$app Internal server error: ${e.getMessage}", e)
         InternalServerError(Json.toJson(ErrorInternalServerError))
