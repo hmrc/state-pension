@@ -20,12 +20,14 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
+import uk.gov.hmrc.domain.Nino
 
 trait ErrorResponseCope {
   def errorCode: String
 }
 
 case class ErrorResponseCopeProcessing(
+  nino: Nino,
   errorCode: String,
   copeDataAvailableDate: LocalDate,
   previousAvailableDate: Option[LocalDate] = None
