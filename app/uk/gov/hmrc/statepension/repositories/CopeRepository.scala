@@ -1,12 +1,27 @@
+/*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
-import com.mongodb.client.model.IndexOptions
-import org.bson.conversions.Bson
-import com.mongodb.client.model.Filters.{eq => mongoEq}
-import org.mongodb.scala.model.{IndexModel, IndexOptions}
+import com.mongodb.{DuplicateKeyException, MongoException}
+import org.joda.time.LocalDate
 import org.mongodb.scala.model.Indexes.ascending
-import play.api.libs.json.Json
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Updates}
+import play.api.Logging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -21,11 +36,37 @@ class CopeRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: Exec
     domainFormat = ErrorResponseCope.copeProcessingFormat,
     indexes = Seq(
       IndexModel(ascending("nino"),
-      IndexOptions().name("indexed_id").unique(true))
+      IndexOptions().name("indexed_nino").unique(true))
     )
-  ) {
-  def put = ???
-  def update = ???
-  def find(nino: String): Future[ErrorResponseCopeProcessing] = collection.find().filter(_.nino == nino).headOption().toFuture()
-  def delete = ???
+  ) with Logging {
+
+  def put(errorResponseCopeProcessing: ErrorResponseCopeProcessing): Future[Boolean] = {
+    (for {
+      insertOneResult <- collection.insertOne(errorResponseCopeProcessing).toFuture
+    } yield {
+      insertOneResult.wasAcknowledged
+    }) recover {
+      case de: DuplicateKeyException =>
+        logger.error("Duplicate Key Exception: attempted to save document with non unique NINO", de)
+        false
+      case de: MongoException =>
+        logger.error("Mongo exception", de)
+        false
+      case e: Exception => logger.error(s"Exception when saving ErrorResponseCopeProcessing: $e", e)
+        false
+    }
+  }
+
+  def find(nino: Nino): Future[Option[ErrorResponseCopeProcessing]] =
+    collection.find(Filters.equal("nino", nino.nino)).headOption()
+
+  def update(nino: Nino, newCopeDate: LocalDate): Future[ErrorResponseCopeProcessing] =
+    collection.findOneAndUpdate(
+      filter = Filters.equal("nino", nino.nino),
+      update = Updates.set("copeDataAvailableDate", newCopeDate) // FIXME: check which field to update and add correct LocalDate
+    ).toFuture
+
+  def delete(nino: Nino): Future[ErrorResponseCopeProcessing] =
+    collection.findOneAndDelete(Filters.equal("nino", nino.nino)).toFuture
+
 }
