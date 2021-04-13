@@ -60,11 +60,11 @@ class CopeRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: Exec
   def find(nino: Nino): Future[Option[CopeMongo]] =
     collection.find(Filters.equal("nino", nino.nino)).headOption()
 
-  def update(nino: Nino, newCopeDate: LocalDate): Future[CopeMongo] =
-    collection.findOneAndUpdate(
-      filter = Filters.equal("nino", nino.nino),
-      update = Updates.set("copeDataAvailableDate", newCopeDate)
-    ).toFuture
+//  def update(nino: Nino, newCopeDate: LocalDate): Future[CopeMongo] =
+//    collection.findOneAndUpdate(
+//      filter = Filters.equal("nino", nino.nino),
+//      update = Updates.set("copeDataAvailableDate", newCopeDate)
+//    ).toFuture
 
   def delete(nino: Nino): Future[CopeMongo] =
     collection.findOneAndDelete(Filters.equal("nino", nino.nino)).toFuture
