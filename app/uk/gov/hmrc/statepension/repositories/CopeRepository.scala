@@ -25,24 +25,24 @@ import play.api.Logging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.statepension.controllers.{ErrorResponseCope, ErrorResponseCopeProcessing}
+import uk.gov.hmrc.statepension.domain.CopeMongo
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class CopeRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[ErrorResponseCopeProcessing](
+  extends PlayMongoRepository[CopeMongo](
     collectionName = "cope",
     mongoComponent = mongoComponent,
-    domainFormat = ErrorResponseCope.copeProcessingFormat,
+    domainFormat = CopeMongo.format,
     indexes = Seq(
       IndexModel(ascending("nino"),
       IndexOptions().name("indexed_nino").unique(true))
     )
   ) with Logging {
 
-  def put(errorResponseCopeProcessing: ErrorResponseCopeProcessing): Future[Boolean] = {
+  def put(copeMongo: CopeMongo): Future[Boolean] = {
     (for {
-      insertOneResult <- collection.insertOne(errorResponseCopeProcessing).toFuture
+      insertOneResult <- collection.insertOne(copeMongo).toFuture
     } yield {
       insertOneResult.wasAcknowledged
     }) recover {
@@ -57,16 +57,16 @@ class CopeRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: Exec
     }
   }
 
-  def find(nino: Nino): Future[Option[ErrorResponseCopeProcessing]] =
+  def find(nino: Nino): Future[Option[CopeMongo]] =
     collection.find(Filters.equal("nino", nino.nino)).headOption()
 
-  def update(nino: Nino, newCopeDate: LocalDate): Future[ErrorResponseCopeProcessing] =
+  def update(nino: Nino, newCopeDate: LocalDate): Future[CopeMongo] =
     collection.findOneAndUpdate(
       filter = Filters.equal("nino", nino.nino),
-      update = Updates.set("copeDataAvailableDate", newCopeDate) // FIXME: check which field to update and add correct LocalDate
+      update = Updates.set("copeDataAvailableDate", newCopeDate)
     ).toFuture
 
-  def delete(nino: Nino): Future[ErrorResponseCopeProcessing] =
+  def delete(nino: Nino): Future[CopeMongo] =
     collection.findOneAndDelete(Filters.equal("nino", nino.nino)).toFuture
 
 }

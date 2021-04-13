@@ -17,15 +17,18 @@
 package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
+import org.joda.time.LocalDate
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse, WithStatusCode}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
+import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -37,13 +40,13 @@ trait ErrorHandling {
 
   val app: String = "State-Pension"
 
-  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result]
+  def errorWrapper(func: => Future[Result], nini: Nino)(implicit hc: HeaderCarrier): Future[Result]
 }
 
-class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig) extends BackendController(cc)
+class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeRepository) extends BackendController(cc)
   with ErrorHandling with Logging {
 
-  override def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+  override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result] = {
     func.recover {
       case WithStatusCode(NOT_FOUND, _)       => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
       case _: NotFoundException               => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
@@ -51,7 +54,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       case WithStatusCode(BAD_GATEWAY, e)     => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case WithStatusCode(BAD_REQUEST, _)     => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
-        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
+        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
@@ -59,6 +62,25 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       case e: Throwable =>
         logger.error(s"$app Internal server error: ${e.getMessage}", e)
         InternalServerError(Json.toJson(ErrorInternalServerError))
+    }
+  }
+
+  private def calculateCopeDate(nino: Nino): Future[Result] = {
+    copeRepository.find(nino) flatMap {
+      entry =>
+        if (entry.isEmpty) {
+          copeRepository.put(
+            ErrorResponseCopeProcessing(
+              nino,
+              ErrorResponses.CODE_COPE_PROCESSING,
+              LocalDate.now().plusDays(appConfig.copeReturnToServiceDays),
+              Some(LocalDate.now())
+            )
+          )
+
+          Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
+        }
+        else ???
     }
   }
 }

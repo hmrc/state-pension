@@ -76,6 +76,6 @@ abstract class StatePensionController @Inject()(controllerComponents: Controller
             statePension.statePensionAgeUnderConsideration))
 
           Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
-      })
+      }, nino)
   }
 }
