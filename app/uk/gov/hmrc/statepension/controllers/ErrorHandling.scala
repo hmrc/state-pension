@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
+import uk.gov.hmrc.statepension.domain.CopeMongo
 import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -54,7 +55,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       case WithStatusCode(BAD_GATEWAY, e)     => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case WithStatusCode(BAD_REQUEST, _)     => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
-        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
+        calculateCopeDate(nino)
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
@@ -65,22 +66,29 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
     }
   }
 
-  private def calculateCopeDate(nino: Nino): Future[Result] = {
-    copeRepository.find(nino) flatMap {
+  private def calculateCopeDate(nino: Nino): Result = {
+    copeRepository.find(nino) map {
       entry =>
         if (entry.isEmpty) {
           copeRepository.put(
-            ErrorResponseCopeProcessing(
-              nino,
-              ErrorResponses.CODE_COPE_PROCESSING,
-              LocalDate.now().plusDays(appConfig.copeReturnToServiceDays),
-              Some(LocalDate.now())
+            CopeMongo(nino, LocalDate.now())
             )
-          )
-
           Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
         }
-        else ???
+        else {
+          val firstLoginDate = entry.get.firstLoginDate
+          if(LocalDate.now().isBefore(firstLoginDate.plusWeeks(4)))
+            Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
+          else if (LocalDate.now().isAfter(firstLoginDate.plusWeeks(4)) && LocalDate.now().isBefore(firstLoginDate.plusWeeks(13)))
+           Forbidden(Json.toJson(
+            ErrorResponseCopeProcessing(
+              ErrorResponses.CODE_COPE_PROCESSING,
+              firstLoginDate.plusWeeks(13),
+              Some(firstLoginDate.plusWeeks(4))
+            )
+          ))
+          else ErrorResponses.ExclusionCopeProcessingFailed
+        }
     }
   }
 }

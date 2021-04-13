@@ -27,7 +27,6 @@ trait ErrorResponseCope {
 }
 
 case class ErrorResponseCopeProcessing(
-  nino: Nino,
   errorCode: String,
   copeDataAvailableDate: LocalDate,
   previousAvailableDate: Option[LocalDate] = None
