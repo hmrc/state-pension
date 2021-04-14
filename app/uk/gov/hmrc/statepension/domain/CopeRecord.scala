@@ -14,29 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers
+package uk.gov.hmrc.statepension.domain
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.domain.Nino
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 
-trait ErrorResponseCope {
-  def errorCode: String
-}
+case class CopeRecord(nino: Nino, firstLoginDate: LocalDate)
 
-case class ErrorResponseCopeProcessing(
-  errorCode: String,
-  copeDataAvailableDate: LocalDate,
-  previousAvailableDate: Option[LocalDate] = None
-) extends ErrorResponseCope
-
-case class ErrorResponseCopeFailed(
-  errorCode: String
-) extends ErrorResponseCope
-
-
-object ErrorResponseCope {
-  implicit val copeProcessingFormat: Format[ErrorResponseCopeProcessing] = Json.format[ErrorResponseCopeProcessing]
-  implicit val copeFailedFormat: Format[ErrorResponseCopeFailed] = Json.format[ErrorResponseCopeFailed]
+object CopeRecord {
+  implicit val format: Format[CopeRecord] = Json.format[CopeRecord]
 }
