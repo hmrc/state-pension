@@ -55,7 +55,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       case WithStatusCode(BAD_GATEWAY, e)     => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
       case WithStatusCode(BAD_REQUEST, _)     => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
-        calculateCopeDate(nino)
+        storeCopeData(nino)
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
@@ -66,29 +66,50 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
     }
   }
 
-  private def calculateCopeDate(nino: Nino): Result = {
+  private def storeCopeData(nino: Nino): Future[Result] = {
+    val today = LocalDate.now()
     copeRepository.find(nino) map {
       entry =>
         if (entry.isEmpty) {
           copeRepository.put(
-            CopeMongo(nino, LocalDate.now())
+            CopeMongo(nino, today)
             )
           Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
         }
         else {
           val firstLoginDate = entry.get.firstLoginDate
-          if(LocalDate.now().isBefore(firstLoginDate.plusWeeks(4)))
-            Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
-          else if (LocalDate.now().isAfter(firstLoginDate.plusWeeks(4)) && LocalDate.now().isBefore(firstLoginDate.plusWeeks(13)))
-           Forbidden(Json.toJson(
-            ErrorResponseCopeProcessing(
-              ErrorResponses.CODE_COPE_PROCESSING,
-              firstLoginDate.plusWeeks(13),
-              Some(firstLoginDate.plusWeeks(4))
-            )
-          ))
-          else ErrorResponses.ExclusionCopeProcessingFailed
+          calculateCopeDate(firstLoginDate, today, nino)
         }
     }
+  }
+
+  private def calculateCopeDate(loginDate: LocalDate, today: LocalDate, nino: Nino): Result = {
+
+    today match {
+      case td if td.isBefore(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) =>
+        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
+      case td if td.isAfter(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) &&
+        td.isBefore(loginDate.plusDays(appConfig.secondReturnToServiceWeeks)) =>
+          Forbidden(Json.toJson(
+                ErrorResponseCopeProcessing(
+                  ErrorResponses.CODE_COPE_PROCESSING,
+                  loginDate.plusWeeks(appConfig.secondReturnToServiceWeeks),
+                  Some(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks))
+                )
+              ))
+      case _ => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed))
+    }
+
+//    if(LocalDate.now().isBefore(loginDate.plusWeeks(4)))
+//      Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
+//    else if (LocalDate.now().isAfter(loginDate.plusWeeks(4)) && LocalDate.now().isBefore(loginDate.plusWeeks(13)))
+//      Forbidden(Json.toJson(
+//        ErrorResponseCopeProcessing(
+//          ErrorResponses.CODE_COPE_PROCESSING,
+//          loginDate.plusWeeks(13),
+//          Some(loginDate.plusWeeks(4))
+//        )
+//      ))
+//    else Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed))
   }
 }
