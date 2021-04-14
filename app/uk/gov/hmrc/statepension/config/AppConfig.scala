@@ -39,7 +39,8 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
-  val copeReturnToServiceDays: Int = configuration.get[Int]("cope.returnToServiceDays")
+  val firstReturnToServiceWeeks: Int = configuration.get[Int]("cope.firstReturnToServiceWeeks")
+  val secondReturnToServiceWeeks: Int = configuration.get[Int]("cope.secondReturnToServiceWeeks")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     val empty = ""
