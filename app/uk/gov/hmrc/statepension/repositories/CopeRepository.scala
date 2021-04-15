@@ -39,7 +39,7 @@ class CopeRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: Exec
     )
   ) with Logging {
 
-  def put(copeMongo: CopeRecord): Future[Boolean] =
+  def insert(copeMongo: CopeRecord): Future[Boolean] =
     {for {
       insertOneResult <- collection.insertOne(copeMongo).toFuture
     } yield {

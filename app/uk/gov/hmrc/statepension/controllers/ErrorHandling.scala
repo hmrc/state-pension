@@ -17,7 +17,9 @@
 package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
-import org.joda.time.LocalDate
+import scala.concurrent.duration._
+import java.util.concurrent.TimeUnit._
+import org.joda.time.{LocalDate}
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
@@ -33,6 +35,8 @@ import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success, Try}
 
 
 @ImplementedBy(classOf[CopeErrorHandling])
@@ -48,32 +52,32 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
   with ErrorHandling with Logging {
 
   override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result] = {
-    func.recover {
-      case WithStatusCode(NOT_FOUND, _) => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
-      case _: NotFoundException => NotFound(Json.toJson[ErrorResponse](ErrorNotFound))
-      case WithStatusCode(GATEWAY_TIMEOUT, e) => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); GatewayTimeout
-      case WithStatusCode(BAD_GATEWAY, e) => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); BadGateway
-      case WithStatusCode(BAD_REQUEST, _) => BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?")))
+    func.recoverWith {
+      case WithStatusCode(NOT_FOUND, _) => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
+      case _: NotFoundException => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
+      case WithStatusCode(GATEWAY_TIMEOUT, e) => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); Future.successful(GatewayTimeout)
+      case WithStatusCode(BAD_GATEWAY, e) => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); Future.successful(BadGateway)
+      case WithStatusCode(BAD_REQUEST, _) =>
+        Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino) // FIXME
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
-        Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
-      case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); BadGateway
-      case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); BadGateway
+        Future.successful(Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)))
+      case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); Future.successful(BadGateway)
+      case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); Future.successful(BadGateway)
       case e: Throwable =>
         logger.error(s"$app Internal server error: ${e.getMessage}", e)
-        InternalServerError(Json.toJson(ErrorInternalServerError))
+        Future.successful(InternalServerError(Json.toJson(ErrorInternalServerError)))
     }
   }
 
   private def defineCopeResponse(nino: Nino): Future[Result] = {
     val today = LocalDate.now()
-    copeRepository.find(nino) map { copeMongoRecord =>
-      if (copeMongoRecord.isEmpty) {
-        copeRepository.put(CopeRecord(nino, today))
+    copeRepository.find(nino) map { entry =>
+      if(entry.isEmpty) {
+        copeRepository.insert(CopeRecord(nino, today))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
-      }
-      else {
-        val firstLoginDateFromDb: LocalDate = copeMongoRecord.get.firstLoginDate
+      } else {
+        val firstLoginDateFromDb: LocalDate = entry.get.firstLoginDate
         defineCopePeriod(firstLoginDateFromDb) match {
           case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
           case CopeDatePeriod.Extended => Forbidden(Json.toJson(
@@ -89,6 +93,8 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
     }
   }
 
+
+  //TODO set this as method on CopeRecord case class
   private def defineCopePeriod(loginDate: LocalDate): CopeDatePeriod = LocalDate.now() match {
     case td if td.isBefore(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) => CopeDatePeriod.Initial
     case td if td.isAfter(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) &&
