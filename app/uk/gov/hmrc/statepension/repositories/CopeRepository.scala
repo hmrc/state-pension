@@ -28,10 +28,10 @@ import uk.gov.hmrc.statepension.domain.CopeRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CopeRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
+class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
   extends PlayMongoRepository[CopeRecord](
     collectionName = "cope",
-    mongoComponent = mongoComponent,
+    mongoComponent = mongo,
     domainFormat = CopeRecord.format,
     indexes = Seq(
       IndexModel(ascending("nino"),

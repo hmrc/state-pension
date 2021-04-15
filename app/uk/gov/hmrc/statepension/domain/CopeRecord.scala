@@ -28,7 +28,7 @@ case class CopeRecord(nino: Nino, firstLoginDate: LocalDate) {
   def defineCopePeriod(today: LocalDate, appConfig: AppConfig): CopeDatePeriod = today match {
     case td if td.isBefore(firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) => CopeDatePeriod.Initial
     case td if td.isAfter(firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) &&
-      td.isBefore(firstLoginDate.plusDays(appConfig.secondReturnToServiceWeeks)) => CopeDatePeriod.Extended
+      td.isBefore(firstLoginDate.plusWeeks(appConfig.secondReturnToServiceWeeks)) => CopeDatePeriod.Extended
     case _ => CopeDatePeriod.Expired
   }
 }
