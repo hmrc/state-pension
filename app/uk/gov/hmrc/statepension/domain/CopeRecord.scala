@@ -21,8 +21,17 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.domain.Nino
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
+import uk.gov.hmrc.statepension.config.AppConfig
 
-case class CopeRecord(nino: Nino, firstLoginDate: LocalDate)
+case class CopeRecord(nino: Nino, firstLoginDate: LocalDate) {
+
+  def defineCopePeriod(today: LocalDate, appConfig: AppConfig): CopeDatePeriod = today match {
+    case td if td.isBefore(firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) => CopeDatePeriod.Initial
+    case td if td.isAfter(firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) &&
+      td.isBefore(firstLoginDate.plusDays(appConfig.secondReturnToServiceWeeks)) => CopeDatePeriod.Extended
+    case _ => CopeDatePeriod.Expired
+  }
+}
 
 object CopeRecord {
   implicit val format: Format[CopeRecord] = Json.format[CopeRecord]
