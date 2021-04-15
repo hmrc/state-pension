@@ -72,13 +72,14 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
   private def defineCopeResponse(nino: Nino): Future[Result] = {
     val today = LocalDate.now()
-    copeRepository.find(nino) map { entry =>
-      if(entry.isEmpty) {
+
+    copeRepository.find(nino) map {
+      case None => {
         copeRepository.insert(CopeRecord(nino, today))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
-      } else {
-        val firstLoginDateFromDb: LocalDate = entry.get.firstLoginDate
-        defineCopePeriod(firstLoginDateFromDb) match {
+      }
+      case Some(entry) => {
+        entry.defineCopePeriod(today, appConfig) match {
           case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
           case CopeDatePeriod.Extended => Forbidden(Json.toJson(
             ErrorResponseCopeProcessing(
@@ -92,14 +93,4 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       }
     }
   }
-
-
-  //TODO set this as method on CopeRecord case class
-  private def defineCopePeriod(loginDate: LocalDate): CopeDatePeriod = LocalDate.now() match {
-    case td if td.isBefore(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) => CopeDatePeriod.Initial
-    case td if td.isAfter(loginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) &&
-      td.isBefore(loginDate.plusDays(appConfig.secondReturnToServiceWeeks)) => CopeDatePeriod.Extended
-    case _ => CopeDatePeriod.Expired
-  }
-
 }
