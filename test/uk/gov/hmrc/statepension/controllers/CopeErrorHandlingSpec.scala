@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import org.joda.time.LocalDate
+import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.Injecting
@@ -28,17 +31,28 @@ import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerE
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.{ExclusionCopeProcessing, ExclusionCopeProcessingFailed}
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
+import uk.gov.hmrc.statepension.domain.CopeRecord
+import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.Future
 
 class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with MockitoSugar {
 
+  val nino = generateNino()
+  val mockCopeRepository = mock[CopeRepository]
+
   override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .configure("cope.feature.enabled" -> true).build()
+    .configure("cope.feature.enabled" -> true)
+    .overrides(bind[CopeRepository].toInstance(mockCopeRepository)).build()
 
   val copeErrorHandling = inject[CopeErrorHandling]
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockCopeRepository)
+  }
 
   "errorWrapper" must {
     "return NotFound when NotFoundException is passed" in  {
@@ -47,7 +61,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
         UpstreamErrorResponse("NOT_FOUND", NOT_FOUND)
       ) foreach {
         exception =>
-          val result = copeErrorHandling.errorWrapper(Future.failed(exception))
+          val result = copeErrorHandling.errorWrapper(Future.failed(exception), nino)
 
           status(result) shouldBe 404
           contentAsJson(result) shouldBe Json.toJson[ErrorResponse](ErrorNotFound)
@@ -56,7 +70,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
     }
 
     "return GateWayTimeout when GatewayTimeoutException is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("GATEWAY_TIMEOUT", GATEWAY_TIMEOUT)))
+      val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("GATEWAY_TIMEOUT", GATEWAY_TIMEOUT)), nino)
 
       status(result) shouldBe 504
     }
@@ -68,7 +82,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
       ) foreach {
         exception =>
           s"${exception.getMessage} is passed" in  {
-            val result = copeErrorHandling.errorWrapper(Future.failed(exception))
+            val result = copeErrorHandling.errorWrapper(Future.failed(exception), nino)
 
             status(result) shouldBe 502
           }
@@ -76,22 +90,70 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
     }
 
     "return Bad Request when BadRequestException is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("BAD_REQUEST", BAD_REQUEST)))
+      val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("BAD_REQUEST", BAD_REQUEST)), nino)
 
       status(result) shouldBe 400
       contentAsJson(result) shouldBe Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))
     }
 
     "return Forbidden" when {
-      "Upstream4xxResponse is returned with 422 status and NO_OPEN_COPE_WORK_ITEM message from DES" in  {
-        val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)))
+      "Upstream4xxResponse is returned with 422 status and NO_OPEN_COPE_WORK_ITEM message from DES" when {
+        "Return ExclusionCopeProcessing" when {
+          "mongo returns None" in {
 
-        status(result) shouldBe 403
-        contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessing(inject[AppConfig]))
+            when(mockCopeRepository.find(nino)).thenReturn(Future.successful(None))
+
+            val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
+
+            status(result) shouldBe 403
+            contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessing(inject[AppConfig]))
+          }
+
+          "mongo returns an entry for nino where date falls in Initial period" in {
+            when(mockCopeRepository.find(nino)).thenReturn(Future.successful(Some(CopeRecord(nino, LocalDate.now()))))
+
+            val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
+
+            status(result) shouldBe 403
+            contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessing(inject[AppConfig]))
+          }
+
+          "mongo returns an entry for nino where date falls in Extended Period" in {
+            val initialLoginDate = LocalDate.now().minusWeeks(5)
+            val appConfig = inject[AppConfig]
+
+            when(mockCopeRepository.find(nino)).thenReturn(Future.successful(Some(CopeRecord(nino, initialLoginDate))))
+
+            val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
+
+            status(result) shouldBe 403
+            contentAsJson(result) shouldBe
+              Json.toJson(
+                ErrorResponseCopeProcessing(
+                  ErrorResponses.CODE_COPE_PROCESSING,
+                  initialLoginDate.plusWeeks(appConfig.secondReturnToServiceWeeks),
+                  Some(initialLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)
+                  )
+                )
+              )
+          }
+        }
+
+        "Return ExclusionCopeFailed when mongo returns entry where date falls into Expired period" in {
+          val initialLoginDate = LocalDate.now().minusWeeks(14)
+          val appConfig = inject[AppConfig]
+
+          when(mockCopeRepository.find(nino)).thenReturn(Future.successful(Some(CopeRecord(nino, initialLoginDate))))
+
+          val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
+
+          status(result) shouldBe 403
+          contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessingFailed)
+        }
       }
 
       "Upstream4xxResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in  {
-        val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("CLOSED_COPE_WORK_ITEM", 422, 500)))
+        val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("CLOSED_COPE_WORK_ITEM", 422, 500)), nino)
 
         status(result) shouldBe 403
         contentAsJson(result) shouldBe Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)
@@ -99,11 +161,10 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
     }
 
     "return InternalServerError when Throwable that isn't matched is passed" in  {
-      val result = copeErrorHandling.errorWrapper(Future.failed(new UnauthorizedException("Unauthorized")))
+      val result = copeErrorHandling.errorWrapper(Future.failed(new UnauthorizedException("Unauthorized")), nino)
 
       status(result) shouldBe 500
       contentAsJson(result) shouldBe Json.toJson(ErrorInternalServerError)
     }
   }
-
 }

@@ -59,7 +59,10 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
       case WithStatusCode(BAD_GATEWAY, e) => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); Future.successful(BadGateway)
       case WithStatusCode(BAD_REQUEST, _) =>
         Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
-      case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino) // FIXME
+      case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("NO_OPEN_COPE_WORK_ITEM") => {
+        println("\n\n\n\nPlease pass the first test\n\n\n\n")
+        defineCopeResponse(nino)
+      } // FIXME
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if appConfig.copeFeatureEnabled && e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         Future.successful(Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)))
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); Future.successful(BadGateway)
@@ -76,18 +79,23 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
     copeRepository.find(nino) map {
       case None => {
         copeRepository.insert(CopeRecord(nino, today))
-        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
+        Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       }
       case Some(entry) => {
+
+        println(s"\n\n\n$entry\n\n\n")
         entry.defineCopePeriod(today, appConfig) match {
-          case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig, nino)))
-          case CopeDatePeriod.Extended => Forbidden(Json.toJson(
-            ErrorResponseCopeProcessing(
-              ErrorResponses.CODE_COPE_PROCESSING,
-              today.plusWeeks(appConfig.secondReturnToServiceWeeks),
-              Some(today.plusWeeks(appConfig.firstReturnToServiceWeeks))
-            )
-          ))
+          case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
+          case CopeDatePeriod.Extended => {
+            println("\n\n\n\n\nkjahdsgfkjhvdk")
+            Forbidden(Json.toJson(
+              ErrorResponseCopeProcessing(
+                ErrorResponses.CODE_COPE_PROCESSING,
+                entry.firstLoginDate.plusWeeks(appConfig.secondReturnToServiceWeeks),
+                Some(entry.firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks))
+              )
+            ))
+          }
           case CopeDatePeriod.Expired => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed))
         }
       }

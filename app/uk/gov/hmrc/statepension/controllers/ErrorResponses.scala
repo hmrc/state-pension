@@ -18,7 +18,6 @@ package uk.gov.hmrc.statepension.controllers
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.api.controllers.ErrorResponse
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.statepension.config.AppConfig
 
 object ErrorResponses {
@@ -29,7 +28,7 @@ object ErrorResponses {
   val CODE_COPE_PROCESSING_FAILED = "EXCLUSION_COPE_PROCESSING_FAILED"
 
   case object ExclusionCopeProcessing {
-    def apply(appConfig: AppConfig, nino: Nino): ErrorResponseCopeProcessing =
+    def apply(appConfig: AppConfig): ErrorResponseCopeProcessing =
       ErrorResponseCopeProcessing(CODE_COPE_PROCESSING, LocalDate.now().plusWeeks(appConfig.firstReturnToServiceWeeks))
   }
   object ExclusionCopeProcessingFailed extends ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED)
