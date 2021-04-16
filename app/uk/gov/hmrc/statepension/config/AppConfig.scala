@@ -38,7 +38,6 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
-  val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
   val firstReturnToServiceWeeks: Int = configuration.get[Int]("cope.firstReturnToServiceWeeks")
   val secondReturnToServiceWeeks: Int = configuration.get[Int]("cope.secondReturnToServiceWeeks")
 
