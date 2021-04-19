@@ -17,17 +17,21 @@
 package uk.gov.hmrc.statepension.controllers
 
 import java.security.MessageDigest
-
 import org.apache.commons.codec.binary.Base64
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.statepension.config.AppConfig
 
 
-trait NinoHashing {
+case class HashedNino(nino: Nino) {
 
-  private val shaDigest = MessageDigest.getInstance("SHA-512")
+  private val shaDigest: MessageDigest = MessageDigest.getInstance("SHA-512")
 
-  val key: String
-
-  def generateHash(nino: String): String = {
-    new String(Base64.encodeBase64(shaDigest.digest(Base64.decodeBase64(key) ++ nino.getBytes())))
+  def generateHash(nino: Nino)(implicit appConfig: AppConfig): String = {
+    new String(Base64.encodeBase64(shaDigest.digest(Base64.decodeBase64(appConfig.ninoHashingKey) ++ nino.value.getBytes())))
   }
+}
+
+object HashedNino {
+  implicit val hashedNinoFormat: OFormat[HashedNino] = Json.format[HashedNino]
 }
