@@ -22,6 +22,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.Injecting
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.domain.CopeDatePeriod._
 
 class CopeRecordSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting {
@@ -30,21 +31,21 @@ class CopeRecordSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with 
 
   "defineCopePeriod" must {
     "return Initial Period when today is before 4 weeks of initialLoginDate" in {
-      val copePeriod = CopeRecord(nino, LocalDate.now().minusWeeks(3))
+      val copePeriod = CopeRecord(HashedNino(nino), LocalDate.now().minusWeeks(3))
         .defineCopePeriod(LocalDate.now(), inject[AppConfig])
 
       copePeriod shouldBe Initial
     }
 
     "return Extended Period when today is after 4 weeks and before 13 weeks of the initialLoginDate" in {
-      val copePeriod = CopeRecord(nino, LocalDate.now().minusWeeks(10))
+      val copePeriod = CopeRecord(HashedNino(nino), LocalDate.now().minusWeeks(10))
         .defineCopePeriod(LocalDate.now(), inject[AppConfig])
 
       copePeriod shouldBe Extended
     }
 
     "return Expired Period when today is after 13 weeks of the initialLoginDate" in {
-      val copePeriod = CopeRecord(nino, LocalDate.now().minusWeeks(14))
+      val copePeriod = CopeRecord(HashedNino(nino), LocalDate.now().minusWeeks(14))
         .defineCopePeriod(LocalDate.now(), inject[AppConfig])
 
       copePeriod shouldBe Expired

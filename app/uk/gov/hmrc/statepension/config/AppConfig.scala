@@ -31,6 +31,8 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
     .getOrElse(throw new RuntimeException("rates.statePension is missing"))
   val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
 
+  val ninoHashingKey: String = configuration.get[String]("ninoHashingKey")
+
   val citizenDetailsBaseUrl: String = baseUrl("citizen-details")
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")

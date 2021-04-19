@@ -24,6 +24,7 @@ import play.api.Logging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.domain.CopeRecord
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,9 +40,9 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
     )
   ) with Logging {
 
-  def insert(copeMongo: CopeRecord): Future[Boolean] =
+  def insert(copeRecord: CopeRecord): Future[Boolean] =
     {for {
-      insertOneResult <- collection.insertOne(copeMongo).toFuture
+      insertOneResult <- collection.insertOne(copeRecord).toFuture
     } yield {
       insertOneResult.wasAcknowledged
     }} recover {
@@ -50,8 +51,8 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
       case e: Exception => logger.error(s"Exception when saving ErrorResponseCopeProcessing: $e", e); false
     }
 
-  def find(nino: Nino): Future[Option[CopeRecord]] = collection.find(Filters.equal("nino", nino.nino)).headOption()
+  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(Filters.equal("nino", hashedNino)).headOption()
 
-  def delete(nino: Nino): Future[CopeRecord] = collection.findOneAndDelete(Filters.equal("nino", nino.nino)).toFuture
+  def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(Filters.equal("nino", hashedNino)).toFuture
 
 }

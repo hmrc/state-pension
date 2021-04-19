@@ -101,7 +101,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
         "Return ExclusionCopeProcessing" when {
           "mongo returns None" in {
 
-            when(mockCopeRepository.find(nino)).thenReturn(Future.successful(None))
+            when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(None))
 
             val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -110,7 +110,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
           }
 
           "mongo returns an entry for nino where date falls in Initial period" in {
-            when(mockCopeRepository.find(nino)).thenReturn(Future.successful(Some(CopeRecord(nino, LocalDate.now()))))
+            when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), LocalDate.now()))))
 
             val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -122,7 +122,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
             val initialLoginDate = LocalDate.now().minusWeeks(5)
             val appConfig = inject[AppConfig]
 
-            when(mockCopeRepository.find(nino)).thenReturn(Future.successful(Some(CopeRecord(nino, initialLoginDate))))
+            when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), initialLoginDate))))
 
             val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -143,7 +143,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
           val initialLoginDate = LocalDate.now().minusWeeks(14)
           val appConfig = inject[AppConfig]
 
-          when(mockCopeRepository.find(nino)).thenReturn(Future.successful(Some(CopeRecord(nino, initialLoginDate))))
+          when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), initialLoginDate))))
 
           val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 

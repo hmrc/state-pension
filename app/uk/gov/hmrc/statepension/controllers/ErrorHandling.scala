@@ -73,9 +73,9 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
   private def defineCopeResponse(nino: Nino): Future[Result] = {
     val today = LocalDate.now()
 
-    copeRepository.find(nino) map {
+    copeRepository.find(HashedNino(nino)) map {
       case None => {
-        copeRepository.insert(CopeRecord(nino, today))
+        copeRepository.insert(CopeRecord(HashedNino(nino), today))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       }
       case Some(entry) => {
