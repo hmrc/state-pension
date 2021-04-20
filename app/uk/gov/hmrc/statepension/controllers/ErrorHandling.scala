@@ -17,9 +17,7 @@
 package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
-import scala.concurrent.duration._
-import java.util.concurrent.TimeUnit._
-import org.joda.time.{LocalDate}
+import org.joda.time.LocalDate
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
@@ -30,14 +28,11 @@ import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
-import uk.gov.hmrc.statepension.domain.{CopeDatePeriod, CopeRecord}
+import uk.gov.hmrc.statepension.models.{CopeDatePeriod, CopeRecord}
 import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
-
 
 @ImplementedBy(classOf[CopeErrorHandling])
 trait ErrorHandling {
@@ -61,6 +56,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
         Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino)
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if  e.message.contains("CLOSED_COPE_WORK_ITEM") =>
+        copeRepository.delete(HashedNino(nino))
         Future.successful(Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)))
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); Future.successful(BadGateway)
       case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); Future.successful(BadGateway)
@@ -75,22 +71,22 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
     copeRepository.find(HashedNino(nino)) map {
       case None => {
-        copeRepository.insert(CopeRecord(HashedNino(nino), today))
+        copeRepository.insert(CopeRecord(HashedNino(nino), today, today.plusWeeks(appConfig.returnToServiceWeeks)))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       }
       case Some(entry) => {
-        entry.defineCopePeriod(today, appConfig) match {
-          case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
+        entry.defineCopePeriod(appConfig) match {
+          case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate)))
           case CopeDatePeriod.Extended => {
+            copeRepository.update(HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks))
             Forbidden(Json.toJson(
               ErrorResponseCopeProcessing(
                 ErrorResponses.CODE_COPE_PROCESSING,
-                entry.firstLoginDate.plusWeeks(appConfig.secondReturnToServiceWeeks),
-                Some(entry.firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks))
+                entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks),
+                Some(entry.copeAvailableDate)
               )
             ))
           }
-          case CopeDatePeriod.Expired => Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessingFailed))
         }
       }
     }
