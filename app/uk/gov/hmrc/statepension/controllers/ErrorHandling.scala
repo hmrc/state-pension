@@ -71,13 +71,14 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
     copeRepository.find(HashedNino(nino)) map {
       case None => {
-        copeRepository.insert(CopeRecord(HashedNino(nino), today, today.plusWeeks(appConfig.returnToServiceWeeks)))
+        copeRepository.insert(CopeRecord(HashedNino(nino).generateHash()(appConfig), today, today.plusWeeks(appConfig.returnToServiceWeeks)))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       }
       case Some(entry) => {
         entry.defineCopePeriod(appConfig) match {
           case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate)))
           case CopeDatePeriod.Extended => {
+            println(s"\n\nupdateEntry = ${copeRepository.update(HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks))}\n\n\n")
             copeRepository.update(HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks))
             Forbidden(Json.toJson(
               ErrorResponseCopeProcessing(

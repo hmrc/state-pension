@@ -110,7 +110,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
 
           "mongo returns an entry for nino where date falls in Initial period" in {
              when(mockCopeRepository.find(HashedNino(nino)))
-               .thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), LocalDate.now(), LocalDate.now().plusWeeks(4)))))
+               .thenReturn(Future.successful(Some(CopeRecord(nino.value, LocalDate.now(), LocalDate.now().plusWeeks(4)))))
 
             val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -124,7 +124,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
             val appConfig = inject[AppConfig]
 
             when(mockCopeRepository.find(HashedNino(nino)))
-              .thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), initialLoginDate, copeAvailableDate))))
+              .thenReturn(Future.successful(Some(CopeRecord(nino.value, initialLoginDate, copeAvailableDate))))
 
             val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
