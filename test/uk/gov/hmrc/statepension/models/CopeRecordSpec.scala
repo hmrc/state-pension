@@ -36,7 +36,7 @@ class CopeRecordSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with 
   "defineCopePeriod" must {
     "return Initial Period when firstLoginDate + returnToServiceWeeks is before the copeAvailableDate" in {
       val firstLoginDate: LocalDate = LocalDate.now().minusWeeks(1)
-      val copeAvailableDate: LocalDate = firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)
+      val copeAvailableDate: LocalDate = firstLoginDate.plusWeeks(7)
 
       val copePeriod = CopeRecord(HashedNino(nino), firstLoginDate, copeAvailableDate).defineCopePeriod(appConfig)
 
