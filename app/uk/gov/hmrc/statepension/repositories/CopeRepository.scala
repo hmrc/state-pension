@@ -24,8 +24,9 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import play.api.Logging
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.models.CopeRecord
@@ -57,7 +58,10 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
   def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash)).headOption()
 
   def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
-    collection.findOneAndUpdate(equal("nino", hashedNino.generateHash), set("copeDataAvailableDate", newCopeAvailableDate)).toFutureOption()
+    collection.findOneAndUpdate(equal("nino", hashedNino.generateHash),
+      set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJodaFormats.localDateWrites)
+      )
+    ).toFutureOption()
 
   def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(equal("nino", hashedNino.generateHash)).toFuture
 

@@ -18,18 +18,16 @@ package uk.gov.hmrc.statepension.models
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats.Implicits.jotLocalDateFormat
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.HashedNino
 
 case class CopeRecord(
-  hashedNino: HashedNino,
+  nino: String,
   firstLoginDate: LocalDate,
   copeAvailableDate: LocalDate
 ) {
   def defineCopePeriod(appConfig: AppConfig): CopeDatePeriod = firstLoginDate match {
-    case initialDate if (initialDate.plusWeeks(appConfig.returnToServiceWeeks).isAfter(copeAvailableDate)) => CopeDatePeriod.Extended
+    case initialDate if initialDate.plusWeeks(appConfig.returnToServiceWeeks).isAfter(copeAvailableDate) => CopeDatePeriod.Extended
     case _ => CopeDatePeriod.Initial
   }
 }

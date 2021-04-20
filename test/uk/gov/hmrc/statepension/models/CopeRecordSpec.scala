@@ -38,7 +38,7 @@ class CopeRecordSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with 
       val firstLoginDate: LocalDate = LocalDate.now().minusWeeks(1)
       val copeAvailableDate: LocalDate = firstLoginDate.plusWeeks(7)
 
-      val copePeriod = CopeRecord(HashedNino(nino), firstLoginDate, copeAvailableDate).defineCopePeriod(appConfig)
+      val copePeriod = CopeRecord(HashedNino(nino).generateHash()(appConfig), firstLoginDate, copeAvailableDate).defineCopePeriod(appConfig)
 
       copePeriod shouldBe Initial
     }
@@ -47,7 +47,7 @@ class CopeRecordSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with 
       val firstLoginDate: LocalDate = LocalDate.now().minusWeeks(appConfig.returnToServiceWeeks)
       val copeAvailableDate: LocalDate = firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)
 
-      val copePeriod = CopeRecord(HashedNino(nino), firstLoginDate, copeAvailableDate).defineCopePeriod(appConfig)
+      val copePeriod = CopeRecord(HashedNino(nino).generateHash()(appConfig), firstLoginDate, copeAvailableDate).defineCopePeriod(appConfig)
 
       copePeriod shouldBe Initial
     }
@@ -60,7 +60,7 @@ class CopeRecordSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with 
       val firstLoginDate: LocalDate = LocalDate.now().minusWeeks(1)
       val copeAvailableDate: LocalDate = firstLoginDate.plusWeeks(5)
       
-      val copePeriod = CopeRecord(HashedNino(nino), firstLoginDate, copeAvailableDate).defineCopePeriod(mocAppConfig)
+      val copePeriod = CopeRecord(HashedNino(nino).generateHash()(appConfig), firstLoginDate, copeAvailableDate).defineCopePeriod(mocAppConfig)
 
       copePeriod shouldBe Extended
     }
