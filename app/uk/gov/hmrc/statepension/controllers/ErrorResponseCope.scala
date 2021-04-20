@@ -22,17 +22,17 @@ import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 
 trait ErrorResponseCope {
-  def errorCode: String
+  def code: String
 }
 
 case class ErrorResponseCopeProcessing(
-  errorCode: String,
+  code: String,
   copeDataAvailableDate: LocalDate,
   previousAvailableDate: Option[LocalDate] = None
 ) extends ErrorResponseCope
 
 case class ErrorResponseCopeFailed(
-  errorCode: String
+  code: String
 ) extends ErrorResponseCope
 
 
