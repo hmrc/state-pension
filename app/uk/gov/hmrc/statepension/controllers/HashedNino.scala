@@ -27,7 +27,7 @@ case class HashedNino(nino: Nino) {
 
   private val shaDigest: MessageDigest = MessageDigest.getInstance("SHA-512")
 
-  def generateHash(nino: Nino)(implicit appConfig: AppConfig): String = {
+  def generateHash()(implicit appConfig: AppConfig): String = {
     new String(Base64.encodeBase64(shaDigest.digest(Base64.decodeBase64(appConfig.ninoHashingKey) ++ nino.value.getBytes())))
   }
 }

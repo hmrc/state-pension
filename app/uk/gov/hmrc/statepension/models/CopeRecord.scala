@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.domain
+package uk.gov.hmrc.statepension.models
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
@@ -23,13 +23,14 @@ import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
 
-case class CopeRecord(hashedNino: HashedNino, firstLoginDate: LocalDate) {
-
-  def defineCopePeriod(today: LocalDate, appConfig: AppConfig): CopeDatePeriod = today match {
-    case td if td.isBefore(firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) => CopeDatePeriod.Initial
-    case td if td.isAfter(firstLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)) &&
-      td.isBefore(firstLoginDate.plusWeeks(appConfig.secondReturnToServiceWeeks)) => CopeDatePeriod.Extended
-    case _ => CopeDatePeriod.Expired
+case class CopeRecord(
+  hashedNino: HashedNino,
+  firstLoginDate: LocalDate,
+  copeAvailableDate: LocalDate
+) {
+  def defineCopePeriod(appConfig: AppConfig): CopeDatePeriod = firstLoginDate match {
+    case initialDate if (initialDate.plusWeeks(appConfig.returnToServiceWeeks).isAfter(copeAvailableDate)) => CopeDatePeriod.Extended
+    case _ => CopeDatePeriod.Initial
   }
 }
 

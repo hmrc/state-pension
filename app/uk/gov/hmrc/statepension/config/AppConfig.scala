@@ -40,8 +40,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
-  val firstReturnToServiceWeeks: Int = configuration.get[Int]("cope.firstReturnToServiceWeeks")
-  val secondReturnToServiceWeeks: Int = configuration.get[Int]("cope.secondReturnToServiceWeeks")
+  val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     val empty = ""

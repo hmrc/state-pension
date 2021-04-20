@@ -18,18 +18,21 @@ package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
 import com.mongodb.{DuplicateKeyException, MongoException}
+import org.joda.time.LocalDate
+import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import play.api.Logging
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
-import uk.gov.hmrc.statepension.domain.CopeRecord
+import uk.gov.hmrc.statepension.models.CopeRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext, appConfig: AppConfig)
   extends PlayMongoRepository[CopeRecord](
     collectionName = "cope",
     mongoComponent = mongo,
@@ -51,8 +54,11 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
       case e: Exception => logger.error(s"Exception when saving ErrorResponseCopeProcessing: $e", e); false
     }
 
-  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(Filters.equal("nino", hashedNino)).headOption()
+  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash)).headOption()
 
-  def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(Filters.equal("nino", hashedNino)).toFuture
+  def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
+    collection.findOneAndUpdate(equal("nino", hashedNino.generateHash), set("copeDataAvailableDate", newCopeAvailableDate)).toFutureOption()
+
+  def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(equal("nino", hashedNino.generateHash)).toFuture
 
 }
