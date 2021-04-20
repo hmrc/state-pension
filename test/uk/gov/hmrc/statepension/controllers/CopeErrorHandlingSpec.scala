@@ -109,8 +109,8 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
           }
 
           "mongo returns an entry for nino where date falls in Initial period" in {
-            // FIXME
-            // when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), LocalDate.now(), ))))
+             when(mockCopeRepository.find(HashedNino(nino)))
+               .thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), LocalDate.now(), LocalDate.now().plusWeeks(4)))))
 
             val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -118,38 +118,27 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
             contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessing(inject[AppConfig]))
           }
 
-//          "mongo returns an entry for nino where date falls in Extended Period" in {
-//            val initialLoginDate = LocalDate.now().minusWeeks(5)
-//            val appConfig = inject[AppConfig]
-//
-//            when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), initialLoginDate))))
-//
-//            val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
-//
-//            status(result) shouldBe 403
-//            contentAsJson(result) shouldBe
-//              Json.toJson(
-//                ErrorResponseCopeProcessing(
-//                  ErrorResponses.CODE_COPE_PROCESSING,
-//                  initialLoginDate.plusWeeks(appConfig.secondReturnToServiceWeeks),
-//                  Some(initialLoginDate.plusWeeks(appConfig.firstReturnToServiceWeeks)
-//                  )
-//                )
-//              )
-//          }
-        }
+          "mongo returns an entry for nino where date falls in Extended Period" in {
+            val initialLoginDate = LocalDate.now().minusWeeks(5)
+            val copeAvailableDate = initialLoginDate.plusWeeks(2)
+            val appConfig = inject[AppConfig]
 
-//        "Return ExclusionCopeFailed when mongo returns entry where date falls into Expired period" in {
-//          val initialLoginDate = LocalDate.now().minusWeeks(14)
-//          val appConfig = inject[AppConfig]
-//
-//          when(mockCopeRepository.find(HashedNino(nino))).thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), initialLoginDate))))
-//
-//          val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
-//
-//          status(result) shouldBe 403
-//          contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessingFailed)
-//        }
+            when(mockCopeRepository.find(HashedNino(nino)))
+              .thenReturn(Future.successful(Some(CopeRecord(HashedNino(nino), initialLoginDate, copeAvailableDate))))
+
+            val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
+
+            status(result) shouldBe 403
+            contentAsJson(result) shouldBe
+              Json.toJson(
+                ErrorResponseCopeProcessing(
+                  ErrorResponses.CODE_COPE_PROCESSING,
+                  initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks),
+                  Some(copeAvailableDate)
+                )
+              )
+          }
+        }
       }
 
       "Upstream4xxResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in  {
