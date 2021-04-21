@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
-import uk.gov.hmrc.statepension.models.{CopeDatePeriod, CopeRecord}
+import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -75,19 +75,22 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       }
       case Some(entry) => {
-        entry.defineCopePeriod(appConfig) match {
-          case CopeDatePeriod.Initial => Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate)))
-          case CopeDatePeriod.Extended => {
-            copeRepository.update(HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks))
-            Forbidden(Json.toJson(
-              ErrorResponseCopeProcessing(
-                ErrorResponses.CODE_COPE_PROCESSING,
-                entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks),
-                Some(entry.copeAvailableDate)
-              )
-            ))
-          }
+        val availableDateFromEntry: LocalDate = entry.copeAvailableDate
+        val availableDateFromConfig: LocalDate = entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)
+
+        if(availableDateFromEntry.isEqual(availableDateFromConfig)) {
+          Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate)))
+        } else {
+          copeRepository.update(HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks))
+          Forbidden(Json.toJson(
+            ErrorResponseCopeProcessing(
+              ErrorResponses.CODE_COPE_PROCESSING,
+              entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks),
+              Some(entry.copeAvailableDate)
+            )
+          ))
         }
+
       }
     }
   }
