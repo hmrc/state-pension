@@ -57,9 +57,12 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
 
   def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash)).headOption()
 
-  def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
-    collection.findOneAndUpdate(equal("nino", hashedNino.generateHash),
-      set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJodaFormats.localDateWrites)
+  def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate, previousCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
+    collection.findOneAndUpdate(
+      equal("nino", hashedNino.generateHash),
+      Seq(
+        set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJodaFormats.localDateWrites)),
+        set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJodaFormats.localDateWrites))
       )
     ).toFutureOption()
 
