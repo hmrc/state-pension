@@ -41,6 +41,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")
+  val ttlInWeeks: Int = configuration.get[Int]("cope.ttlInWeeks")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     val empty = ""
