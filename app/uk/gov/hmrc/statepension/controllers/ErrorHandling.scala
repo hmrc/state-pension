@@ -40,7 +40,7 @@ trait ErrorHandling {
 
   val app: String = "State-Pension"
 
-  def errorWrapper(func: => Future[Result], nini: Nino)(implicit hc: HeaderCarrier): Future[Result]
+  def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result]
 }
 
 class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeRepository) extends BackendController(cc)
