@@ -56,8 +56,9 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
         Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino)
       case WithStatusCode(UNPROCESSABLE_ENTITY, e) if  e.message.contains("CLOSED_COPE_WORK_ITEM") =>
-        copeRepository.delete(HashedNino(nino))
-        Future.successful(Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed)))
+        copeRepository.delete(HashedNino(nino)) map { _ =>
+          Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
+        }
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); Future.successful(BadGateway)
       case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); Future.successful(BadGateway)
       case e: Throwable =>
