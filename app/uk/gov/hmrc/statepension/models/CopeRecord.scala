@@ -23,7 +23,8 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats.Implicits.jotLocalDa
 case class CopeRecord(
   nino: String,
   firstLoginDate: LocalDate,
-  copeAvailableDate: LocalDate
+  copeAvailableDate: LocalDate,
+  previousCopeAvailableDate: Option[LocalDate] = None
 )
 
 object CopeRecord {

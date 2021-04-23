@@ -30,6 +30,7 @@ import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.models.CopeRecord
+import java.util.concurrent.TimeUnit
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,8 +40,18 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
     mongoComponent = mongo,
     domainFormat = CopeRecord.format,
     indexes = Seq(
-      IndexModel(ascending("nino"),
-      IndexOptions().name("indexed_nino").unique(true))
+      IndexModel(
+        ascending("nino"),
+        IndexOptions()
+          .name("indexed_nino")
+          .unique(true)
+      ),
+      IndexModel(
+        ascending("firstLoginDate"),
+        IndexOptions()
+          .name("index_ttl")
+          .expireAfter(appConfig.ttlInWeeks * 7L, TimeUnit.DAYS)
+      ),
     )
   ) with Logging {
 
@@ -57,9 +68,12 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
 
   def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash)).headOption()
 
-  def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
-    collection.findOneAndUpdate(equal("nino", hashedNino.generateHash),
-      set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJodaFormats.localDateWrites)
+  def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate, previousCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
+    collection.findOneAndUpdate(
+      equal("nino", hashedNino.generateHash),
+      Seq(
+        set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJodaFormats.localDateWrites)),
+        set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJodaFormats.localDateWrites))
       )
     ).toFutureOption()
 

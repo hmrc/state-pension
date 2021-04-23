@@ -154,7 +154,11 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
                 )
 
               verify(mockCopeRepository, times(1))
-                .update(ArgumentMatchers.eq(HashedNino(nino)), ArgumentMatchers.eq(initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks)))
+                .update(
+                  ArgumentMatchers.eq(HashedNino(nino)),
+                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks)),
+                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(123))
+                )
             }
 
             "the new CopeAvailableDate from DB entry is before the one from AppConfig, update DB CopeRecord and return ErrorResponseCopeProcessing" in {
@@ -176,7 +180,11 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
                 )
 
               verify(mockCopeRepository, times(1))
-                .update(ArgumentMatchers.eq(HashedNino(nino)), ArgumentMatchers.eq(initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks)))
+                .update(
+                  ArgumentMatchers.eq(HashedNino(nino)),
+                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks)),
+                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(1))
+                )
             }
 
           }

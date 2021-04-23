@@ -40,7 +40,7 @@ trait ErrorHandling {
 
   val app: String = "State-Pension"
 
-  def errorWrapper(func: => Future[Result], nini: Nino)(implicit hc: HeaderCarrier): Future[Result]
+  def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result]
 }
 
 class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeRepository) extends BackendController(cc)
@@ -71,7 +71,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
     copeRepository.find(HashedNino(nino)) map {
       case None => {
-        copeRepository.insert(CopeRecord(HashedNino(nino).generateHash()(appConfig), today, today.plusWeeks(appConfig.returnToServiceWeeks)))
+        copeRepository.insert(CopeRecord(HashedNino(nino).generateHash()(appConfig), today, today.plusWeeks(appConfig.returnToServiceWeeks), None))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       }
       case Some(entry) => {
@@ -79,9 +79,10 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
         val availableDateFromConfig: LocalDate = entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)
 
         if(availableDateFromEntry.isEqual(availableDateFromConfig)) {
-          Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate)))
+          Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate, entry.previousCopeAvailableDate)))
         } else {
-          copeRepository.update(HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks))
+          copeRepository.update(
+            HashedNino(nino), entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks), entry.copeAvailableDate)
           Forbidden(Json.toJson(
             ErrorResponseCopeProcessing(
               ErrorResponses.CODE_COPE_PROCESSING,
