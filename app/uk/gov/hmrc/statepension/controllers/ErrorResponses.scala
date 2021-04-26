@@ -29,7 +29,7 @@ object ErrorResponses {
 
   case object ExclusionCopeProcessing {
     def apply(appConfig: AppConfig): ErrorResponseCopeProcessing =
-      ErrorResponseCopeProcessing(CODE_COPE_PROCESSING, LocalDate.now().plusDays(appConfig.copeReturnToServiceDays))
+      ErrorResponseCopeProcessing(CODE_COPE_PROCESSING, LocalDate.now().plusWeeks(appConfig.returnToServiceWeeks))
   }
   object ExclusionCopeProcessingFailed extends ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED)
   case object ErrorNinoInvalid extends ErrorResponse(400, CODE_INVALID_NINO, "The provided NINO is not valid")

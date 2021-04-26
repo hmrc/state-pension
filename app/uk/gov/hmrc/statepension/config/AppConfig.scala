@@ -31,6 +31,8 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
     .getOrElse(throw new RuntimeException("rates.statePension is missing"))
   val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
 
+  val ninoHashingKey: String = configuration.get[String]("ninoHashingKey")
+
   val citizenDetailsBaseUrl: String = baseUrl("citizen-details")
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
@@ -38,8 +40,8 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
-  val copeFeatureEnabled: Boolean = configuration.get[Boolean]("cope.feature.enabled")
-  val copeReturnToServiceDays: Int = configuration.get[Int]("cope.returnToServiceDays")
+  val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")
+  val ttlInWeeks: Int = configuration.get[Int]("cope.ttlInWeeks")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     val empty = ""
