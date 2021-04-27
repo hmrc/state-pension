@@ -30,21 +30,23 @@ import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.services.StatePensionService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 @Singleton
-abstract class StatePensionController @Inject()(controllerComponents: ControllerComponents, errorHandling: ErrorHandling)
+abstract class StatePensionController @Inject()(
+                                                 controllerComponents: ControllerComponents,
+                                                 errorHandling: ErrorHandling,
+                                                 appConfig: AppConfig,
+                                                 statePensionService: StatePensionService,
+                                                 customAuditConnector: AuditConnector,
+                                                 authAction: AuthAction
+                                               )( implicit ec: ExecutionContext)
   extends BackendController(controllerComponents)
     with HeaderValidator
     with HalSupport
     with Links {
 
-  val appContext: AppConfig
-  val statePensionService: StatePensionService
-  val customAuditConnector: AuditConnector
-  val authAction: AuthAction
-
-  override lazy val context: String = appContext.apiGatewayContext
+  override lazy val context: String = appConfig.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = (authAction andThen validateAccept(acceptHeaderValidationRules)).async {
     implicit request =>
