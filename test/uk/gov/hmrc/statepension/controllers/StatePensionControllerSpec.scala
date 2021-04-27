@@ -37,7 +37,6 @@ import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
