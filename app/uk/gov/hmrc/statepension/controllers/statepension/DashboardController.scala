@@ -28,23 +28,16 @@ import uk.gov.hmrc.statepension.services.DashboardService
 import scala.concurrent.ExecutionContext
 
 class DashboardController @Inject()(
-                                     authAction: PrivilegedAuthAction,
-                                     appConfig: AppConfig,
-                                     statePensionService: DashboardService,
-                                     customAuditConnector: AuditConnector,
+                                     override val authAction: PrivilegedAuthAction,
+                                     override val appConfig: AppConfig,
+                                     override val statePensionService: DashboardService,
+                                     override val customAuditConnector: AuditConnector,
                                      override val controllerComponents: ControllerComponents,
                                      errorHandling: ErrorHandling,
                                      val parser: BodyParsers.Default,
                                      val executionContext: ExecutionContext
                                    )(implicit ec: ExecutionContext)
-  extends StatePensionController(
-    controllerComponents,
-    errorHandling,
-    appConfig,
-    statePensionService,
-    customAuditConnector,
-    authAction
-  ) {
+  extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.DashboardController.get(nino).url
 }

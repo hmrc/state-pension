@@ -27,7 +27,7 @@ import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.nps._
@@ -39,7 +39,8 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
   with GuiceOneAppPerSuite
   with ScalaFutures
   with MockitoSugar
-  with Injecting {
+  with Injecting
+  with CopeRepositoryHelper {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]

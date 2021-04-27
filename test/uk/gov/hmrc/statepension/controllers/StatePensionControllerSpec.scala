@@ -22,17 +22,14 @@ import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JodaReads._
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, BodyParser, ControllerComponents, Result}
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
-import play.api.inject.bind
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
@@ -40,11 +37,12 @@ import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 
-class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
+class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting with CopeRepositoryHelper {
 
   val nino: Nino = new Generator(new Random()).nextNino
 
@@ -52,23 +50,23 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
   val emptyRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val emptyRequestWithHeader: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
 
-  val mockAppConfig: AppConfig = mock[AppConfig]
+  val _appContext: AppConfig = inject[AppConfig]
   val fakeAuthAction: AuthAction = inject[FakeAuthAction]
-  val mockErrorHandling: ErrorHandling = mock[ErrorHandling]
-  val mockStatePensionService = mock[StatePensionService]
-  val mockAuditConnector = mock[AuditConnector]
+  val fakeErrorHandling: ErrorHandling = inject[ErrorHandling]
 
-  override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .overrides(
-      bind[ErrorHandling].toInstance(mockErrorHandling),
-      bind[AuthAction].to[FakeAuthAction],
-      bind[AppConfig].toInstance(mockAppConfig),
-      bind[ControllerComponents].toInstance(controllerComponents),
-      bind[StatePensionService].toInstance(mockStatePensionService),
-      bind[AuditConnector].toInstance(mockAuditConnector)
-    ).build()
+  def testStatePensionController(spService: StatePensionService): StatePensionController =
+    new StatePensionController(controllerComponents, fakeErrorHandling) {
+      override lazy val context: String = "test"
+      override val appConfig: AppConfig = _appContext
+      override val statePensionService: StatePensionService = spService
+      override val customAuditConnector: AuditConnector = mock[AuditConnector]
+      override val authAction: AuthAction = fakeAuthAction
 
-  lazy val testStatePensionController = inject[StatePensionController]
+      override def endpointUrl(nino: Nino): String = s"/ni/$nino"
+
+      override val executionContext: ExecutionContext = controllerComponents.executionContext
+      override val parser: BodyParser[AnyContent] = controllerComponents.parsers.default
+    }
 
   val testStatePension: StatePension = StatePension(
     new LocalDate(2015, 4, 5),
@@ -102,10 +100,11 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
   "get" should {
     "return status code 406 when the headers are invalid" in {
+      val mockStatePensionService = mock[StatePensionService]
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePension)))
 
-      val response = testStatePensionController.get(nino)(emptyRequest)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequest)
 
       status(response) shouldBe 406
       contentAsJson(response) shouldBe Json.parse("""{"code":"ACCEPT_HEADER_INVALID","message":"The accept header is missing or invalid"}""")
@@ -116,7 +115,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePension)))
 
-      val response = testStatePensionController.get(nino)(emptyRequestWithHeader)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
@@ -154,7 +153,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePensionRRE)))
 
-      val response = testStatePensionController.get(nino)(emptyRequestWithHeader)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
@@ -192,7 +191,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePensionAgeUnderConsideration)))
 
-      val response = testStatePensionController.get(nino)(emptyRequestWithHeader)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
@@ -237,7 +236,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
         ))
       )
 
-      val response = testStatePensionController.get(nino)(emptyRequestWithHeader)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
 
@@ -256,7 +255,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
         ))
       )
 
-      val response = testStatePensionController.get(nino)(emptyRequestWithHeader)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")
@@ -275,7 +274,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
         ))
       )
 
-      val response = testStatePensionController.get(nino)(emptyRequestWithHeader)
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
 
       status(response) shouldBe 403
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")

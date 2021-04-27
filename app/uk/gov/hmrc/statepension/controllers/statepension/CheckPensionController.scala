@@ -28,22 +28,16 @@ import uk.gov.hmrc.statepension.services.CheckPensionService
 import scala.concurrent.ExecutionContext
 
 class CheckPensionController @Inject()(
-                                        authAction: AuthAction,
-                                        appConfig: AppConfig,
-                                        statePensionService: CheckPensionService,
-                                        customAuditConnector: AuditConnector,
+                                        override val authAction: AuthAction,
+                                        override val appConfig: AppConfig,
+                                        override val statePensionService: CheckPensionService,
+                                        override val customAuditConnector: AuditConnector,
                                         override val controllerComponents: ControllerComponents,
                                         val parser: BodyParsers.Default,
                                         val executionContext: ExecutionContext,
                                         errorHandling: ErrorHandling
                                       )(implicit ec: ExecutionContext)
-  extends StatePensionController(
-    controllerComponents,
-    errorHandling,
-    appConfig,
-    statePensionService,
-    customAuditConnector,
-    authAction) {
+  extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url
 }
