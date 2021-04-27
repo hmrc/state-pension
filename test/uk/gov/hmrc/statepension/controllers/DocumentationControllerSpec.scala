@@ -27,14 +27,19 @@ import play.api.test.Helpers.{contentAsJson, contentAsString, status, stubContro
 import play.api.test.{FakeRequest, Injecting}
 import resource._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 
 import scala.concurrent.Future
 import scala.io.Source
 
-class DocumentationControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
+class DocumentationControllerSpec
+  extends StatePensionBaseSpec
+    with GuiceOneAppPerSuite
+    with MockitoSugar
+    with Injecting
+    with CopeRepositoryHelper {
 
   val controllerComponents: ControllerComponents = stubControllerComponents()
   val serviceConfig: ServicesConfig = inject[ServicesConfig]

@@ -29,14 +29,15 @@ import scala.concurrent.ExecutionContext
 
 class DashboardController @Inject()(
                                      override val authAction: PrivilegedAuthAction,
-                                     override val appContext: AppConfig,
+                                     override val appConfig: AppConfig,
                                      override val statePensionService: DashboardService,
                                      override val customAuditConnector: AuditConnector,
                                      override val controllerComponents: ControllerComponents,
                                      errorHandling: ErrorHandling,
                                      val parser: BodyParsers.Default,
                                      val executionContext: ExecutionContext
-                                   ) extends StatePensionController(controllerComponents, errorHandling) {
+                                   )(implicit ec: ExecutionContext)
+  extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.DashboardController.get(nino).url
 }

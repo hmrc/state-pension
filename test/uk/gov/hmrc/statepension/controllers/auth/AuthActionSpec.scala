@@ -35,6 +35,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.{GGCredId, PAClientId, ~}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.statepension.CopeRepositoryHelper
 import uk.gov.hmrc.statepension.controllers.auth.AuthActionSpec.retrievalsTestingSyntax
 
 import scala.concurrent.Future
@@ -44,7 +45,8 @@ class AuthActionSpec
   extends PlaySpec
     with GuiceOneAppPerSuite
     with BeforeAndAfter
-    with MockitoSugar {
+    with MockitoSugar
+    with CopeRepositoryHelper {
 
   val controllerComponents = Helpers.stubControllerComponents()
 

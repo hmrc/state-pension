@@ -31,6 +31,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
+import uk.gov.hmrc.statepension.repositories.CopeRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
@@ -42,6 +43,7 @@ class DesConnectorSpec extends StatePensionBaseSpec
   with WireMockHelper {
 
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
+  val mockcopeRepository: CopeRepository = mock[CopeRepository]
   val nino: Nino = generateNino()
   val ninoWithoutSuffix: String = nino.withoutSuffix
 
@@ -59,7 +61,8 @@ class DesConnectorSpec extends StatePensionBaseSpec
                       "cope.dwp.originatorId" -> "dwpId"
     )
     .overrides(
-      bind[ApplicationMetrics].toInstance(mockMetrics)
+      bind[ApplicationMetrics].toInstance(mockMetrics),
+      bind[CopeRepository].toInstance(mockcopeRepository)
     ).build()
 
   override def beforeEach(): Unit = {

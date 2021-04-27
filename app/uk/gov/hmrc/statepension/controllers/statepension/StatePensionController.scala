@@ -39,12 +39,12 @@ abstract class StatePensionController @Inject()(controllerComponents: Controller
     with HalSupport
     with Links {
 
-  val appContext: AppConfig
+  val appConfig: AppConfig
   val statePensionService: StatePensionService
   val customAuditConnector: AuditConnector
   val authAction: AuthAction
 
-  override lazy val context: String = appContext.apiGatewayContext
+  override lazy val context: String = appConfig.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = (authAction andThen validateAccept(acceptHeaderValidationRules)).async {
     implicit request =>

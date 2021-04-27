@@ -29,7 +29,7 @@ import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
@@ -41,7 +41,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 
-class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting {
+class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with MockitoSugar with Injecting with CopeRepositoryHelper {
 
   val nino: Nino = new Generator(new Random()).nextNino
 
@@ -56,7 +56,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
   def testStatePensionController(spService: StatePensionService): StatePensionController =
     new StatePensionController(controllerComponents, fakeErrorHandling) {
       override lazy val context: String = "test"
-      override val appContext: AppConfig = _appContext
+      override val appConfig: AppConfig = _appContext
       override val statePensionService: StatePensionService = spService
       override val customAuditConnector: AuditConnector = mock[AuditConnector]
       override val authAction: AuthAction = fakeAuthAction

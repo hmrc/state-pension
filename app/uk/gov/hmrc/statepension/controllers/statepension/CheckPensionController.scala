@@ -29,14 +29,15 @@ import scala.concurrent.ExecutionContext
 
 class CheckPensionController @Inject()(
                                         override val authAction: AuthAction,
-                                        override val appContext: AppConfig,
+                                        override val appConfig: AppConfig,
                                         override val statePensionService: CheckPensionService,
                                         override val customAuditConnector: AuditConnector,
                                         override val controllerComponents: ControllerComponents,
                                         val parser: BodyParsers.Default,
                                         val executionContext: ExecutionContext,
                                         errorHandling: ErrorHandling
-                                      ) extends StatePensionController(controllerComponents, errorHandling) {
+                                      )(implicit ec: ExecutionContext)
+  extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url
 }
