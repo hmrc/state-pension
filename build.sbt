@@ -27,7 +27,5 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    routesImport += "uk.gov.hmrc.statepension.config.Binders._",
-    resolvers += Resolver.jcenterRepo
-    
+    routesImport += "uk.gov.hmrc.statepension.config.Binders._"
   )
