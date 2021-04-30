@@ -100,7 +100,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
     appConfig.dwpApplicationId match {
-      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
+      case Some(appIds) if appIds contains getHeaderValueByKey("http_x_application_id") => appConfig.dwpOriginatorId
       case _ => value
     }
   }
