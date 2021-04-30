@@ -61,11 +61,13 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
+    val originatorId = serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
+
     val headers = Seq(
       HeaderNames.authorisation -> s"Bearer $token",
       correlationId,
       environmentHeader,
-      serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
+      originatorId
     )
 
     val responseF = http.GET[HttpResponse](url, Seq(), headers)
@@ -92,7 +94,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
-    headerCarrier.extraHeaders.toMap.getOrElse(key, "Header not found")
+    headerCarrier.headers(Seq(key)).toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
     appConfig.dwpApplicationId match {
