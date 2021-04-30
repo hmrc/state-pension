@@ -63,7 +63,13 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
     val originatorId = serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
 
-    logger.info(s"OriginatorId: $originatorId")
+    val logData = Seq(
+      "OriginatorId" -> originatorId,
+      "ApplicationId" -> getHeaderValueByKey("http_x_application_id"),
+      "DWPApplicationIds" -> appConfig.dwpApplicationId
+    )
+
+    logger.info(logData.mkString(", "))
 
     val headers = Seq(
       HeaderNames.authorisation -> s"Bearer $token",
