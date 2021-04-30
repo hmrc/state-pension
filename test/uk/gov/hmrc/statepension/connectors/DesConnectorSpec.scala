@@ -542,9 +542,10 @@ class DesConnectorSpec extends StatePensionBaseSpec
     }
 
     "return the correct headers for requests made by the DWP" in {
-      val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSessionId")),
-        requestId = Some(RequestId("testRequestId")))
-        .withExtraHeaders(("http_x_application_id", "abcdefg-12345-abddefg-12345"))
+      val hc: HeaderCarrier = HeaderCarrier(
+        sessionId = Some(SessionId("testSessionId")),
+        requestId = Some(RequestId("testRequestId")),
+        otherHeaders = Seq("http_x_application_id" -> "abcdefg-12345-abddefg-12345"))
       val requestBody: String = "{}"
 
       server.stubFor(
