@@ -545,7 +545,7 @@ class DesConnectorSpec extends StatePensionBaseSpec
       val hc: HeaderCarrier = HeaderCarrier(
         sessionId = Some(SessionId("testSessionId")),
         requestId = Some(RequestId("testRequestId")),
-        otherHeaders = Seq("http_x_application_id" -> "abcdefg-12345-abddefg-12345"))
+        otherHeaders = Seq("x-application-id" -> "abcdefg-12345-abddefg-12345"))
       val requestBody: String = "{}"
 
       server.stubFor(
