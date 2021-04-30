@@ -65,7 +65,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
 
     val logData = Seq(
       "OriginatorId" -> originatorId,
-      "ApplicationId" -> getHeaderValueByKey("http_x_application_id"),
+      "ApplicationId" -> getHeaderValueByKey("x-application-id"),
       "DWPApplicationIds" -> appConfig.dwpApplicationId
     )
 
