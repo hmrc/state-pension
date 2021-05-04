@@ -461,6 +461,8 @@ class DesConnectorSpec extends StatePensionBaseSpec
          |  "nino": "$nino"
          |}""".stripMargin)
 
+    val summaryUrl = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+    val liabilitiesUrl = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
     val niRecordUrl = s"/individuals/${nino.withoutSuffix}/pensions/ni"
 
     "return an NiRecord object when successful" in {
@@ -541,23 +543,53 @@ class DesConnectorSpec extends StatePensionBaseSpec
       }
     }
 
-    "return the correct headers for requests made by the DWP" in {
+    "return the correct headers for requests made by the DWP" when {
       val hc: HeaderCarrier = HeaderCarrier(
         sessionId = Some(SessionId("testSessionId")),
         requestId = Some(RequestId("testRequestId")),
         otherHeaders = Seq("x-application-id" -> "abcdefg-12345-abddefg-12345"))
-      val requestBody: String = "{}"
 
-      server.stubFor(
-        get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(requestBody))
-      )
+      "getSummary is called" in {
 
-      desConnector.getNIRecord(nino)(hc).futureValue
+        server.stubFor(
+          get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody("{}"))
+        )
 
-      server.verify(
-        getRequestedFor(urlEqualTo(niRecordUrl))
-          .withHeader("testOriginatorKey", equalTo("dwpId"))
-      )
+        desConnector.getLiabilities(nino)(hc).futureValue
+
+        server.verify(
+          getRequestedFor(urlEqualTo(liabilitiesUrl))
+            .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        )
+      }
+
+      "getLiabilities is called" in {
+
+        server.stubFor(
+          get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody("{}"))
+        )
+
+        desConnector.getLiabilities(nino)(hc).futureValue
+
+        server.verify(
+          getRequestedFor(urlEqualTo(liabilitiesUrl))
+            .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        )
+      }
+
+      "getNIRecord is called" in {
+
+        server.stubFor(
+          get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody("{}"))
+        )
+
+        desConnector.getNIRecord(nino)(hc).futureValue
+
+        server.verify(
+          getRequestedFor(urlEqualTo(niRecordUrl))
+            .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        )
+      }
     }
 
   }
