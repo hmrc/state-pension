@@ -50,18 +50,17 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
-    connectToHOD[Summary](summaryUrl(nino), summaryMetricType)
+    connectToHOD[Summary](summaryUrl(nino), summaryMetricType, serviceOriginatorId(setServiceOriginatorId(originatorIdValue)))
 
   def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
-    connectToHOD[Liabilities](liabilitiesUrl(nino), liabilitiesMetricType).map(_.liabilities)
+    connectToHOD[Liabilities](liabilitiesUrl(nino), liabilitiesMetricType, serviceOriginatorId(originatorIdValue)).map(_.liabilities)
 
   def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
-    connectToHOD[NIRecord](niRecordUrl(nino), niRecordMetricType)
+    connectToHOD[NIRecord](niRecordUrl(nino), niRecordMetricType, serviceOriginatorId(originatorIdValue))
 
-  private def connectToHOD[A](url: String, api: APIType)(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
+  private def connectToHOD[A](url: String, api: APIType, originatorId: (String, String))(implicit headerCarrier: HeaderCarrier, reads: Reads[A]): Future[A] = {
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
-    val originatorId = serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
 
     val headers = Seq(
       HeaderNames.authorisation -> s"Bearer $token",
