@@ -27,10 +27,12 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JodaWrites._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
+import uk.gov.hmrc.statepension.fixtures.SummaryFixture.exampleSummaryJson
 import uk.gov.hmrc.statepension.repositories.CopeRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
@@ -464,6 +466,8 @@ class DesConnectorSpec extends StatePensionBaseSpec
          |  "nino": "$nino"
          |}""".stripMargin)
 
+    val summaryUrl = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+    val liabilitiesUrl = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
     val niRecordUrl = s"/individuals/${nino.withoutSuffix}/pensions/ni"
 
     "return an NiRecord object when successful" in {
@@ -544,23 +548,53 @@ class DesConnectorSpec extends StatePensionBaseSpec
       }
     }
 
-    "return the correct headers for requests made by the DWP" in {
+    "return the correct headers for requests made by the DWP" when {
       val hc: HeaderCarrier = HeaderCarrier(
         sessionId = Some(SessionId("testSessionId")),
         requestId = Some(RequestId("testRequestId")),
         otherHeaders = Seq("x-application-id" -> "abcdefg-12345-abddefg-12345"))
-      val requestBody: String = "{}"
 
-      server.stubFor(
-        get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody(requestBody))
-      )
+      "getSummary is called" in {
 
-      desConnector.getNIRecord(nino)(hc).futureValue
+        server.stubFor(
+          get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(exampleSummaryJson))
+        )
 
-      server.verify(
-        getRequestedFor(urlEqualTo(niRecordUrl))
-          .withHeader("testOriginatorKey", equalTo("dwpId"))
-      )
+        desConnector.getSummary(nino)(hc).futureValue
+
+        server.verify(
+          getRequestedFor(urlEqualTo(summaryUrl))
+            .withHeader("testOriginatorKey", equalTo("dwpId"))
+        )
+      }
+
+      "getLiabilities is called" in {
+
+        server.stubFor(
+          get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody("{}"))
+        )
+
+        desConnector.getLiabilities(nino)(hc).futureValue
+
+        server.verify(
+          getRequestedFor(urlEqualTo(liabilitiesUrl))
+            .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        )
+      }
+
+      "getNIRecord is called" in {
+
+        server.stubFor(
+          get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody("{}"))
+        )
+
+        desConnector.getNIRecord(nino)(hc).futureValue
+
+        server.verify(
+          getRequestedFor(urlEqualTo(niRecordUrl))
+            .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        )
+      }
     }
 
   }
