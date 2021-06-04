@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -44,8 +44,8 @@ class CitizenDetailsConnector @Inject()(http: HttpClient,
         timerContext.stop()
         Success(personResponse.status)
     } recover {
-      case ex: Upstream4xxResponse if ex.upstreamResponseCode == LOCKED => timerContext.stop(); Success(ex.upstreamResponseCode)
-      case ex: Upstream4xxResponse if ex.upstreamResponseCode == NOT_FOUND => {
+      case ex: UpstreamErrorResponse if ex.statusCode == LOCKED => timerContext.stop(); Success(ex.upstreamResponseCode)
+      case ex: UpstreamErrorResponse if ex.statusCode == NOT_FOUND => {
         timerContext.stop()
         Failure(new NotFoundException("Nino was not found."))
       }

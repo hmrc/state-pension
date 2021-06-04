@@ -101,7 +101,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
     }
 
     "return Forbidden" when {
-      "Upstream4xxResponse is returned with 422 status and NO_OPEN_COPE_WORK_ITEM message from DES" when {
+      "UpstreamErrorResponse is returned with 422 status and NO_OPEN_COPE_WORK_ITEM message from DES" when {
 
         "there is no CopeRecord in the database" when {
           "return ExclusionCopeProcessing and insert a CopeRecord to the db" in {
@@ -192,7 +192,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
         }
       }
 
-      "Upstream4xxResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in {
+      "UpstreamErrorResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in {
 
         when(mockCopeRepository.delete(HashedNino(nino))).thenReturn(Future.successful(CopeRecord("Nino", LocalDate.now(), LocalDate.now())))
         

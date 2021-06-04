@@ -107,7 +107,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
       )
 
       val resultF = citizenDetailsConnector.connectToGetPersonDetails(nino)
-      resultF.failed.futureValue shouldBe a[Upstream5xxResponse]
+      resultF.failed.futureValue shouldBe a[UpstreamErrorResponse]
 
       withClue("timer did not stop") {
         Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.CitizenDetails))).stop()

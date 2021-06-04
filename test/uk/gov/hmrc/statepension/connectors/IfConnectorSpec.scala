@@ -28,7 +28,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, UpstreamErrorResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -114,13 +114,13 @@ class IfConnectorSpec extends PlaySpec
       }
     }
 
-    "return Upstream5xxException" when {
-      "response status is 5xx" in {
+    "return UpstreamErrorResponse" when {
+      "response status is UpstreamErrorResponse" in {
         stubGetSummary(INTERNAL_SERVER_ERROR)
 
         val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
 
-        assert(thrown.isInstanceOf[Upstream5xxResponse])
+        assert(thrown.isInstanceOf[UpstreamErrorResponse])
       }
     }
   }
@@ -162,13 +162,13 @@ class IfConnectorSpec extends PlaySpec
       }
     }
 
-    "return Upstream5xxException" when {
-      "response status is 5xx" in {
+    "return UpstreamErrorResponse" when {
+      "response status is UpstreamErrorResponse" in {
         stubLiabilities(status = INTERNAL_SERVER_ERROR)
 
         val thrown: Throwable = ifConnector.getLiabilities(nino).failed.futureValue
 
-        assert(thrown.isInstanceOf[Upstream5xxResponse])
+        assert(thrown.isInstanceOf[UpstreamErrorResponse])
       }
     }
   }
@@ -208,13 +208,13 @@ class IfConnectorSpec extends PlaySpec
       }
     }
 
-    "return Upstream5xxException" when {
-      "response status is 5xx" in {
+    "return UpstreamErrorResponse" when {
+      "response status is UpstreamErrorResponse" in {
         stubNiRecord(status = INTERNAL_SERVER_ERROR)
 
         val thrown: Throwable = ifConnector.getNIRecord(nino).failed.futureValue
 
-        assert(thrown.isInstanceOf[Upstream5xxResponse])
+        assert(thrown.isInstanceOf[UpstreamErrorResponse])
       }
     }
   }
