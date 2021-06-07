@@ -34,10 +34,10 @@ object AppDependencies {
   val test: Seq[ModuleID] = Seq(
     "org.scalatest" %% "scalatest" % "3.0.9",
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3",
-    "org.mockito" % "mockito-core" % "2.10.0",
+    "org.mockito" % "mockito-core" % "3.6.0",
     "com.github.tomakehurst" % "wiremock-jre8" % "2.27.2",
     "org.pegdown" % "pegdown" % "1.6.0"
-  ).map(_ % Test)
+  ).map(_ % "test,it")
 
   val all: Seq[ModuleID] = compile ++ test
 
