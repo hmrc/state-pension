@@ -8,7 +8,6 @@ import play.api.test.Helpers.{route, status => statusResult, _}
 import test_utils.{IntegrationBaseSpec, ResponseHelpers}
 
 class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpers {
-
   val nino = generateNino
   val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
   val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
@@ -17,23 +16,6 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
 
   def defaultHeaders: (String, String) = {
     "Accept" -> "application/vnd.hmrc.1.0+json"
-  }
-
-  def generateAuthHeaderResponse = {
-    s"""
-       |{
-       |  "nino": "$nino",
-       |  "trustedHelper": {
-       |    "principalName": "Mr Test",
-       |    "attorneyName": "Mr Test",
-       |    "returnLinkUrl": "http://test.com/",
-       |    "principalNino": "$nino"
-       |  },
-       |  "authProviderId": {
-       |    "ggCredId": "xyz"
-       |  }
-       |}"""
-      .stripMargin
   }
 
   override def fakeApplication() = GuiceApplicationBuilder().configure(
@@ -54,8 +36,24 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
     stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
   }
 
-  "get" must {
+  def generateAuthHeaderResponse = {
+    s"""
+       |{
+       |  "nino": "$nino",
+       |  "trustedHelper": {
+       |    "principalName": "Mr Test",
+       |    "attorneyName": "Mr Test",
+       |    "returnLinkUrl": "http://test.com/",
+       |    "principalNino": "$nino"
+       |  },
+       |  "authProviderId": {
+       |    "ggCredId": "xyz"
+       |  }
+       |}"""
+      .stripMargin
+  }
 
+  "get" must {
     List(
       notFound() -> NOT_FOUND -> "NOT_FOUND",
       gatewayTimeout() -> GATEWAY_TIMEOUT -> "GATEWAY_TIMEOUT",
@@ -66,16 +64,15 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
       unauthorized() -> BAD_GATEWAY -> "BAD_GATEWAY from 4xx",
       serviceUnavailable() -> BAD_GATEWAY -> "BAD_GATEWAY from 5xx",
       httpClientTimeout(25000) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR",
-    ).foreach {case ((response, statusCode), errorDescription) =>
+    ).foreach { case ((response, statusCode), errorDescription) =>
 
-    s"return $statusCode $errorDescription" in {
-
+      s"return $statusCode $errorDescription" in {
         stubGetServer(response, npsSummaryUrl)
         stubGetServer(response, npsLiabilitiesUrl)
         stubGetServer(response, npsNiRecordUrl)
 
         val request = FakeRequest(GET, checkPensionControllerUrl).withHeaders(defaultHeaders)
-        val result = route(fakeApplication(), request)
+        val result = route(app, request)
 
         result.map(statusResult) shouldBe Some(statusCode)
       }
