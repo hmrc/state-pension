@@ -53,6 +53,8 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
       .stripMargin
   }
 
+  val nino = generateNino
+
   "get" must {
     List(
       notFound() -> NOT_FOUND -> "NOT_FOUND",
