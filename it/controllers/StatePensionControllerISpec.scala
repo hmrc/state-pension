@@ -1,6 +1,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.ok
+import controllers.Assets.OK
 import org.scalatest.Matchers.convertToAnyShouldWrapper
 import play.api.inject.guice.GuiceApplicationBuilder
 import test_utils.IntegrationBaseSpec
@@ -27,9 +28,14 @@ class StatePensionControllerISpec extends IntegrationBaseSpec {
     stubPostServer(ok("{}"), "/auth/authorise")
   }
 
+  val nino = generateNino
+
   "get" must {
-    "return a 200" in {
-      "true" shouldBe "true"
+    s"return $OK" in {
+      val controllerUrl: String = s"/ni/$nino"
+
+
+
     }
   }
 }
