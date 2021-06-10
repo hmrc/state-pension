@@ -1,12 +1,37 @@
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.ok
+import com.github.tomakehurst.wiremock.client.WireMock.{notFound, ok}
 import controllers.Assets.OK
 import org.scalatest.Matchers.convertToAnyShouldWrapper
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.FakeRequest
+import play.api.test.Helpers.{route, status => statusResult, _}
 import test_utils.IntegrationBaseSpec
 
 class StatePensionControllerISpec extends IntegrationBaseSpec {
+
+  val nino = generateNino
+
+  def defaultHeaders: (String, String) = {
+    "Accept" -> "application/vnd.hmrc.1.0+json"
+  }
+
+  def generateAuthHeaderResponse = {
+      s"""
+         |{
+         |  "nino": "$nino",
+         |  "trustedHelper": {
+         |    "principalName": "Mr Test",
+         |    "attorneyName": "Mr Test",
+         |    "returnLinkUrl": "http://test.com/",
+         |    "principalNino": "$nino"
+         |  },
+         |  "authProviderId": {
+         |    "ggCredId": "xyz"
+         |  }
+         |}"""
+        .stripMargin
+  }
 
   override def fakeApplication() = GuiceApplicationBuilder().configure(
     "microservice.services.auth.port" -> server.port(),
@@ -25,17 +50,26 @@ class StatePensionControllerISpec extends IntegrationBaseSpec {
 
   override def beforeEach() = {
     super.beforeEach()
-    stubPostServer(ok("{}"), "/auth/authorise")
+    stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
   }
-
-  val nino = generateNino
 
   "get" must {
     s"return $OK" in {
       val controllerUrl: String = s"/ni/$nino"
+      val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+      val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
+      val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
+      val citizenDetailsUrl: String = s"/citizen-details/$nino/designatory-details/"
 
+      stubGetServer(notFound(), npsSummaryUrl)
+      stubGetServer(notFound(), npsLiabilitiesUrl)
+      stubGetServer(notFound(), npsNiRecordUrl)
+      stubGetServer(notFound(), citizenDetailsUrl)
 
+      val request = FakeRequest(GET, controllerUrl).withHeaders(defaultHeaders)
+      val result = route(fakeApplication(), request)
 
+      result.map(statusResult) shouldBe Some(NOT_FOUND)
     }
   }
 }
