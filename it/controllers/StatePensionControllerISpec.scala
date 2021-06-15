@@ -38,10 +38,6 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
 
   override def fakeApplication() = GuiceApplicationBuilder().configure(
     "microservice.services.auth.port" -> server.port(),
-    "microservice.services.service-locator.host" -> "127.0.0.1",
-    "microservice.services.service-locator.port" -> server.port(),
-    "microservice.services.citizen-details.host" -> "127.0.0.1",
-    "microservice.services.citizen-details.port" -> server.port(),
     "microservice.services.nps-hod.host" -> "127.0.0.1",
     "microservice.services.nps-hod.port" -> server.port(),
     "microservice.services.des-hod.host" -> "127.0.0.1",
