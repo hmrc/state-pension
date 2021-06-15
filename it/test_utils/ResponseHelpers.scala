@@ -16,6 +16,10 @@ trait ResponseHelpers {
     aResponse().withStatus(504)
   }
 
+  def httpClientTimeout(fixedDelay: Int): ResponseDefinitionBuilder = {
+    aResponse().withStatus(200).withBody("").withFixedDelay(fixedDelay)
+  }
+
   def noOpenCopeWorkItem(): ResponseDefinitionBuilder = {
     aResponse().withStatus(422).withBody("NO_OPEN_COPE_WORK_ITEM")
   }

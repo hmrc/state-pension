@@ -44,6 +44,8 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
     "microservice.services.des-hod.port" -> server.port(),
     "microservice.services.if-hod.host" -> "127.0.0.1",
     "microservice.services.if-hod.port" -> server.port(),
+    "play.ws.timeout.request" -> "1000ms",
+    "play.ws.timeout.connection" -> "500ms",
     "auditing.enabled" -> false
   ).build()
 
@@ -63,7 +65,7 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
       closedCopeWorkItem() -> FORBIDDEN -> "CLOSED_COPE_WORK_ITEM",
       unauthorized() -> BAD_GATEWAY -> "BAD_GATEWAY from 4xx",
       serviceUnavailable() -> BAD_GATEWAY -> "BAD_GATEWAY from 5xx",
-      aResponse().withStatus(600) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR from non 4xx or 5xx"
+      httpClientTimeout(25000) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR",
     ).foreach {case ((response, statusCode), errorDescription) =>
 
     s"return $statusCode $errorDescription" in {
