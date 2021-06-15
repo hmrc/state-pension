@@ -1,36 +1,41 @@
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{notFound, ok}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import controllers.Assets.OK
 import org.scalatest.Matchers.convertToAnyShouldWrapper
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => statusResult, _}
-import test_utils.IntegrationBaseSpec
+import test_utils.{IntegrationBaseSpec, ResponseHelpers}
 
-class StatePensionControllerISpec extends IntegrationBaseSpec {
+class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpers {
 
   val nino = generateNino
+  val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+  val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
+  val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
+  val citizenDetailsUrl: String = s"/citizen-details/$nino/designatory-details/"
+  val checkPensionControllerUrl: String = s"/ni/$nino"
 
   def defaultHeaders: (String, String) = {
     "Accept" -> "application/vnd.hmrc.1.0+json"
   }
 
   def generateAuthHeaderResponse = {
-      s"""
-         |{
-         |  "nino": "$nino",
-         |  "trustedHelper": {
-         |    "principalName": "Mr Test",
-         |    "attorneyName": "Mr Test",
-         |    "returnLinkUrl": "http://test.com/",
-         |    "principalNino": "$nino"
-         |  },
-         |  "authProviderId": {
-         |    "ggCredId": "xyz"
-         |  }
-         |}"""
-        .stripMargin
+    s"""
+       |{
+       |  "nino": "$nino",
+       |  "trustedHelper": {
+       |    "principalName": "Mr Test",
+       |    "attorneyName": "Mr Test",
+       |    "returnLinkUrl": "http://test.com/",
+       |    "principalNino": "$nino"
+       |  },
+       |  "authProviderId": {
+       |    "ggCredId": "xyz"
+       |  }
+       |}"""
+      .stripMargin
   }
 
   override def fakeApplication() = GuiceApplicationBuilder().configure(
@@ -54,22 +59,28 @@ class StatePensionControllerISpec extends IntegrationBaseSpec {
   }
 
   "get" must {
-    s"return $OK" in {
-      val controllerUrl: String = s"/ni/$nino"
-      val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
-      val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
-      val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
-      val citizenDetailsUrl: String = s"/citizen-details/$nino/designatory-details/"
 
-      stubGetServer(notFound(), npsSummaryUrl)
-      stubGetServer(notFound(), npsLiabilitiesUrl)
-      stubGetServer(notFound(), npsNiRecordUrl)
-      stubGetServer(notFound(), citizenDetailsUrl)
+    List(
+      notFound() -> NOT_FOUND -> "NOT_FOUND",
+      gatewayTimeout() -> GATEWAY_TIMEOUT -> "GATEWAY_TIMEOUT",
+      badGateway() -> BAD_GATEWAY -> "BAD_GATEWAY",
+      badRequest() -> BAD_REQUEST -> "BAD_REQUEST",
+      noOpenCopeWorkItem() -> FORBIDDEN -> "NO_OPEN_COPE_WORK_ITEM",
+      closedCopeWorkItem() -> FORBIDDEN -> "CLOSED_COPE_WORK_ITEM"
+    ).foreach {case ((response, statusCode), errorDescription) =>
 
-      val request = FakeRequest(GET, controllerUrl).withHeaders(defaultHeaders)
-      val result = route(fakeApplication(), request)
+    s"return $statusCode $errorDescription" in {
 
-      result.map(statusResult) shouldBe Some(NOT_FOUND)
+        stubGetServer(response, npsSummaryUrl)
+        stubGetServer(response, npsLiabilitiesUrl)
+        stubGetServer(response, npsNiRecordUrl)
+        stubGetServer(response, citizenDetailsUrl)
+
+        val request = FakeRequest(GET, checkPensionControllerUrl).withHeaders(defaultHeaders)
+        val result = route(fakeApplication(), request)
+
+        result.map(statusResult) shouldBe Some(statusCode)
+      }
     }
   }
 }
