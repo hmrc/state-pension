@@ -14,7 +14,6 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
   val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
   val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
   val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
-  val citizenDetailsUrl: String = s"/citizen-details/$nino/designatory-details/"
   val checkPensionControllerUrl: String = s"/ni/$nino"
 
   def defaultHeaders: (String, String) = {
@@ -74,7 +73,6 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
         stubGetServer(response, npsSummaryUrl)
         stubGetServer(response, npsLiabilitiesUrl)
         stubGetServer(response, npsNiRecordUrl)
-        stubGetServer(response, citizenDetailsUrl)
 
         val request = FakeRequest(GET, checkPensionControllerUrl).withHeaders(defaultHeaders)
         val result = route(fakeApplication(), request)
