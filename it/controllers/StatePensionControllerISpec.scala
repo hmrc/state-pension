@@ -1,6 +1,6 @@
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
 import controllers.Assets.OK
 import org.scalatest.Matchers.convertToAnyShouldWrapper
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -65,7 +65,10 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
       badGateway() -> BAD_GATEWAY -> "BAD_GATEWAY",
       badRequest() -> BAD_REQUEST -> "BAD_REQUEST",
       noOpenCopeWorkItem() -> FORBIDDEN -> "NO_OPEN_COPE_WORK_ITEM",
-      closedCopeWorkItem() -> FORBIDDEN -> "CLOSED_COPE_WORK_ITEM"
+      closedCopeWorkItem() -> FORBIDDEN -> "CLOSED_COPE_WORK_ITEM",
+      unauthorized() -> BAD_GATEWAY -> "BAD_GATEWAY from 4xx",
+      serviceUnavailable() -> BAD_GATEWAY -> "BAD_GATEWAY from 5xx",
+      aResponse().withStatus(600) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR from non 4xx or 5xx"
     ).foreach {case ((response, statusCode), errorDescription) =>
 
     s"return $statusCode $errorDescription" in {
