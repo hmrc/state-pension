@@ -21,11 +21,10 @@ object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "4.1.0",
+    "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "5.2.0",
     "uk.gov.hmrc" %% "domain" % "5.10.0-play-27",
     "uk.gov.hmrc" %% "play-hmrc-api" % "6.2.0-play-27",
     "uk.gov.hmrc" %% "play-hal" % "2.1.0-play-27",
-    "uk.gov.hmrc" %% "auth-client" % "5.1.0-play-27",
     "uk.gov.hmrc" %% "time" % "3.19.0",
     "com.typesafe.play" %% "play-json-joda" % "2.9.2",
     "com.jsuereth" %% "scala-arm" % "2.0",
@@ -35,10 +34,10 @@ object AppDependencies {
   val test: Seq[ModuleID] = Seq(
     "org.scalatest" %% "scalatest" % "3.0.9",
     "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3",
-    "org.mockito" % "mockito-core" % "2.10.0",
+    "org.mockito" % "mockito-core" % "3.6.0",
     "com.github.tomakehurst" % "wiremock-jre8" % "2.27.2",
     "org.pegdown" % "pegdown" % "1.6.0"
-  ).map(_ % Test)
+  ).map(_ % "test,it")
 
   val all: Seq[ModuleID] = compile ++ test
 
