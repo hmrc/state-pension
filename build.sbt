@@ -2,6 +2,7 @@ import play.sbt.routes.RoutesKeys._
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
+import scoverage.ScoverageKeys
 
 val appName = "state-pension"
 
@@ -20,6 +21,7 @@ lazy val microservice = Project(appName, file("."))
   .enablePlugins(plugins: _*)
   .settings(
     scalaSettings,
+    scoverageSettings,
     publishingSettings,
     defaultSettings(),
     majorVersion := 2,
@@ -32,7 +34,18 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(
-    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
+    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest) (base => Seq(base / "it")).value,
     addTestReportOption(IntegrationTest, "int-test-reports"),
     parallelExecution in IntegrationTest := false
   )
+
+lazy val scoverageSettings: Seq[Def.Setting[_]] = {
+  Seq(
+    ScoverageKeys.coverageEnabled := true,
+    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
+    ScoverageKeys.coverageMinimumStmtTotal := 87.81,
+    ScoverageKeys.coverageMinimumBranchTotal := 84.37,
+    ScoverageKeys.coverageFailOnMinimum := false,
+    ScoverageKeys.coverageHighlighting := false
+  )
+}
