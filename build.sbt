@@ -41,7 +41,6 @@ lazy val microservice = Project(appName, file("."))
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(
-    ScoverageKeys.coverageEnabled := true,
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
     ScoverageKeys.coverageMinimumStmtTotal := 87.81,
     ScoverageKeys.coverageMinimumBranchTotal := 84.37,
