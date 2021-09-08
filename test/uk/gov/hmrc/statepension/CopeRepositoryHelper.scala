@@ -17,8 +17,7 @@
 package uk.gov.hmrc.statepension
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.Mockito.{mock, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
@@ -27,7 +26,7 @@ import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.Future
 
-trait CopeRepositoryHelper extends MockitoSugar { self: GuiceOneAppPerSuite =>
+trait CopeRepositoryHelper { self: GuiceOneAppPerSuite =>
 
   val mockCopeRepository = mock[CopeRepository]
 

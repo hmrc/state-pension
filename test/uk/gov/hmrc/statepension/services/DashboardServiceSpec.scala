@@ -19,23 +19,23 @@ package uk.gov.hmrc.statepension.services
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
+import org.scalatest.matchers.should.Matchers.a
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.NinoGenerator
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.IfConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
+import uk.gov.hmrc.statepension.{NinoGenerator, UnitSpec}
 
 import scala.concurrent.Future
 
-class DashboardServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator with EitherValues with BeforeAndAfterEach {
+class DashboardServiceSpec extends UnitSpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 
   val mockIfConnector: IfConnector = mock[IfConnector]

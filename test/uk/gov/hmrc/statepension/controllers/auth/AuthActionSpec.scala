@@ -18,9 +18,8 @@ package uk.gov.hmrc.statepension.controllers.auth
 
 import akka.util.Timeout
 import org.mockito.ArgumentMatchers.{any, eq => MockitoEq}
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito.{mock, verify, when}
 import org.scalatest.BeforeAndAfter
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
@@ -45,7 +44,6 @@ class AuthActionSpec
   extends PlaySpec
     with GuiceOneAppPerSuite
     with BeforeAndAfter
-    with MockitoSugar
     with CopeRepositoryHelper {
 
   val controllerComponents = Helpers.stubControllerComponents()

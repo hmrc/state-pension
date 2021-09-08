@@ -19,15 +19,13 @@ package uk.gov.hmrc.statepension.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
 import org.mockito.{ArgumentMatchers, Mockito}
-import org.scalatest.Matchers._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
-import play.api.libs.json.JodaWrites._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
 import uk.gov.hmrc.statepension.domain.nps._
@@ -39,7 +37,6 @@ import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
 class DesConnectorSpec extends StatePensionBaseSpec
   with GuiceOneAppPerSuite
-  with MockitoSugar
   with ScalaFutures
   with IntegrationPatience
   with WireMockHelper {

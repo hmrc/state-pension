@@ -18,11 +18,10 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.mockito.Mockito.{reset => mockReset}
-import org.scalatest.Matchers._
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.matchers.should.Matchers.{a, convertToAnyShouldWrapper}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
@@ -37,7 +36,6 @@ import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
   with ScalaFutures
   with IntegrationPatience
-  with MockitoSugar
   with GuiceOneAppPerSuite
   with WireMockHelper {
 

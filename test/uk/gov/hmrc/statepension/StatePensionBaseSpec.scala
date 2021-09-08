@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension
 
-import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
+import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait StatePensionBaseSpec extends UnitSpec with NinoGenerator with BeforeAndAfterEach {

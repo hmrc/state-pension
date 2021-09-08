@@ -17,10 +17,9 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito.{mock, verify, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -36,7 +35,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
+class PrivilegedAuthActionSpec extends PlaySpec {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val controllerComponents = Helpers.stubControllerComponents()

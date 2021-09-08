@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 class CountrySpec extends StatePensionBaseSpec {

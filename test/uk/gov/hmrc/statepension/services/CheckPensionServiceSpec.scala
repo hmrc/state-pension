@@ -17,10 +17,9 @@
 package uk.gov.hmrc.statepension.services
 
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -35,7 +34,7 @@ import uk.gov.hmrc.statepension.fixtures.SummaryFixture
 
 import scala.concurrent.Future
 
-class CheckPensionServiceSpec extends PlaySpec with MockitoSugar with NinoGenerator with EitherValues with BeforeAndAfterEach {
+class CheckPensionServiceSpec extends PlaySpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 
