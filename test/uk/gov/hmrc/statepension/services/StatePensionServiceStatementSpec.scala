@@ -19,26 +19,23 @@ package uk.gov.hmrc.statepension.services
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
-import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Exclusion, Scenario, StatePension}
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class StatePensionServiceStatementSpec extends StatePensionBaseSpec
   with GuiceOneAppPerSuite
   with ScalaFutures
-  with MockitoSugar
   with Injecting
   with CopeRepositoryHelper {
 

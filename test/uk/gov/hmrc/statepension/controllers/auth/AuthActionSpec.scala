@@ -18,15 +18,14 @@ package uk.gov.hmrc.statepension.controllers.auth
 
 import akka.util.Timeout
 import org.mockito.ArgumentMatchers.{any, eq => MockitoEq}
-import org.mockito.Mockito.{mock, verify, when}
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.BeforeAndAfter
-import org.scalatestplus.play.PlaySpec
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, Result}
-import play.api.test.Helpers.status
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
@@ -34,14 +33,14 @@ import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.{GGCredId, PAClientId, ~}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.statepension.CopeRepositoryHelper
 import uk.gov.hmrc.statepension.controllers.auth.AuthActionSpec.retrievalsTestingSyntax
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class AuthActionSpec
-  extends PlaySpec
+  extends StatePensionBaseSpec
     with GuiceOneAppPerSuite
     with BeforeAndAfter
     with CopeRepositoryHelper {
@@ -61,7 +60,7 @@ class AuthActionSpec
   implicit val timeout: Timeout = 5 seconds
 
   "Auth Action" when {
-    "the user is not logged in" must {
+    "the user is not logged in" should {
       "return UNAUTHORIZED" in {
         val (result, _) =
           testAuthActionWith(Future.failed(new MissingBearerToken))
@@ -69,7 +68,7 @@ class AuthActionSpec
       }
     }
 
-    "the user is logged in" must {
+    "the user is logged in" should {
       "return the request" when {
         "the user is authorised and Nino matches the Nino in the uri" in {
 

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.domain
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import play.api.libs.json.{JsError, JsString, JsSuccess}
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 

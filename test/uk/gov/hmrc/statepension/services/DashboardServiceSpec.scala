@@ -20,7 +20,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
-import org.scalatest.matchers.should.Matchers.a
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -63,14 +62,14 @@ class DashboardServiceSpec extends UnitSpec with NinoGenerator with EitherValues
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
-  "getStatement" must {
+  "getStatement" should {
     "return StatePension data" when {
       "Summary data has false for MCI check" in {
         when(mockIfConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
 
         val result = sut.getStatement(generateNino()).futureValue
-        result mustBe a [Right[_, _]]
+        result shouldBe a[Right[_, _]]
       }
     }
 

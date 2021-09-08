@@ -21,7 +21,6 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.{reset => mockReset}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.matchers.should.Matchers.{a, convertToAnyShouldWrapper}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind

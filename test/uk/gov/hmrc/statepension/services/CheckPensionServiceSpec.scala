@@ -17,26 +17,25 @@
 package uk.gov.hmrc.statepension.services
 
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.{mock, when}
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
-import org.scalatestplus.play.PlaySpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.NinoGenerator
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.DesConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
+import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 
-class CheckPensionServiceSpec extends PlaySpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
+class CheckPensionServiceSpec extends StatePensionBaseSpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
 
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+  override implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 
   val mockCitizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
   val mockDesConnector: DesConnector = mock[DesConnector]
@@ -67,14 +66,14 @@ class CheckPensionServiceSpec extends PlaySpec with NinoGenerator with EitherVal
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
-  "getStatement" must {
+  "getStatement" should {
     "return StatePension data" when {
       "citizen details returns false for MCI check" in {
         when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(false))
 
         val result = sut.getStatement(generateNino()).futureValue
-        result mustBe a [Right[_, _]]
+        result shouldBe a[Right[_, _]]
       }
     }
 
@@ -84,7 +83,7 @@ class CheckPensionServiceSpec extends PlaySpec with NinoGenerator with EitherVal
           .thenReturn(Future.successful(true))
 
         val result = sut.getStatement(generateNino()).futureValue
-        result.left.value.exclusionReasons mustBe List(Exclusion.ManualCorrespondenceIndicator)
+        result.left.value.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
       }
     }
   }

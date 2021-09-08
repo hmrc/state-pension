@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.statepension.builders
 
-import org.mockito.Mockito.mock
 import play.api.Configuration
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.services.RateService
 
-object RateServiceBuilder {
+object RateServiceBuilder extends StatePensionBaseSpec {
 
   private def rateToConfig(pair: (Int, BigDecimal)): (String, Any) = pair._1.toString -> pair._2
   val appContext = mock[AppConfig]

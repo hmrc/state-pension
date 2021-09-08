@@ -19,10 +19,10 @@ package uk.gov.hmrc.statepension.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.mockito.Mockito
-import org.mockito.Mockito.{mock, when}
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatestplus.play.PlaySpec
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK}
@@ -31,9 +31,9 @@ import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, UpstreamErrorRespo
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import uk.gov.hmrc.statepension.{NinoGenerator, WireMockHelper}
+import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec, WireMockHelper}
 
-class IfConnectorSpec extends PlaySpec
+class IfConnectorSpec extends StatePensionBaseSpec
   with ScalaFutures
   with IntegrationPatience
   with NinoGenerator
@@ -76,7 +76,7 @@ class IfConnectorSpec extends PlaySpec
       )
   )
 
-  "getSummary" must {
+  "getSummary" should {
     def stubGetSummary(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/summary", status, body)
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
@@ -123,7 +123,7 @@ class IfConnectorSpec extends PlaySpec
     }
   }
 
-  "getLiabilities" must {
+  "getLiabilities" should {
     def stubLiabilities(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities", status, body)
 
@@ -171,7 +171,7 @@ class IfConnectorSpec extends PlaySpec
     }
   }
 
-  "getNIRecord" must {
+  "getNIRecord" should {
     def stubNiRecord(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details", status, body)
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {

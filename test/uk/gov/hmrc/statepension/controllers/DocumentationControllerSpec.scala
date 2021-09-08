@@ -17,7 +17,6 @@
 package uk.gov.hmrc.statepension.controllers
 
 import controllers.Assets
-import org.scalatest.matchers.should.Matchers.{a, convertToAnyShouldWrapper}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}

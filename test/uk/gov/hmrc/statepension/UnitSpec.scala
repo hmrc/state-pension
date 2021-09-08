@@ -34,7 +34,6 @@ package uk.gov.hmrc.statepension
 
 import akka.stream.Materializer
 import akka.util.ByteString
-import com.google.inject.matcher.Matchers
 import org.mockito.Mockito
 import org.mockito.stubbing.Answer
 import org.scalatest.OptionValues
