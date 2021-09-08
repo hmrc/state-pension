@@ -21,21 +21,21 @@ object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "5.2.0",
-    "uk.gov.hmrc" %% "domain" % "5.10.0-play-27",
-    "uk.gov.hmrc" %% "play-hmrc-api" % "6.2.0-play-27",
-    "uk.gov.hmrc" %% "play-hal" % "2.1.0-play-27",
+    "uk.gov.hmrc" %% "bootstrap-backend-play-28" % "5.12.0",
+    "uk.gov.hmrc" %% "domain" % "6.2.0-play-28",
+    "uk.gov.hmrc" %% "play-hmrc-api" % "6.2.0-play-28",
+    "uk.gov.hmrc" %% "play-hal" % "3.0.0-play-28",
     "uk.gov.hmrc" %% "time" % "3.19.0",
     "com.typesafe.play" %% "play-json-joda" % "2.9.2",
     "com.jsuereth" %% "scala-arm" % "2.0",
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-27" % "0.49.0"
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.49.0"
   )
 
   val test: Seq[ModuleID] = Seq(
-    "org.scalatest" %% "scalatest" % "3.0.9",
-    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3",
-    "org.mockito" % "mockito-core" % "3.6.0",
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.27.2",
+    //"org.scalatest" %% "scalatest" % "3.0.9",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0",
+    "org.mockito" % "mockito-core" % "3.12.4",
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.30.1",
     "org.pegdown" % "pegdown" % "1.6.0"
   ).map(_ % "test,it")
 
