@@ -19,13 +19,10 @@ package uk.gov.hmrc.statepension.controllers
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import org.scalatest.Matchers
-import org.scalatest.Matchers._
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.Injecting
@@ -34,14 +31,14 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.{ExclusionCopeProcessing, ExclusionCopeProcessingFailed}
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.CopeRepository
 
 import scala.concurrent.Future
 
-class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with MockitoSugar {
+class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting {
 
   val nino: Nino = generateNino()
   val mockCopeRepository: CopeRepository = mock[CopeRepository]

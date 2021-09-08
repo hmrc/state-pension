@@ -48,14 +48,14 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
 
   override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result] = {
     func.recoverWith {
-      case WithStatusCode(NOT_FOUND, _) => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
+      case WithStatusCode(NOT_FOUND) => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
       case _: NotFoundException => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
-      case WithStatusCode(GATEWAY_TIMEOUT, e) => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); Future.successful(GatewayTimeout)
-      case WithStatusCode(BAD_GATEWAY, e) => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); Future.successful(BadGateway)
-      case WithStatusCode(BAD_REQUEST, _) =>
+      case e@WithStatusCode(GATEWAY_TIMEOUT) => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); Future.successful(GatewayTimeout)
+      case e@WithStatusCode(BAD_GATEWAY) => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); Future.successful(BadGateway)
+      case WithStatusCode(BAD_REQUEST) =>
         Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
-      case WithStatusCode(UNPROCESSABLE_ENTITY, e) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino)
-      case WithStatusCode(UNPROCESSABLE_ENTITY, e) if  e.message.contains("CLOSED_COPE_WORK_ITEM") =>
+      case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino)
+      case e@WithStatusCode(UNPROCESSABLE_ENTITY) if  e.message.contains("CLOSED_COPE_WORK_ITEM") =>
         copeRepository.delete(HashedNino(nino)) map { _ =>
           Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
         }
