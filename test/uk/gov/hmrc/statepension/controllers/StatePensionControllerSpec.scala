@@ -276,5 +276,4 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")
     }
   }
-
 }

@@ -28,7 +28,7 @@ import scala.concurrent.Future
 
 trait CopeRepositoryHelper extends StatePensionBaseSpec { self: GuiceOneAppPerSuite =>
 
-  val mockCopeRepository = mock[CopeRepository]
+  val mockCopeRepository: CopeRepository = mock[CopeRepository]
 
   when(mockCopeRepository.find(any())).thenReturn(Future.successful(None))
   when(mockCopeRepository.insert(any())).thenReturn(Future.successful(true))
