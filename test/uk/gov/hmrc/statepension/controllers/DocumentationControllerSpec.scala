@@ -17,19 +17,17 @@
 package uk.gov.hmrc.statepension.controllers
 
 import controllers.Assets
-import org.scalatest.Matchers._
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.{ControllerComponents, Result}
-import play.api.test.Helpers.{contentAsJson, contentAsString, status, stubControllerComponents, _}
+import play.api.test.Helpers.{contentAsJson, contentAsString, stubControllerComponents, _}
 import play.api.test.{FakeRequest, Injecting}
 import resource._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
+import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 import scala.io.Source
@@ -37,7 +35,6 @@ import scala.io.Source
 class DocumentationControllerSpec
   extends StatePensionBaseSpec
     with GuiceOneAppPerSuite
-    with MockitoSugar
     with Injecting
     with CopeRepositoryHelper {
 

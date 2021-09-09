@@ -20,23 +20,23 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, Request, Result}
-import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED, defaultAwaitTimeout, status}
+import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, InternalError}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
+class PrivilegedAuthActionSpec extends StatePensionBaseSpec {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val controllerComponents = Helpers.stubControllerComponents()
@@ -62,9 +62,9 @@ class PrivilegedAuthActionSpec extends PlaySpec with MockitoSugar {
 
   val request: Request[AnyContent] = FakeRequest()
   implicit val hc: HeaderCarrier =
-    HeaderCarrierConverter.fromHeadersAndSessionAndRequest(request.headers, request = Some(request))
+    HeaderCarrierConverter.fromRequest(request)
 
-  "PrivilegedAuthAction" must {
+  "PrivilegedAuthAction" should {
     "make a call to auth for privileged application" in {
       setupAuthConnector(Future.successful(()))
 

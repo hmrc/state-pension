@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import org.scalatest.Matchers._
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 class LiabilityTypeSpec extends StatePensionBaseSpec {

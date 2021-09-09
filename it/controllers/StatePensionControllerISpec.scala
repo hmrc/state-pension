@@ -1,7 +1,6 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
-import org.scalatest.Matchers.convertToAnyShouldWrapper
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => statusResult, _}

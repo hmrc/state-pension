@@ -18,9 +18,7 @@ package uk.gov.hmrc.statepension.services
 
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
-import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.{LOCKED, OK}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,7 +27,7 @@ import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
 
 import scala.concurrent.Future
 
-class CitizenDetailsServiceSpec extends StatePensionBaseSpec with MockitoSugar {
+class CitizenDetailsServiceSpec extends StatePensionBaseSpec {
 
   val nino: Nino = generateNino()
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
