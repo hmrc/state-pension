@@ -38,7 +38,6 @@ import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-
 class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with CopeRepositoryHelper {
 
   val nino: Nino = new Generator(new Random()).nextNino
@@ -276,7 +275,5 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       status(response) shouldBe 403
       contentAsJson(response) shouldBe Json.parse("""{"code":"EXCLUSION_DEAD","message":"The customer needs to contact the National Insurance helpline"}""")
     }
-
   }
-
 }
