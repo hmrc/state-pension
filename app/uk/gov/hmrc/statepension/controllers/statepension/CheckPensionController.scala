@@ -36,7 +36,7 @@ class CheckPensionController @Inject()(
                                         val parser: BodyParsers.Default,
                                         val executionContext: ExecutionContext,
                                         errorHandling: ErrorHandling
-                                      )(implicit ec: ExecutionContext)
+                                      )
   extends StatePensionController(controllerComponents, errorHandling) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url

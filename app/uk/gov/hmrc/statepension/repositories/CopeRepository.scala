@@ -22,16 +22,16 @@ import org.joda.time.LocalDate
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import play.api.Logging
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.models.CopeRecord
-import java.util.concurrent.TimeUnit
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 
 class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext, appConfig: AppConfig)
