@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.config
 
-import play.api.mvc.PathBindable
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 class BindersSpec extends StatePensionBaseSpec {
@@ -25,16 +24,12 @@ class BindersSpec extends StatePensionBaseSpec {
 
     "return Right with a NINO instance for a valid NINO string" in {
       val nino = generateNino()
-      implicit val pathBindable = PathBindable.bindableString
-
       val result = Binders.ninoBinder.bind("nino", nino.nino)
       result shouldEqual Right(nino)
     }
 
     "return Left for an invalid NINO string" in {
       val nino = "invalid"
-      implicit val pathBindable = PathBindable.bindableString
-
       val result = Binders.ninoBinder.bind("nino", nino)
       result shouldEqual Left("ERROR_NINO_INVALID")
     }

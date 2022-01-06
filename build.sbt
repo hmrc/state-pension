@@ -28,7 +28,6 @@ lazy val microservice = Project(appName, file("."))
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesImport += "uk.gov.hmrc.statepension.config.Binders._"
   )
   .configs(IntegrationTest)
