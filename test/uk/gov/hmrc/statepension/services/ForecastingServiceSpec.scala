@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,37 +165,37 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
     "There is no more years to contribute" should {
       "return an un-modified current amount" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123, 30).amount shouldBe 123
+        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123).amount shouldBe 123
       }
       "return no years to work" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123, 30).yearsToWork shouldBe 0
+        forecastCalculation(new LocalDate(2016, 4, 5), 2015, currentAmount = 123).yearsToWork shouldBe 0
       }
     }
 
     "There is one year to contribute" should {
       "return a forecast with a difference of (max / amount) rounded (half-up)" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123, 30).amount shouldBe 127.45
+        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123).amount shouldBe 127.45
       }
       "return one year to work" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123, 30).yearsToWork shouldBe 1
+        forecastCalculation(new LocalDate(2016, 4, 5), 2016, currentAmount = 123).yearsToWork shouldBe 1
       }
     }
 
     "There is two years to contribute" should {
       "return a forecast with a difference of (max / amount) * 2 rounded (half-up)" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123, 30).amount shouldBe 131.89
+        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123).amount shouldBe 131.89
       }
       "return two years to work" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123, 30).yearsToWork shouldBe 2
+        forecastCalculation(new LocalDate(2016, 4, 5), 2017, currentAmount = 123).yearsToWork shouldBe 2
       }
     }
 
     "There is more years to contribute than required" should {
       "cap the amount at the maximum" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).amount shouldBe 155.65
+        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123).amount shouldBe 155.65
       }
       "years to work should be the number of years required and no more 155.65 - 123 / (155.65/35) = 7.34 rounded up to int = 8" in {
-        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123, 30).yearsToWork shouldBe 8
+        forecastCalculation(new LocalDate(2016, 4, 5), 2050, currentAmount = 123).yearsToWork shouldBe 8
       }
     }
 
@@ -249,7 +249,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
       "there is no gaps it" should {
         "perform the same as the forecast calculation" should {
           "There is no more years to contribute" should {
-            val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYearsPre2016 = 30, payableGapsPre2016 = 0, additionalPension = 3.7, rebateDerivedAmount = 100)
+            val max = maximumCalculation(finalRelevantStartYear = 2015, additionalPension = 3.7, rebateDerivedAmount = 100)
             "return the current amount" in {
               max.amount shouldBe 123
             }
@@ -263,7 +263,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
 
           "There is two years to contribute" should {
-            val max = maximumCalculation(new LocalDate(2016, 4, 5), 2017, qualifyingYearsPre2016 = 30, payableGapsPre2016 = 0, additionalPension = 3.7, rebateDerivedAmount = 100)
+            val max = maximumCalculation(finalRelevantStartYear = 2017, additionalPension = 3.7, rebateDerivedAmount = 100)
             "return a forecast with a difference of (max / amount) * 2 rounded (half-up)" in {
               max.amount shouldBe 131.89
             }
@@ -276,7 +276,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
 
           "There is more years to contribute than required" should {
-            val max = maximumCalculation(new LocalDate(2016, 4, 5), 2050, qualifyingYearsPre2016 = 30, payableGapsPre2016 = 0, additionalPension = 3.7, rebateDerivedAmount = 100)
+            val max = maximumCalculation(finalRelevantStartYear = 2050, additionalPension = 3.7, rebateDerivedAmount = 100)
             "cap the amount at the maximum" in {
               max.amount shouldBe 155.65
             }
@@ -292,7 +292,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
       "there is one payable gap and zero years to contribute" when {
         "there is less than 30 qualifying years" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYearsPre2016 = 29, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
+          val max = maximumCalculation(finalRelevantStartYear = 2015, qualifyingYearsPre2016 = 29, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
           "return amount + 1 year of basic pension (119.3 /30)" in {
             max.amount shouldBe 119.30
           }
@@ -304,7 +304,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "there is 30 qualifying years" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYearsPre2016 = 30, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
+          val max = maximumCalculation(finalRelevantStartYear = 2015, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
           "return the current amount" in {
             max.amount shouldBe 119.30
           }
@@ -316,7 +316,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "there is 28 qualifying years" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2015, qualifyingYearsPre2016 = 28, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
+          val max = maximumCalculation(finalRelevantStartYear = 2015, qualifyingYearsPre2016 = 28, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
           "return the amount + 1 year of basic pension (119.3 /30) " in {
             max.amount shouldBe 115.32
           }
@@ -331,7 +331,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
       "there is one payable gap and one year to contribute " when {
         "there is 29 qualifying years" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, qualifyingYearsPre2016 = 29, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
+          val max = maximumCalculation(finalRelevantStartYear = 2016, qualifyingYearsPre2016 = 29, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
           "return amount + 1 year of basic pension (119.3 /30) + 1 one year of state pension (155.65/35)" in {
             max.amount shouldBe 123.75
           }
@@ -343,7 +343,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "there is 30 qualifying years" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, qualifyingYearsPre2016 = 30, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
+          val max = maximumCalculation(finalRelevantStartYear = 2016, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
           "return the current amount + 1 one year of state pension (155.65/35)" in {
             max.amount shouldBe 123.75
           }
@@ -355,7 +355,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "there is 28 qualifying years" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, qualifyingYearsPre2016 = 28, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
+          val max = maximumCalculation(finalRelevantStartYear = 2016, qualifyingYearsPre2016 = 28, payableGapsPre2016 = 1, rebateDerivedAmount = 100)
           "return the amount + 1 year of basic pension (119.3 /30) + 1 one year of state pension (155.65/35) " in {
             max.amount shouldBe 119.77
           }
@@ -368,7 +368,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
         }
 
         "there is 30 qualifying years and no RDA" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2016, qualifyingYearsPre2016 = 30, payableGapsPre2016 = 1)
+          val max = maximumCalculation(finalRelevantStartYear = 2016, payableGapsPre2016 = 1)
           "return 32 qualifying years of new state pension" in {
             max.amount shouldBe 142.31
           }
@@ -383,7 +383,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
       "there are multiple gaps and many years to contribute " when {
         "there is 23 QYs, 10 gaps, 5 years to contribute, 42 AP (only filling gaps matters because Amount A)" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGapsPre2016 = 10, additionalPension = 42)
+          val max = maximumCalculation(qualifyingYearsPre2016 = 23, payableGapsPre2016 = 10, additionalPension = 42)
           "return a maximum of 219.30" in {
             max.amount shouldBe 161.3
           }
@@ -395,7 +395,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "there is 23 QYs, 6 gaps, 5 years to contribute, 40 AP (working is more cost effective than paying but it's the tactical solution so paying is favoured over working)" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, 23, payableGapsPre2016 = 6, additionalPension = 40)
+          val max = maximumCalculation(qualifyingYearsPre2016 = 23, payableGapsPre2016 = 6, additionalPension = 40)
           "return a maximum of 219.30" in {
             max.amount shouldBe 155.65
           }
@@ -409,7 +409,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
       }
 
       "there is only 34 years and and 1 fillable gaps" should {
-        val max = maximumCalculation(new LocalDate(2016, 4, 5), 2020, qualifyingYearsPre2016 = 34, payableGapsPre2016 = 1)
+        val max = maximumCalculation(qualifyingYearsPre2016 = 34, payableGapsPre2016 = 1)
         "return the full rate of 155.65" in {
           max.amount shouldBe 155.65
         }
@@ -427,7 +427,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
       "there are no gaps" should {
         "add post 16 years onto the starting amount" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 30, qualifyingYearsPost2016 = 2, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPost2016 = 2, forecastingService = service)
           "return 145.87 for the current/forecast amount" in {
             max.amount shouldBe 145.87
           }
@@ -439,7 +439,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "forecast regularly from the earningsIncludedUpTo date (2016 + 2/35ths + 2/35ths rather than 2016 + 4/35ths)" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2019, qualifyingYearsPre2016 = 30, qualifyingYearsPost2016 = 2, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2019, qualifyingYearsPost2016 = 2, forecastingService = service)
           "return 154.99 for the forecast amount" in {
             max.amount shouldBe 154.99
           }
@@ -452,7 +452,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
         }
 
         "still include the RDA when calculating the starting amount" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2019, qualifyingYearsPre2016 = 30, qualifyingYearsPost2016 = 2, rebateDerivedAmount = 12, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2019, qualifyingYearsPost2016 = 2, rebateDerivedAmount = 12, forecastingService = service)
           "return 142.69 for the forecast amount" in {
             max.amount shouldBe 142.69
           }
@@ -465,7 +465,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
         }
 
         "the forecast still caps at 159.55" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2025, qualifyingYearsPre2016 = 30, qualifyingYearsPost2016 = 2, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2025, qualifyingYearsPost2016 = 2, forecastingService = service)
           "return 159.55 for the forecast amount" in {
             max.amount shouldBe 159.55
           }
@@ -478,7 +478,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
         }
 
         "protected payments are only uprated and post 16 years don't matter" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2019, qualifyingYearsPre2016 = 30, qualifyingYearsPost2016 = 2, additionalPension = 50, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2019, qualifyingYearsPost2016 = 2, additionalPension = 50, forecastingService = service)
           "return 173.34 for the forecast amount" in {
             max.amount shouldBe 173.34
           }
@@ -541,7 +541,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "people with 35 QYs and RDA cannot improve their amount" should {
-          val max = maximumCalculation(new LocalDate(2016, 4, 5), finalRelevantStartYear = 2015, qualifyingYearsPre2016 = 35, qualifyingYearsPost2016 = 0, additionalPension = 0, payableGapsPre2016 = 5, rebateDerivedAmount = 20, forecastingService = service)
+          val max = maximumCalculation(finalRelevantStartYear = 2015, qualifyingYearsPre2016 = 35, payableGapsPre2016 = 5, rebateDerivedAmount = 20, forecastingService = service)
           "return 139.05 for the current/forecast amount" in {
             max.amount shouldBe 139.05
           }
@@ -555,7 +555,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
       }
       "there are only post16 gaps" should {
         "do nothing for a protected payment customers" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 28, qualifyingYearsPost2016 = 0, additionalPension = 100, payableGapsPre2016 = 0, payableGapsPost2016 = 2, rebateDerivedAmount = 100, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 28, additionalPension = 100, payableGapsPost2016 = 2, rebateDerivedAmount = 100, forecastingService = service)
           "return 215.81 for the current/forecast amount" in {
             max.amount shouldBe 215.81
           }
@@ -567,7 +567,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "can not push people into protected payments (capped at max)" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 25, qualifyingYearsPost2016 = 0, additionalPension = 50, payableGapsPost2016 = 2, rebateDerivedAmount = 100, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 25, additionalPension = 50, payableGapsPost2016 = 2, rebateDerivedAmount = 100, forecastingService = service)
           "return 159.55 for the current/forecast amount" in {
             max.amount shouldBe 159.55
           }
@@ -592,7 +592,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
         }
 
         "calculation takes into account post16 qualifying years and gaps when calculating current amount and then treats the forecast separate (should be 2/35ths + 3/35ths)" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2020, qualifyingYearsPre2016 = 20, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), qualifyingYearsPre2016 = 20, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
           "return 158.2 for the current/forecast amount" in {
             max.amount shouldBe 155.58
           }
@@ -607,7 +607,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
       "there is a mixture of pre and post 16 gaps" should {
         "take both into account" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2020, qualifyingYearsPre2016 = 20, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPre2016 = 1, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), qualifyingYearsPre2016 = 20, qualifyingYearsPost2016 = 1, additionalPension = 50, payableGapsPre2016 = 1, payableGapsPost2016 = 1, rebateDerivedAmount = 100, forecastingService = service)
           "return 159.55 for the current/forecast amount" in {
             max.amount shouldBe 159.55
           }
@@ -619,7 +619,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
           }
         }
         "people with 35 QYs and RDA can only improve their amount with post 16 gaps" should {
-          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 35, qualifyingYearsPost2016 = 0, additionalPension = 0, payableGapsPre2016 = 5, payableGapsPost2016 = 2, rebateDerivedAmount = 20, forecastingService = service)
+          val max = maximumCalculation(new LocalDate(2018, 4, 5), finalRelevantStartYear = 2017, qualifyingYearsPre2016 = 35, payableGapsPre2016 = 5, payableGapsPost2016 = 2, rebateDerivedAmount = 20, forecastingService = service)
           "return 148.17 for the current/forecast amount" in {
             max.amount shouldBe 148.17
           }
