@@ -18,15 +18,35 @@ package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
 import play.api.Configuration
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.statepension.models.TaxRates
+import uk.gov.hmrc.statepension.services.TaxYearResolver
+import uk.gov.hmrc.statepension.util.SystemLocalDate
 
-class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig){
+import java.time.LocalDate
+import scala.io.Source
+
+class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig, systemLocalDate: SystemLocalDate){
   import servicesConfig._
 
   val appName: String = configuration.get[String]("appName")
   val apiGatewayContext: String = configuration.get[String]("api.gateway.context")
   val access: Option[Configuration] = configuration.getOptional[Configuration]("api.access")
   val status: Option[String] = configuration.getOptional[String]("api.status")
+  val effectiveFromDate: LocalDate = LocalDate.parse(configuration.get[String]("rates.effectiveFromDate"))
+
+  def taxRates(year: Int) = {
+    if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(year - 1)
+    else getTaxRatesByTaxYear(year)
+  }
+
+  private def getTaxRatesByTaxYear(year: Int): TaxRates = {
+    val content = Source.fromURL(getClass.getResource(s"/resources/TaxRates/$year.json")).mkString
+
+    Json.parse(content).as[TaxRates]
+  }
+
   val rates: Configuration = configuration.getOptional[Configuration]("rates.statePension")
     .getOrElse(throw new RuntimeException("rates.statePension is missing"))
   val revaluation: Option[Configuration] = configuration.getOptional[Configuration]("rates.revaluation")
