@@ -18,7 +18,6 @@ package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
 import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.models.TaxRates
@@ -40,7 +39,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
     .getOrElse(TaxYearResolver.startOfCurrentTaxYear)
 
   def taxRates(year: Int): TaxRates = {
-    if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(year - 1)
+    if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(2021)
     else getTaxRatesByTaxYear(year)
   }
 
