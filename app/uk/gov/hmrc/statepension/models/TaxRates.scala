@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.models
 
 import play.api.libs.json.{Format, Json}
 
-case class TaxRates(startingAmount: Double, protectedPayment: Double, statePensionRates: Seq[Double])
+case class TaxRates(startingAmount: BigDecimal, protectedPayment: BigDecimal, statePensionRates: Seq[BigDecimal])
 
 object TaxRates {
   implicit def formats: Format[TaxRates] = Json.format[TaxRates]

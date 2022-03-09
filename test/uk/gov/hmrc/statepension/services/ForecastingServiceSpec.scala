@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.domain.Forecast
+import uk.gov.hmrc.statepension.models.TaxRates
 
 class ForecastingServiceSpec extends StatePensionBaseSpec {
 
@@ -97,14 +98,12 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
         "return 102.51 for 100" in {
           service.calculateRevaluedStartingAmount(100, 100) shouldBe 102.51
         }
+
         "return 126.08 for 123 (half-up rounding)" in {
           service.calculateRevaluedStartingAmount(123, 100) shouldBe 126.08
         }
       }
-
-
     }
-
   }
 
   "calculateForecastAmount" when {
@@ -710,7 +709,7 @@ class ForecastingServiceSpec extends StatePensionBaseSpec {
 
     "rates have revalued" should {
       "still return the 2016 values" in {
-        val service = new ForecastingService(rateService = RateServiceBuilder.apply(Map(0 -> 0, 1 -> 100, 2 -> 200)))
+        val service = new ForecastingService(rateService = RateServiceBuilder.apply(TaxRates(1,  1, Seq(0, 100, 200))))
 
         service.amountB(35, 0) shouldBe 155.65
       }

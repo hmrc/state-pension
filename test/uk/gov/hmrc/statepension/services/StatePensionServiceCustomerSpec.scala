@@ -25,7 +25,6 @@ import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain._
@@ -42,14 +41,14 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
-
-  val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
+  val mockRateService: RateService = inject[RateService]
+  val defaultForecasting = inject[ForecastingService]
 
   def service(mci: Boolean = false): StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
     override val nps: NpsConnector = mockNpsConnector
     override val forecastingService: ForecastingService = defaultForecasting
-    override val rateService: RateService = RateServiceBuilder.default
+    override val rateService: RateService = mockRateService
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
     override implicit val executionContext: ExecutionContext = inject[ExecutionContext]

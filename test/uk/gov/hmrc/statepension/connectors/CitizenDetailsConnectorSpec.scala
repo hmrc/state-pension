@@ -50,7 +50,8 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
   }
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .configure("microservice.services.citizen-details.port" -> server.port())
+    .configure("microservice.services.citizen-details.port" -> server.port(),
+      "rates.effectiveFromDate" -> "2022-03-03")
     .overrides(
       bind[ApplicationMetrics].toInstance(mockMetrics),
       bind[CopeRepository].toInstance(mockCopeRepository)

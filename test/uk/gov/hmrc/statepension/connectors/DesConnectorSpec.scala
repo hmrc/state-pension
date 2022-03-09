@@ -56,7 +56,8 @@ class DesConnectorSpec extends StatePensionBaseSpec
                       "microservice.services.des-hod.environment" -> "testEnvironment",
                       "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
                       "api.access.type" -> "PRIVATE",
-                      "cope.dwp.originatorId" -> "dwpId"
+                      "cope.dwp.originatorId" -> "dwpId",
+                      "rates.effectiveFromDate" -> "2022-03-03"
     )
     .overrides(
       bind[ApplicationMetrics].toInstance(mockMetrics),

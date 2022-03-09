@@ -18,12 +18,13 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import org.joda.time.LocalDate
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.PolicyDecisions.MINIMUM_QUALIFYING_YEARS
 import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
 
 import scala.math.BigDecimal.RoundingMode
 
-class ForecastingService @Inject()(val rateService: RateService) {
+class ForecastingService @Inject()(rateService: RateService) {
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
     amountA2016.max(amountB2016)

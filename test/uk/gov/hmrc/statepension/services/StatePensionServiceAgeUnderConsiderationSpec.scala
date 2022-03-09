@@ -33,11 +33,9 @@ import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
 import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
-  with GuiceOneAppPerSuite
-  with Injecting
-  with CopeRepositoryHelper {
+class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -50,7 +48,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
-    override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
+    override implicit val executionContext: ExecutionContext = global
 
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)

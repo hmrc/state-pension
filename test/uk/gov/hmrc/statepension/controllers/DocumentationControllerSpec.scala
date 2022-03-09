@@ -51,8 +51,6 @@ class DocumentationControllerSpec
       override val apiGatewayContext: String = ""
       override val access: Option[Configuration] = apiConfig
       override val status: Option[String] = apiStatus
-      override val rates: Configuration = Configuration()
-      override val revaluation: Option[Configuration] = None
     }
 
     new DocumentationController(appContext, controllerComponents, assets).definition()(FakeRequest())
