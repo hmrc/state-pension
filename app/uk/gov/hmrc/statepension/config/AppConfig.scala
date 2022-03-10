@@ -39,7 +39,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
     .getOrElse(TaxYearResolver.startOfCurrentTaxYear)
 
   def taxRates(year: Int): TaxRates = {
-    if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(2021)
+    if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(year - 1)
     else getTaxRatesByTaxYear(year)
   }
 
