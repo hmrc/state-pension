@@ -20,17 +20,16 @@ import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.{AppConfig, RevaluationRates}
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.RateService
-import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 object RateServiceBuilder extends StatePensionBaseSpec {
 
-  val appConfig = mock[AppConfig]
+  val appConfig: AppConfig = mock[AppConfig]
   def apply(testRates: TaxRates): RateService = new RateService(appConfig) {
     override lazy val taxRates: TaxRates = testRates
     override val revaluationRates: RevaluationRates = RevaluationRates(testRates.startingAmount, testRates.protectedPayment)
   }
 
-  val default = apply(TaxRates(1, 1, Seq(
+  val default: RateService = apply(TaxRates(1, 1, Seq(
     0,
     4.45,
     8.89,
@@ -69,7 +68,7 @@ object RateServiceBuilder extends StatePensionBaseSpec {
     155.65
   )))
 
-  val twentySeventeenToTwentyEighteen = apply(TaxRates(1.025056, 1.01, Seq(
+  val twentySeventeenToTwentyEighteen: RateService = apply(TaxRates(1.025056, 1.01, Seq(
     0,
     4.56,
     9.12,
@@ -108,7 +107,7 @@ object RateServiceBuilder extends StatePensionBaseSpec {
     159.55
   )))
 
-  val twentyEighteenToTwentyNineteen = apply(TaxRates(1.055895, 1.0403, Seq(
+  val twentyEighteenToTwentyNineteen: RateService = apply(TaxRates(1.055895, 1.0403, Seq(
     0,
     4.70,
     9.39,
@@ -147,7 +146,7 @@ object RateServiceBuilder extends StatePensionBaseSpec {
     164.35
   )))
 
-  val twentyNineteenToTwentyTwenty = apply(TaxRates( 1.083199, 1.065267, Seq(
+  val twentyNineteenToTwentyTwenty: RateService = apply(TaxRates( 1.083199, 1.065267, Seq(
     0,
     4.82,
     9.63,

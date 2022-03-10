@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.joda.time.LocalDate
-import org.mockito.Mockito.{reset, when}
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.models.TaxRates
 
 class RateServiceSpec extends StatePensionBaseSpec {
 

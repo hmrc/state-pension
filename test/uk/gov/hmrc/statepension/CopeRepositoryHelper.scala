@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension
 
-import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite

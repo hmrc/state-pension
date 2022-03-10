@@ -37,5 +37,4 @@ class FileReaderSpec extends UnitSpec {
       }
     }
   }
-
 }

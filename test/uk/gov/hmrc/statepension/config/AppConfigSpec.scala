@@ -43,7 +43,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
       bind[SystemLocalDate].toInstance(mockSystemLocalDate)
     ).injector()
 
-  val appConfig = injector.instanceOf[AppConfig]
+  val appConfig: AppConfig = injector.instanceOf[AppConfig]
 
   override def beforeEach(): Unit = {
     reset(mockSystemLocalDate)
