@@ -19,11 +19,12 @@ package uk.gov.hmrc.statepension.services
 import com.google.inject.Inject
 import uk.gov.hmrc.statepension.config.{AppConfig, RevaluationRates}
 import uk.gov.hmrc.statepension.models.TaxRates
+import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 import scala.math.BigDecimal.RoundingMode
 
-class RateService @Inject()(appConfig: AppConfig) {
-  lazy val taxRates: TaxRates = appConfig.taxRates(TaxYearResolver.currentTaxYear)
+class RateService @Inject()(appConfig: AppConfig, systemLocalDate: SystemLocalDate) {
+  lazy val taxRates: TaxRates = appConfig.taxRates(TaxYearResolver.taxYearFor(systemLocalDate.currentLocalDate))
 
   val revaluationRates: RevaluationRates = RevaluationRates(taxRates.startingAmount, taxRates.protectedPayment)
 
