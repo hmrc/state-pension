@@ -27,6 +27,7 @@ import resource._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
+import uk.gov.hmrc.statepension.util.SystemLocalDate
 import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
@@ -41,16 +42,15 @@ class DocumentationControllerSpec
   val controllerComponents: ControllerComponents = stubControllerComponents()
   val serviceConfig: ServicesConfig = inject[ServicesConfig]
   val assets: Assets = inject[Assets]
+  val systemLocalDate = inject[SystemLocalDate]
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Future[Result] = {
 
-    val appContext = new AppConfig(app.configuration, serviceConfig) {
+    val appContext = new AppConfig(app.configuration, serviceConfig, systemLocalDate) {
       override val appName: String = ""
       override val apiGatewayContext: String = ""
       override val access: Option[Configuration] = apiConfig
       override val status: Option[String] = apiStatus
-      override val rates: Configuration = Configuration()
-      override val revaluation: Option[Configuration] = None
     }
 
     new DocumentationController(appContext, controllerComponents, assets).definition()(FakeRequest())

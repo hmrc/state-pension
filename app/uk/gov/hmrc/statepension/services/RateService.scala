@@ -17,19 +17,21 @@
 package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
-import play.api.Configuration
 import uk.gov.hmrc.statepension.config.{AppConfig, RevaluationRates}
+import uk.gov.hmrc.statepension.models.TaxRates
+import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 import scala.math.BigDecimal.RoundingMode
 
-class RateService @Inject()(appContext: AppConfig) {
-  lazy val ratesConfig: Configuration = appContext.rates
-  lazy val revaluationConfig: Option[Configuration] = appContext.revaluation
+class RateService @Inject()(appConfig: AppConfig, systemLocalDate: SystemLocalDate) {
+  lazy val taxRates: TaxRates = appConfig.taxRates(TaxYearResolver.taxYearFor(systemLocalDate.currentLocalDate))
 
-  val revaluationRates: RevaluationRates = RevaluationRates(revaluationConfig)
+  val revaluationRates: RevaluationRates = RevaluationRates(taxRates.startingAmount, taxRates.protectedPayment)
 
   private[services] lazy val ratesTable: Map[Int, BigDecimal] = {
-    ratesConfig.keys.map(key => key.toInt -> ratesConfig.getOptional[String](key).fold[BigDecimal](0)(BigDecimal(_))).toMap
+    taxRates.statePensionRates.zipWithIndex.toMap.map {
+      case (rates, keys) => keys -> rates
+    }
   }
 
   val MAX_YEARS: Int = ratesTable.keys.max

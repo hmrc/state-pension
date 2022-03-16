@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.config
+package uk.gov.hmrc.statepension.models
 
-case class RevaluationRates(startingAmount: BigDecimal, protectedPayment: BigDecimal)
+import play.api.libs.json.{Json, Reads}
+
+case class TaxRates(startingAmount: BigDecimal, protectedPayment: BigDecimal, statePensionRates: Seq[BigDecimal])
+
+object TaxRates {
+  implicit def reads: Reads[TaxRates] = Json.reads[TaxRates]
+}

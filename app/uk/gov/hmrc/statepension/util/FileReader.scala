@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.config
+package uk.gov.hmrc.statepension.util
 
-case class RevaluationRates(startingAmount: BigDecimal, protectedPayment: BigDecimal)
+import play.api.libs.json.Json
+import uk.gov.hmrc.statepension.models.TaxRates
+
+import scala.io.Source
+
+object FileReader {
+  def getTaxRatesByTaxYear(year: Int): TaxRates = {
+    val path = getClass.getResource(s"/resources/TaxRates/$year.json")
+    val rates = {
+      if (path == null) None
+      else Some(Json.parse(Source.fromURL(path).mkString).as[TaxRates])
+    }
+    rates.getOrElse(throw new Exception(s"Not Found: tax rates for requested year = $year"))
+  }
+}

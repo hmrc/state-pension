@@ -42,8 +42,8 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
-
-  val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
+  val mockRateService: RateService = inject[RateService]
+  val defaultForecasting = new ForecastingService(RateServiceBuilder.default)
 
   def service(mci: Boolean = false): StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)

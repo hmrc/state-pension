@@ -41,13 +41,14 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
-  val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
+  val fakeRateService: RateService = RateServiceBuilder.default
+  val defaultForecasting: ForecastingService = new ForecastingService(fakeRateService)
 
   lazy val service: StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
     override val nps: NpsConnector = mockNpsConnector
     override val forecastingService: ForecastingService = defaultForecasting
-    override val rateService: RateService = RateServiceBuilder.default
+    override val rateService: RateService = fakeRateService
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
     override implicit val executionContext: ExecutionContext = inject[ExecutionContext]

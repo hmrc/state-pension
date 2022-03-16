@@ -25,7 +25,6 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.IfConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
@@ -43,8 +42,6 @@ class DashboardServiceSpec extends UnitSpec with NinoGenerator with EitherValues
   val sut: DashboardService = GuiceApplicationBuilder()
     .overrides(
       bind[IfConnector].toInstance(mockIfConnector),
-      bind[ForecastingService].toInstance(new ForecastingService(rateService = RateServiceBuilder.default)),
-      bind[RateService].toInstance(RateServiceBuilder.default),
       bind[ApplicationMetrics].toInstance(mockMetrics),
       bind[AuditConnector].toInstance(mock[AuditConnector])
     )

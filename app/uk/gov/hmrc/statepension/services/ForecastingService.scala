@@ -23,7 +23,7 @@ import uk.gov.hmrc.statepension.domain.{Forecast, PersonalMaximum}
 
 import scala.math.BigDecimal.RoundingMode
 
-class ForecastingService @Inject()(val rateService: RateService) {
+class ForecastingService @Inject()(rateService: RateService) {
 
   def calculateStartingAmount(amountA2016: BigDecimal, amountB2016: BigDecimal): BigDecimal = {
     amountA2016.max(amountB2016)
