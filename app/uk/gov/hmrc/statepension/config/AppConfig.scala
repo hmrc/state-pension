@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
 import org.joda.time.LocalDate
-import play.api.{ConfigLoader, Configuration}
+import play.api.{ConfigLoader, Configuration, Logging}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.TaxYearResolver
@@ -26,7 +26,7 @@ import uk.gov.hmrc.statepension.util.FileReader.getTaxRatesByTaxYear
 import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 
-class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig, systemLocalDate: SystemLocalDate){
+class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig, systemLocalDate: SystemLocalDate) extends Logging {
   import servicesConfig._
 
   implicit val dateLoader: ConfigLoader[LocalDate] = ConfigLoader(_.getString).map(LocalDate.parse(_))
@@ -39,6 +39,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
     .getOrElse(TaxYearResolver.startOfCurrentTaxYear)
 
   def taxRates(year: Int): TaxRates = {
+    logger.info(s"systemLocalDate returns: ${systemLocalDate.currentLocalDate}")
     if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(2021)
     else getTaxRatesByTaxYear(year)
   }
