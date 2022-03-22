@@ -24,18 +24,18 @@ import uk.gov.hmrc.statepension.util.SystemLocalDate
 import scala.math.BigDecimal.RoundingMode
 
 class RateService @Inject()(appConfig: AppConfig, systemLocalDate: SystemLocalDate) {
-  lazy val taxRates: TaxRates = appConfig.taxRates(TaxYearResolver.taxYearFor(systemLocalDate.currentLocalDate))
+  def taxRates: TaxRates = appConfig.taxRates(TaxYearResolver.taxYearFor(systemLocalDate.currentLocalDate))
 
-  val revaluationRates: RevaluationRates = RevaluationRates(taxRates.startingAmount, taxRates.protectedPayment)
+  def revaluationRates: RevaluationRates = RevaluationRates(taxRates.startingAmount, taxRates.protectedPayment)
 
-  private[services] lazy val ratesTable: Map[Int, BigDecimal] = {
+  private[services] def ratesTable: Map[Int, BigDecimal] = {
     taxRates.statePensionRates.zipWithIndex.toMap.map {
       case (rates, keys) => keys -> rates
     }
   }
 
-  val MAX_YEARS: Int = ratesTable.keys.max
-  val MAX_AMOUNT: BigDecimal = ratesTable(MAX_YEARS)
+  def MAX_YEARS: Int = ratesTable.keys.max
+  def MAX_AMOUNT: BigDecimal = ratesTable(MAX_YEARS)
 
   def getSPAmount(totalQualifyingYears: Int): BigDecimal = {
     if (totalQualifyingYears > MAX_YEARS) {
