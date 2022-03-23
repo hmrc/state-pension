@@ -17,12 +17,7 @@
 package uk.gov.hmrc.statepension.util
 
 import org.joda.time.LocalDate
-import play.api.Logging
 
-
-class SystemLocalDate extends Logging {
-
-  def currentLocalDate:LocalDate = {
-    logger.info(s"currentLocalDate = ${LocalDate.now()}")
-    LocalDate.now()}
+class SystemLocalDate {
+  def currentLocalDate:LocalDate = LocalDate.now()
 }
