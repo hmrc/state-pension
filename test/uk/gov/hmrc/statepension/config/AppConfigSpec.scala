@@ -38,7 +38,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
       ("microservice.services.if-hod.token", "testABC123"),
       ("microservice.services.if-hod.originatoridkey", "testOriginatorId"),
       ("microservice.services.if-hod.originatoridvalue", "testOriginatorIdValue"),
-      ("rates.effectiveFromDate", "2022-03-02")
+      ("rates.effectiveFromDate", "2022-04-22")
     ).overrides(
       bind[SystemLocalDate].toInstance(mockSystemLocalDate)
     ).injector()
@@ -64,7 +64,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
     "taxRates" should {
       "return current tax year rates file as TaxRates case class when effectiveDate matches currentLocalDate" in {
 
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 3, 2))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 4, 22))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.29,
@@ -107,7 +107,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
       }
 
       "return current tax year rates file as TaxRates case class when currentLocalDate is after effectiveFromDate" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 3, 5))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 5, 5))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.29,
@@ -149,8 +149,8 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
         appConfig.taxRates(2022) shouldBe TaxRates(1.189527, 1.122547, spRates)
       }
 
-      "return previous tax year rates file as TaxRates case class when currentLocalDate is before effectiveFromDate" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 2, 26))
+      "return previous tax year rates as TaxRates case class when currentLocalDate is between effectiveFromDate and start of tax year" in {
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 4, 12))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.13,
@@ -190,6 +190,49 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
           179.60)
 
         appConfig.taxRates(2022) shouldBe TaxRates(1.153870, 1.088794, spRates)
+      }
+
+      "return current tax year rates when effectiveFromDate is in next tax year and currentLocalDate is before effectiveFromDate" in {
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 3, 23))
+
+        val spRates: Seq[BigDecimal] = Seq(0,
+          5.13,
+          10.26,
+          15.39,
+          20.53,
+          25.66,
+          30.79,
+          35.92,
+          41.05,
+          46.18,
+          51.31,
+          56.45,
+          61.58,
+          66.71,
+          71.84,
+          76.97,
+          82.10,
+          87.23,
+          92.37,
+          97.50,
+          102.63,
+          107.76,
+          112.89,
+          118.02,
+          123.15,
+          128.29,
+          133.42,
+          138.55,
+          143.68,
+          148.81,
+          153.94,
+          159.07,
+          164.21,
+          169.34,
+          174.47,
+          179.60)
+
+        appConfig.taxRates(2021) shouldBe TaxRates(1.153870, 1.088794, spRates)
       }
     }
   }

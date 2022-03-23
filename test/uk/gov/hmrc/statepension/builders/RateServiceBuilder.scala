@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.builders
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
-import uk.gov.hmrc.statepension.config.{AppConfig, RevaluationRates}
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.RateService
 import uk.gov.hmrc.statepension.util.SystemLocalDate
@@ -31,7 +31,6 @@ object RateServiceBuilder extends StatePensionBaseSpec {
   }
   def apply(testRates: TaxRates): RateService = new RateService(appConfig, systemLocalDate) {
     override lazy val taxRates: TaxRates = testRates
-    override val revaluationRates: RevaluationRates = RevaluationRates(testRates.startingAmount, testRates.protectedPayment)
   }
 
   val default: RateService = apply(TaxRates(1, 1, Seq(
