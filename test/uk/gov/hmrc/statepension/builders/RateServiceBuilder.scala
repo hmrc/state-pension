@@ -16,20 +16,16 @@
 
 package uk.gov.hmrc.statepension.builders
 
-import org.joda.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.RateService
-import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 object RateServiceBuilder extends StatePensionBaseSpec {
 
   val appConfig: AppConfig = mock[AppConfig]
-  val systemLocalDate = new SystemLocalDate {
-    override def currentLocalDate: LocalDate = LocalDate.now()
-  }
-  def apply(testRates: TaxRates): RateService = new RateService(appConfig, systemLocalDate) {
+
+  def apply(testRates: TaxRates): RateService = new RateService(appConfig) {
     override lazy val taxRates: TaxRates = testRates
   }
 
