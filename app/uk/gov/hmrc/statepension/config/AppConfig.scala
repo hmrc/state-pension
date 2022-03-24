@@ -38,9 +38,11 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   val effectiveFromDate: LocalDate = configuration.getOptional[LocalDate]("rates.effectiveFromDate")
     .getOrElse(TaxYearResolver.startOfCurrentTaxYear)
 
-  def taxRates(year: Int): TaxRates =
-    if (systemLocalDate.currentLocalDate.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(2021)
-    else getTaxRatesByTaxYear(year)
+  def taxRates: TaxRates = {
+    val today = systemLocalDate.currentLocalDate
+    if (today.isBefore(effectiveFromDate.withYear(today.getYear))) getTaxRatesByTaxYear(today.getYear - 1)
+    else getTaxRatesByTaxYear(today.getYear)
+  }
 
   val ninoHashingKey: String = configuration.get[String]("ninoHashingKey")
 

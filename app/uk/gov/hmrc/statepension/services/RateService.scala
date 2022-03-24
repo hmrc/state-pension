@@ -17,16 +17,13 @@
 package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
-import uk.gov.hmrc.statepension.config.{AppConfig, RevaluationRates}
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.models.TaxRates
-import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 import scala.math.BigDecimal.RoundingMode
 
-class RateService @Inject()(appConfig: AppConfig, systemLocalDate: SystemLocalDate) {
-  def taxRates: TaxRates = appConfig.taxRates(TaxYearResolver.taxYearFor(systemLocalDate.currentLocalDate))
-
-  def revaluationRates: RevaluationRates = RevaluationRates(taxRates.startingAmount, taxRates.protectedPayment)
+class RateService @Inject()(appConfig: AppConfig) {
+  def taxRates: TaxRates = appConfig.taxRates
 
   private[services] def ratesTable: Map[Int, BigDecimal] = {
     taxRates.statePensionRates.zipWithIndex.toMap.map {
