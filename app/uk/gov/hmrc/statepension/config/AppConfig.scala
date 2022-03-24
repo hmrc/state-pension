@@ -40,8 +40,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
 
   def taxRates: TaxRates = {
     val today = systemLocalDate.currentLocalDate
-    if (today.isBefore(effectiveFromDate)) getTaxRatesByTaxYear(today.getYear - 1)
-    else if (today.getYear > TaxYearResolver.taxYearFor(today) && today.isAfter(effectiveFromDate)) getTaxRatesByTaxYear(today.getYear - 1)
+    if (today.isBefore(effectiveFromDate.withYear(today.getYear))) getTaxRatesByTaxYear(today.getYear - 1)
     else getTaxRatesByTaxYear(today.getYear)
   }
 
