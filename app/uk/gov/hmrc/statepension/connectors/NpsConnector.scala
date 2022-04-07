@@ -20,7 +20,11 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{
+  HeaderCarrier, HeaderNames, HttpClient, HttpResponse, UpstreamErrorResponse
+}
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -29,7 +33,8 @@ import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
+abstract class NpsConnector @Inject()(appConfig: AppConfig)(
+  implicit ec: ExecutionContext) extends Logging {
 
   val http: HttpClient
   val metrics: ApplicationMetrics
@@ -44,8 +49,6 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
   val summaryMetricType: APIType
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
-
-  implicit val legacyRawReads = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
 
   val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
@@ -69,17 +72,28 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(implicit ec: Executi
       originatorId
     )
 
-    val responseF = http.GET[HttpResponse](url, Seq(), headers)
-
-    responseF.map { httpResponse =>
-      timerContext.stop()
-      Try(httpResponse.json.validate[A]).flatMap( jsResult =>
-        jsResult.fold(errs => Failure(new JsonValidationException(formatJsonErrors(errs))), valid => Success(valid))
-      )
-    } recover {
-      // http-verbs throws exceptions, convert to Try
-      case ex => Failure(ex)
-    } flatMap (handleResult(api, _))
+    http
+      .GET[Either[UpstreamErrorResponse, HttpResponse]](url, Seq(), headers)
+      .transform {
+        result =>
+          timerContext.stop()
+          result
+      }
+      .map {
+        case Right(httpResponse) =>
+          Try(httpResponse.json.validate[A]).flatMap { jsResult =>
+            jsResult.fold(
+              errs => Failure(new JsonValidationException(formatJsonErrors(errs))),
+              valid => Success(valid)
+            )
+          }
+        case Left(error) => Failure(error)
+      }
+      .recover {
+        // http-verbs throws exceptions, convert to Try
+        case ex => Failure(ex)
+      }
+      .flatMap(handleResult(api, _))
   }
 
   private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] = {
