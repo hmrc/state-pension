@@ -20,8 +20,6 @@ import org.joda.time.LocalDate
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -30,7 +28,7 @@ import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
