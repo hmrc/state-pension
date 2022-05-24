@@ -25,8 +25,11 @@ val suppressedImports = Seq("-P:silencer:lineContentFilters=import _root_.play.t
 scalacOptions ++= Seq("-P:silencer:pathFilters=routes")
 scalacOptions ++= suppressedImports
 scalacOptions ++= Seq(
+  "-Xfatal-warnings",
   "-Xmaxerrs", "1000", // Maximum errors to print
-  "-Xmaxwarns", "1000" // Maximum warnings to print
+  "-Xmaxwarns", "1000", // Maximum warnings to print
+  // Suggested here https://github.com/playframework/twirl/issues/105#issuecomment-782985171
+  "-Wconf:src=routes/.*:is,src=twirl/.*:is"
 )
 
 lazy val plugins: Seq[Plugins] = Seq(
