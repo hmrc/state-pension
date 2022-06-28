@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.Liability
 
 class ExclusionServiceSpec extends StatePensionBaseSpec {
 
-  val exampleNow = new LocalDate(2017, 2, 16)
-  val examplePensionDate = new LocalDate(2022, 2, 2)
+  val exampleNow = LocalDate.of(2017, 2, 16)
+  val examplePensionDate = LocalDate.of(2022, 2, 2)
 
   def exclusionServiceBuilder(dateOfDeath: Option[LocalDate] = None,
                               pensionDate: LocalDate = examplePensionDate,
@@ -45,26 +45,26 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
 
     "there is a date of death" should {
       "return a List(Dead)" in {
-        exclusionServiceBuilder(dateOfDeath = Some(new LocalDate(2000, 9, 13))).getExclusions shouldBe List(Exclusion.Dead)
+        exclusionServiceBuilder(dateOfDeath = Some(LocalDate.of(2000, 9, 13))).getExclusions shouldBe List(Exclusion.Dead)
       }
     }
 
     "checking for post state pension age" should {
       "return a List(PostStatePensionAge)" when {
         "the state pension age is the same as the current date" in {
-          exclusionServiceBuilder(pensionDate = new LocalDate(2000, 1, 1), now = new LocalDate(2000, 1, 1)).getExclusions shouldBe List(Exclusion.PostStatePensionAge)
+          exclusionServiceBuilder(pensionDate = LocalDate.of(2000, 1, 1), now = LocalDate.of(2000, 1, 1)).getExclusions shouldBe List(Exclusion.PostStatePensionAge)
         }
         "the state pension age is one day after the the current date" in {
-          exclusionServiceBuilder(pensionDate = new LocalDate(2000, 1, 2), now = new LocalDate(2000, 1, 1)).getExclusions shouldBe List(Exclusion.PostStatePensionAge)
+          exclusionServiceBuilder(pensionDate = LocalDate.of(2000, 1, 2), now = LocalDate.of(2000, 1, 1)).getExclusions shouldBe List(Exclusion.PostStatePensionAge)
         }
         "the state pension age is one day before the the current date" in {
-          exclusionServiceBuilder(pensionDate = new LocalDate(2000, 1, 1), now = new LocalDate(2000, 1, 2)).getExclusions shouldBe List(Exclusion.PostStatePensionAge)
+          exclusionServiceBuilder(pensionDate = LocalDate.of(2000, 1, 1), now = LocalDate.of(2000, 1, 2)).getExclusions shouldBe List(Exclusion.PostStatePensionAge)
         }
       }
 
       "return an empty list" when {
         "the state pension age is two days after the current date" in {
-          exclusionServiceBuilder(pensionDate = new LocalDate(2000, 1, 3), now = new LocalDate(2000, 1, 1)).getExclusions shouldBe List()
+          exclusionServiceBuilder(pensionDate = LocalDate.of(2000, 1, 3), now = LocalDate.of(2000, 1, 1)).getExclusions shouldBe List()
         }
       }
     }
@@ -123,9 +123,9 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
     "all the exclusion criteria are met" should {
       "return a sorted list of Dead, PostSPA, MWRRE, CopeProcessing" in {
         exclusionServiceBuilder(
-          dateOfDeath = Some(new LocalDate(1999, 12, 31)),
-          pensionDate = new LocalDate(2000, 1, 1),
-          now = new LocalDate(2000, 1, 1),
+          dateOfDeath = Some(LocalDate.of(1999, 12, 31)),
+          pensionDate = LocalDate.of(2000, 1, 1),
+          now = LocalDate.of(2000, 1, 1),
           entitlement = 100,
           startingAmount = 100,
           calculatedStartingAmount = 101,

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -40,7 +40,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
 
   lazy val service: StatePensionService = new StatePensionService {
-    override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+    override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
     override val nps: NpsConnector = mockNpsConnector
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
@@ -59,7 +59,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
   def regularStatementWithDateOfBirth(dateOfBirth: LocalDate, statePensionAgeDate: LocalDate): Summary = {
     Summary(
-      earningsIncludedUpTo = new LocalDate(2016, 4, 5),
+      earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
       statePensionAgeDate = statePensionAgeDate,
       finalRelevantStartYear = 2018,
       pensionSharingOrderSERPS = false,
@@ -92,8 +92,8 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
     "the customer has state pension age under consideration flag set to false as the date of birth is before the required range " should {
 
-      val statePensionAgeDate = new LocalDate(2034, 4, 5)
-      val dateOfBirth = new LocalDate(1970, 4, 5)
+      val statePensionAgeDate = LocalDate.of(2034, 4, 5)
+      val dateOfBirth = LocalDate.of(1970, 4, 5)
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
       when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
@@ -142,8 +142,8 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the minimum of the required range " should {
 
-      val statePensionAgeDate = new LocalDate(2034, 4, 6)
-      val dateOfBirth = new LocalDate(1970, 4, 6)
+      val statePensionAgeDate = LocalDate.of(2034, 4, 6)
+      val dateOfBirth = LocalDate.of(1970, 4, 6)
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
       when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
@@ -193,11 +193,11 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
     "the customer has state pension age under consideration flag set to true as the date of birth is in the middle of the required range " should {
 
       val summary = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2038, 1, 1),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2038, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1976, 7, 7),
+        dateOfBirth = LocalDate.of(1976, 7, 7),
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
@@ -272,9 +272,9 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
     "the customer has state pension age under consideration flag set to true as the date of birth is at the maximum of the required range " should {
 
-      val dateOfBirth = new LocalDate(1978, 4, 5)
+      val dateOfBirth = LocalDate.of(1978, 4, 5)
 
-      val statePensionAgeDate = new LocalDate(2042, 4, 5)
+      val statePensionAgeDate = LocalDate.of(2042, 4, 5)
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
@@ -324,9 +324,9 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
     "the customer has state pension age under consideration flag set to false as the date of birth is after the required range " should {
 
-      val dateOfBirth = new LocalDate(1978, 4, 6)
+      val dateOfBirth = LocalDate.of(1978, 4, 6)
 
-      val statePensionAgeDate = new LocalDate(2042, 4, 6)
+      val statePensionAgeDate = LocalDate.of(2042, 4, 6)
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 

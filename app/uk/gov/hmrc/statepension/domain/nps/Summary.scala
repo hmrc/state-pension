@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import org.joda.time.{LocalDate, Period}
+
+import java.time.{LocalDate, Period}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
-import play.api.libs.json.JodaReads._
+
 import scala.math.BigDecimal.RoundingMode
 
 final case class Summary(
@@ -35,7 +36,7 @@ final case class Summary(
                        manualCorrespondenceIndicator: Option[Boolean] = None
                      ) {
   val finalRelevantYear: String = s"$finalRelevantStartYear-${(finalRelevantStartYear + 1).toString.takeRight(2)}"
-  val statePensionAge: Int = new Period(dateOfBirth, statePensionAgeDate).getYears
+  val statePensionAge: Int = Period.between(dateOfBirth, statePensionAgeDate).getYears
 }
 
 object Summary {

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.events
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.domain.StatePensionAmounts

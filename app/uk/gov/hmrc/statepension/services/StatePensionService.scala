@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.statepension.services
 
-import java.util.TimeZone
-
-import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.NpsConnector
-import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.Exclusion._
+import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps.Summary
 import uk.gov.hmrc.statepension.events.Forecasting
+
+import java.time.{LocalDate, ZoneId}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait StatePensionService {
@@ -40,7 +39,7 @@ trait StatePensionService {
 
   def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
-  def now: LocalDate = LocalDate.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("Europe/London")))
+  def now: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
 
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
 
@@ -171,8 +170,8 @@ trait StatePensionService {
     ))
   }
 
-  final val CHANGE_SPA_MIN_DATE = new LocalDate(1970, 4, 6)
-  final val CHANGE_SPA_MAX_DATE = new LocalDate(1978, 4, 5)
+  final val CHANGE_SPA_MIN_DATE = LocalDate.of(1970, 4, 6)
+  final val CHANGE_SPA_MAX_DATE = LocalDate.of(1978, 4, 5)
 
   private def checkStatePensionAgeUnderConsideration(dateOfBirth: LocalDate): Boolean = {
     !dateOfBirth.isBefore(CHANGE_SPA_MIN_DATE)  && !dateOfBirth.isAfter(CHANGE_SPA_MAX_DATE)

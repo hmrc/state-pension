@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.libs.json.JodaReads._
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, BodyParser, ControllerComponents}
 import play.api.test.Helpers._
@@ -35,6 +33,7 @@ import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
@@ -65,7 +64,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     }
 
   val testStatePension: StatePension = StatePension(
-    new LocalDate(2015, 4, 5),
+    LocalDate.of(2015, 4, 5),
     StatePensionAmounts(
       protectedPayment = false,
       StatePensionAmount(None, None, 123.65),
@@ -84,7 +83,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       )
     ),
     67,
-    new LocalDate(2019, 7, 1),
+    LocalDate.of(2019, 7, 1),
     "2018-19",
     30,
     pensionSharingOrder = false,
@@ -115,7 +114,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
-      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe new LocalDate(2015, 4, 5)
+      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe LocalDate.of(2015, 4, 5)
       (json \ "amounts" \ "protectedPayment").as[Boolean] shouldBe false
       (json \ "amounts" \ "maximum" \ "yearsToWork").as[Int] shouldBe 4
       (json \ "amounts" \ "maximum" \ "gapsToFill").as[Int] shouldBe 1
@@ -131,7 +130,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       (json \ "amounts" \ "newRules" \ "grossStatePension").as[BigDecimal] shouldBe 155.40
       (json \ "amounts" \ "newRules" \ "rebateDerivedAmount").as[BigDecimal] shouldBe 0.25
       (json \ "pensionAge").as[Int] shouldBe 67
-      (json \ "pensionDate").as[LocalDate] shouldBe new LocalDate(2019, 7, 1)
+      (json \ "pensionDate").as[LocalDate] shouldBe LocalDate.of(2019, 7, 1)
       (json \ "finalRelevantYear").as[String] shouldBe "2018-19"
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
@@ -153,7 +152,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
-      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe new LocalDate(2015, 4, 5)
+      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe LocalDate.of(2015, 4, 5)
       (json \ "amounts" \ "protectedPayment").as[Boolean] shouldBe false
       (json \ "amounts" \ "maximum" \ "yearsToWork").as[Int] shouldBe 4
       (json \ "amounts" \ "maximum" \ "gapsToFill").as[Int] shouldBe 1
@@ -169,7 +168,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       (json \ "amounts" \ "newRules" \ "grossStatePension").as[BigDecimal] shouldBe 155.40
       (json \ "amounts" \ "newRules" \ "rebateDerivedAmount").as[BigDecimal] shouldBe 0.25
       (json \ "pensionAge").as[Int] shouldBe 67
-      (json \ "pensionDate").as[LocalDate] shouldBe new LocalDate(2019, 7, 1)
+      (json \ "pensionDate").as[LocalDate] shouldBe LocalDate.of(2019, 7, 1)
       (json \ "finalRelevantYear").as[String] shouldBe "2018-19"
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
@@ -191,7 +190,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       status(response) shouldBe 200
       val json = contentAsJson(response)
-      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe new LocalDate(2015, 4, 5)
+      (json \ "earningsIncludedUpTo").as[LocalDate] shouldBe LocalDate.of(2015, 4, 5)
       (json \ "amounts" \ "protectedPayment").as[Boolean] shouldBe false
       (json \ "amounts" \ "maximum" \ "yearsToWork").as[Int] shouldBe 4
       (json \ "amounts" \ "maximum" \ "gapsToFill").as[Int] shouldBe 1
@@ -207,7 +206,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       (json \ "amounts" \ "newRules" \ "grossStatePension").as[BigDecimal] shouldBe 155.40
       (json \ "amounts" \ "newRules" \ "rebateDerivedAmount").as[BigDecimal] shouldBe 0.25
       (json \ "pensionAge").as[Int] shouldBe 67
-      (json \ "pensionDate").as[LocalDate] shouldBe new LocalDate(2019, 7, 1)
+      (json \ "pensionDate").as[LocalDate] shouldBe LocalDate.of(2019, 7, 1)
       (json \ "finalRelevantYear").as[String] shouldBe "2018-19"
       (json \ "numberOfQualifyingYears").as[Int] shouldBe 30
       (json \ "pensionSharingOrder").as[Boolean] shouldBe false
@@ -226,7 +225,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
           StatePensionExclusion(
             exclusionReasons = List(ManualCorrespondenceIndicator),
             pensionAge = 0,
-            pensionDate = new LocalDate(2050, 1, 1),
+            pensionDate = LocalDate.of(2050, 1, 1),
             statePensionAgeUnderConsideration = false
           )
         ))
@@ -246,7 +245,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
         Left(
           StatePensionExclusion(List(Exclusion.Dead),
             0,
-            new LocalDate(2050, 1, 1),
+            LocalDate.of(2050, 1, 1),
             false)
         ))
       )
@@ -264,7 +263,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
         Left(StatePensionExclusion(
           List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
           0,
-          new LocalDate(2050, 1, 1),
+          LocalDate.of(2050, 1, 1),
           false
         )
         ))

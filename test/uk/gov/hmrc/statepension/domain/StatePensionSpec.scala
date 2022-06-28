@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.domain
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 class StatePensionSpec extends StatePensionBaseSpec {
@@ -68,7 +68,7 @@ class StatePensionSpec extends StatePensionBaseSpec {
                          statePensionAgeUnderConsideration: Boolean = false
                         ) = {
     StatePension(
-      new LocalDate(earningsIncludedUpTo + 1, 4, 5),
+      LocalDate.of(earningsIncludedUpTo + 1, 4, 5),
       amounts = StatePensionAmounts(
         false,
         StatePensionAmount(None, None, currentAmount),
@@ -80,7 +80,7 @@ class StatePensionSpec extends StatePensionBaseSpec {
         newRules
       ),
       65,
-      new LocalDate(2019, 5, 1),
+      LocalDate.of(2019, 5, 1),
       finalRelevantYear,
       qualifyingYears,
       false,

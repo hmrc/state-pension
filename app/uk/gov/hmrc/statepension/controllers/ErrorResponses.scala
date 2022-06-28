@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.api.controllers.ErrorResponse
 import uk.gov.hmrc.statepension.config.AppConfig
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.util
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 
 class SystemLocalDate {
   def currentLocalDate:LocalDate = LocalDate.now()

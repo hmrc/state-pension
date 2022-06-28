@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.statepension.models
 
-import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats.Implicits.jotLocalDateFormat
+
+import java.time.LocalDate
 
 case class CopeRecord(
   nino: String,

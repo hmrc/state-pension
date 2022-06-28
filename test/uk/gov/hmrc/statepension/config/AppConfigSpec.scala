@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.config
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.{Assertion, BeforeAndAfterEach}
 import play.api.inject.Injector
@@ -64,7 +64,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
     "taxRates" should {
       "return current tax year rates file as TaxRates case class when effectiveDate matches currentLocalDate" in {
 
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 3, 22))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2022, 3, 22))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.29,
@@ -107,7 +107,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
       }
 
       "return current tax year rates when currentLocalDate is after effectiveFromDate and is after 1st January in current tax year" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2023, 3, 3))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2023, 3, 3))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.29,
@@ -150,7 +150,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
       }
 
       "return current tax year rates when currentLocalDate is after effectiveFromDate and is before 1st January in current tax year" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 6, 6))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2022, 6, 6))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.29,
@@ -193,7 +193,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
       }
 
       "return previous tax year rates when currentLocalDate is before effectiveFromDate" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(new LocalDate(2022, 2, 23))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2022, 2, 23))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.13,

@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json.{Format, Json}
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 
 trait ErrorResponseCope {
   def code: String
