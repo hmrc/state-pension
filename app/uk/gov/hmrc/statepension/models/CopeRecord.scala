@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.models
 import play.api.libs.json.{Format, Json}
 
 import java.time.LocalDate
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.jatLocalDateFormat
 
 case class CopeRecord(
   nino: String,
