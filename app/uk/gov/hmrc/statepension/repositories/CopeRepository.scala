@@ -18,14 +18,15 @@ package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
 import com.mongodb.{DuplicateKeyException, MongoException}
-import org.joda.time.LocalDate
+
+import java.time.LocalDate
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import play.api.Logging
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.formats.MongoJodaFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
@@ -72,8 +73,8 @@ class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionCont
     collection.findOneAndUpdate(
       equal("nino", hashedNino.generateHash),
       Seq(
-        set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJodaFormats.localDateWrites)),
-        set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJodaFormats.localDateWrites))
+        set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJavatimeFormats.localDateWrites)),
+        set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJavatimeFormats.localDateWrites))
       )
     ).toFutureOption()
 

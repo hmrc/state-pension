@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
@@ -45,7 +45,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
   val defaultForecasting: ForecastingService = new ForecastingService(fakeRateService)
 
   lazy val service: StatePensionService = new StatePensionService {
-    override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+    override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
     override val nps: NpsConnector = mockNpsConnector
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = fakeRateService
@@ -77,11 +77,11 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
       "there is a regular statement (Reached)" should {
 
         val regularStatement = Summary(
-          earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-          statePensionAgeDate = new LocalDate(2019, 9, 6),
+          earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+          statePensionAgeDate = LocalDate.of(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
-          dateOfBirth = new LocalDate(1954, 3, 9),
+          dateOfBirth = LocalDate.of(1954, 3, 9),
           amounts = PensionAmounts(
             pensionEntitlement = 161.18,
             startingAmount2016 = 161.18,
@@ -155,7 +155,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
 
           val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          statement.earningsIncludedUpTo shouldBe new LocalDate(2016, 4, 5)
+          statement.earningsIncludedUpTo shouldBe LocalDate.of(2016, 4, 5)
         }
 
         "return qualifying years of 36" in {
@@ -179,7 +179,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
 
           val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
 
-          statement.pensionDate shouldBe new LocalDate(2019, 9, 6)
+          statement.pensionDate shouldBe LocalDate.of(2019, 9, 6)
         }
 
         "return oldRules additionalStatePension as 39.22" in {
@@ -749,11 +749,11 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
       "there is a regular statement (Reached)" should {
 
         val regularStatement = Summary(
-          earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-          statePensionAgeDate = new LocalDate(2019, 9, 6),
+          earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+          statePensionAgeDate = LocalDate.of(2019, 9, 6),
           finalRelevantStartYear = 2018,
           pensionSharingOrderSERPS = false,
-          dateOfBirth = new LocalDate(1954, 3, 9),
+          dateOfBirth = LocalDate.of(1954, 3, 9),
           amounts = PensionAmounts(
             pensionEntitlement = 161.18,
             startingAmount2016 = 0,
@@ -800,11 +800,11 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
     "there is a regular statement (Forecast)" should {
 
       val regularStatement = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1954, 3, 9),
+        dateOfBirth = LocalDate.of(1954, 3, 9),
         amounts = PensionAmounts(
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
@@ -996,11 +996,11 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
     "there is a regular statement (grossStatePension)" should {
 
       val regularStatement = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1954, 3, 9),
+        dateOfBirth = LocalDate.of(1954, 3, 9),
         amounts = PensionAmounts(
           pensionEntitlement = 121.41,
           startingAmount2016 = 121.41,
@@ -1056,11 +1056,11 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
     "there is a regular statement (Fill Gaps)" should {
 
       val regularStatement = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1954, 3, 9),
+        dateOfBirth = LocalDate.of(1954, 3, 9),
         amounts = PensionAmounts(
           pensionEntitlement = 121.4123,
           startingAmount2016 = 121.41,
@@ -1254,11 +1254,11 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
     "there is an mqp user" should {
 
       val regularStatement = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1954, 3, 9),
+        dateOfBirth = LocalDate.of(1954, 3, 9),
         amounts = PensionAmounts(
           pensionEntitlement = 40.53,
           startingAmount2016 = 40.53,

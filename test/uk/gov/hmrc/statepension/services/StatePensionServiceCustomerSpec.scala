@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
@@ -46,7 +46,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
   val defaultForecasting = new ForecastingService(RateServiceBuilder.default)
 
   def service(mci: Boolean = false): StatePensionService = new StatePensionService {
-    override lazy val now: LocalDate = new LocalDate(2017, 2, 16)
+    override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
     override val nps: NpsConnector = mockNpsConnector
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
@@ -59,11 +59,11 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
   }
 
   val summary = Summary(
-    earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-    statePensionAgeDate = new LocalDate(2018, 1, 1),
+    earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+    statePensionAgeDate = LocalDate.of(2018, 1, 1),
     finalRelevantStartYear = 2049,
     pensionSharingOrderSERPS = false,
-    dateOfBirth = new LocalDate(1956, 7, 7)
+    dateOfBirth = LocalDate.of(1956, 7, 7)
   )
 
   override def beforeEach: Unit = {
@@ -88,12 +88,12 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
     "the customer is dead" should {
 
       val summary = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2050, 7, 7),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2050, 7, 7),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1983, 7, 7),
-        dateOfDeath = Some(new LocalDate(2000, 9, 13)),
+        dateOfBirth = LocalDate.of(1983, 7, 7),
+        dateOfDeath = Some(LocalDate.of(2000, 9, 13)),
         reducedRateElection = false,
         countryCode = 1,
         PensionAmounts(),
@@ -119,7 +119,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
         lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
-        exclusion.pensionDate shouldBe new LocalDate(2050, 7, 7)
+        exclusion.pensionDate shouldBe LocalDate.of(2050, 7, 7)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
@@ -154,11 +154,11 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
     "the customer is over state pension age" should {
 
       val summary = Summary(
-        earningsIncludedUpTo = new LocalDate(1954, 4, 5),
-        statePensionAgeDate = new LocalDate(2016, 1, 1),
+        earningsIncludedUpTo = LocalDate.of(1954, 4, 5),
+        statePensionAgeDate = LocalDate.of(2016, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1954, 7, 7),
+        dateOfBirth = LocalDate.of(1954, 7, 7),
         dateOfDeath = None,
         reducedRateElection = false,
         countryCode = 1,
@@ -186,7 +186,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
         lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
-        exclusion.pensionDate shouldBe new LocalDate(2016, 1, 1)
+        exclusion.pensionDate shouldBe LocalDate.of(2016, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
@@ -216,11 +216,11 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
     "the customer has married women's reduced rate election" should {
 
       val summary1 = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2018, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1956, 7, 7),
+        dateOfBirth = LocalDate.of(1956, 7, 7),
         dateOfDeath = None,
         reducedRateElection = true,
         countryCode = 1,
@@ -302,11 +302,11 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
     "the customer has amount dissonance" should {
 
       lazy val summary = Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4, 5),
-        statePensionAgeDate = new LocalDate(2018, 1, 1),
+        earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+        statePensionAgeDate = LocalDate.of(2018, 1, 1),
         finalRelevantStartYear = 2049,
         pensionSharingOrderSERPS = false,
-        dateOfBirth = new LocalDate(1956, 7, 7),
+        dateOfBirth = LocalDate.of(1956, 7, 7),
         amounts = PensionAmounts(
           pensionEntitlement = 155.65,
           startingAmount2016 = 155.65,
@@ -335,7 +335,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
         lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
-        exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
@@ -387,7 +387,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
         lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
-        exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
@@ -438,7 +438,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
         lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.get
-        exclusion.pensionDate shouldBe new LocalDate(2018, 1, 1)
+        exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {

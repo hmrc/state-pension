@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.config
 
 import com.google.inject.Inject
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.{ConfigLoader, Configuration}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.models.TaxRates

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.fixtures
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.statepension.domain.nps.{AmountA2016, AmountB2016, PensionAmounts, Summary}
 
 object SummaryFixture {
@@ -72,11 +72,11 @@ object SummaryFixture {
   """
 
   val exampleSummary: Summary = Summary(
-    new LocalDate(2016, 4, 5),
-    statePensionAgeDate = new LocalDate(2025, 9, 6),
+    LocalDate.of(2016, 4, 5),
+    statePensionAgeDate = LocalDate.of(2025, 9, 6),
     finalRelevantStartYear = 2018,
     pensionSharingOrderSERPS = true,
-    dateOfBirth = new LocalDate(1954, 3, 9),
+    dateOfBirth = LocalDate.of(1954, 3, 9),
     None,
     reducedRateElection = false,
     countryCode = 1,

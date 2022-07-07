@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 

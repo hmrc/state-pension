@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -138,11 +138,11 @@ class DesConnectorSpec extends StatePensionBaseSpec
         amountB2016 = AmountB2016(155.65,0))
 
       val expectedSummary =  Summary(
-        earningsIncludedUpTo = new LocalDate(2016, 4,5),
-        statePensionAgeDate = new LocalDate(2019, 9, 6),
+        earningsIncludedUpTo = LocalDate.of(2016, 4,5),
+        statePensionAgeDate = LocalDate.of(2019, 9, 6),
         finalRelevantStartYear = 2018,
         pensionSharingOrderSERPS = true,
-        dateOfBirth = new LocalDate(1954, 3, 9),
+        dateOfBirth = LocalDate.of(1954, 3, 9),
         dateOfDeath = None,
         countryCode = 1,
         amounts = expectedPensionAmounts,
