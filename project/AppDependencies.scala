@@ -27,7 +27,7 @@ object AppDependencies {
     "uk.gov.hmrc" %% "play-hal" % "3.0.0-play-28",
     "uk.gov.hmrc" %% "time" % "3.19.0",
     "com.jsuereth" %% "scala-arm" % "2.0",
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.65.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.68.0",
     "com.typesafe.play" %% "play-json" % "2.9.2"
   )
 
