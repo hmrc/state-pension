@@ -14,9 +14,10 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
   val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
   val checkPensionControllerUrl: String = s"/ni/$nino"
 
-  def defaultHeaders: (String, String) = {
-    "Accept" -> "application/vnd.hmrc.1.0+json"
-  }
+  val defaultHeaders = Seq(
+    "Accept" -> "application/vnd.hmrc.1.0+json",
+    "Authorization" -> "Bearer 123"
+  )
 
   def generateAuthHeaderResponse = {
     s"""
@@ -73,7 +74,9 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
         stubGetServer(response, npsLiabilitiesUrl)
         stubGetServer(response, npsNiRecordUrl)
 
-        val request = FakeRequest(GET, checkPensionControllerUrl).withHeaders(defaultHeaders)
+        val request = FakeRequest(GET, checkPensionControllerUrl)
+
+          .withHeaders(defaultHeaders:_*)
         val result = route(app, request)
 
         result.map(statusResult) shouldBe Some(statusCode)
