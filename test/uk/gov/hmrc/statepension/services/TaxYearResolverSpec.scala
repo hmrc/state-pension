@@ -164,8 +164,6 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
     }
   }
 
-
-
   "Requesting the end of a given tax year" should {
     "return 2016/4/5 for the tax year 2015" in {
       Resolver().endOfTaxYear(2015) shouldBe LocalDate.of(2016, 4, 5)
