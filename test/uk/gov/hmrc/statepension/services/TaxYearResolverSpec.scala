@@ -164,7 +164,12 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
     }
   }
 
-
+  "Requesting the current tax year's range" should {
+    "return a list of the current and next taxYear" in {
+      val currentTime = LocalDateTime.of(2013, 9, 24, 11, 6, 23, 323)
+      Resolver(currentTime).currentTaxYearYearsRange shouldBe Seq(2013, 2014)
+    }
+  }
 
   "Requesting the end of a given tax year" should {
     "return 2016/4/5 for the tax year 2015" in {
