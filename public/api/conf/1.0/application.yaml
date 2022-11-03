@@ -105,8 +105,7 @@
                   ]
                 },
                 "examples": [
-                {
-                  "Regular": {
+                  {
                     "value": {
                       "earningsIncludedUpTo": "2015-04-05",
                       "amounts": {
@@ -163,10 +162,8 @@
                         }
                       }
                     }
-                  }
-                },
-                {
-                  "RegularReducedRateElection": {
+                  },
+                  {
                     "value": {
                       "earningsIncludedUpTo": "2015-04-05",
                       "amounts": {
@@ -224,10 +221,8 @@
                         }
                       }
                     }
-                  }
-                },
-                {
-                  "Exclusion": {
+                  },
+                  {
                     "value": {
                       "exclusionReasons": [
                         "AmountDissonance"
@@ -242,7 +237,6 @@
                       }
                     }
                   }
-                }
                 ]
               }
             }
@@ -536,8 +530,7 @@
                   ]
                 },
                 "examples": [
-                {
-                  "Regular": {
+                  {
                     "value": {
                       "earningsIncludedUpTo": "2015-04-05",
                       "amounts": {
@@ -594,10 +587,8 @@
                         }
                       }
                     }
-                  }
-                },
-                {
-                  "RegularReducedRateElection": {
+                  },
+                  {
                     "value": {
                       "earningsIncludedUpTo": "2015-04-05",
                       "amounts": {
@@ -655,10 +646,8 @@
                         }
                       }
                     }
-                  }
-                },
-                {
-                  "Exclusion": {
+                  },
+                  {
                     "value": {
                       "exclusionReasons": [
                         "AmountDissonance"
@@ -673,119 +662,118 @@
                       }
                     }
                   }
-                }
                 ]
+              }
             }
-          }
-        },
-        "400": {
-          "description": "",
-          "headers": {},
-          "content": {
-            "application/json": {
-              "schema": {
-                "allOf": [
-                {
-                  "$ref": "#/components/schemas/errorResponse"
-                },
-                {
-                  "example": {
-                    "code": "BAD_REQUEST"
+          },
+          "400": {
+            "description": "",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                  {
+                    "$ref": "#/components/schemas/errorResponse"
+                  },
+                  {
+                    "example": {
+                      "code": "BAD_REQUEST"
+                    }
                   }
-                }
-                ]
-              },
-              "examples": {
-                "InvalidNino": {
-                  "description": "Invalid NINO",
-                  "value": {
-                    "code": "ERROR_NINO_INVALID"
-                  }
+                  ]
                 },
-                "BadRequest": {
-                  "description": "Bad Request",
-                  "value": {
-                    "code": "BAD_REQUEST"
+                "examples": {
+                  "InvalidNino": {
+                    "description": "Invalid NINO",
+                    "value": {
+                      "code": "ERROR_NINO_INVALID"
+                    }
+                  },
+                  "BadRequest": {
+                    "description": "Bad Request",
+                    "value": {
+                      "code": "BAD_REQUEST"
+                    }
                   }
                 }
               }
             }
-          }
-        },
-        "401": {
-          "description": "",
-          "headers": {},
-          "content": {
-            "application/json": {
-              "schema": {
-                "allOf": [
-                {
-                  "$ref": "#/components/schemas/errorResponse"
+          },
+          "401": {
+            "description": "",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                  {
+                    "$ref": "#/components/schemas/errorResponse"
+                  },
+                  {
+                    "example": {
+                      "code": "UNAUTHORIZED"
+                    }
+                  }
+                  ]
                 },
-                {
-                  "example": {
-                    "code": "UNAUTHORIZED"
-                  }
-                }
-                ]
-              },
-              "examples": {
-                "Unauth": {
-                  "description": "Unauthorized",
-                  "value": {
-                    "code": "UNAUTHORIZED"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "403":  {
-          "description": "",
-          "headers": {},
-          "content": {
-            "application/json": {
-              "schema": {
-                "allOf": [
-                {
-                  "$ref": "#/components/schemas/errorResponse"
-                },
-                {
-                  "example": {
-                    "code": "EXCLUSION_MANUAL_CORRESPONDENCE"
-                  }
-                }
-                ]
-              },
-              "examples": {
-                "ExcManCor": {
-                  "description": "Manual Correspondence exclusion, the customer cannot be served digitally and needs to contact HMRC",
-                  "value": {
-                    "code": "EXCLUSION_MANUAL_CORRESPONDENCE"
-                  }
-                },
-                "ExcDead": {
-                  "description": "Death recorded, the customer needs to contact the National Insurance Helpline",
-                  "value": {
-                    "code": "EXCLUSION_DEAD"
-                  }
-                },
-                "ExcCopePro": {
-                  "description": "Cope data has an open work item meaning that the customer cannot enter the service and must come back at a later date.",
-                  "value": {
-                    "code": "EXCLUSION_COPE_PROCESSING"
-                  }
-                },
-                "ExcCopeProFail": {
-                  "description": "Cope data has a closed work item against it meaning that the customer cannot enter the service and is advised to contact DWP.",
-                  "value": {
-                    "code": "EXCLUSION_COPE_PROCESSING_FAILED"
+                "examples": {
+                  "Unauth": {
+                    "description": "Unauthorized",
+                    "value": {
+                      "code": "UNAUTHORIZED"
+                    }
                   }
                 }
               }
             }
-          }
-        },
+          },
+          "403":  {
+            "description": "",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                  {
+                    "$ref": "#/components/schemas/errorResponse"
+                  },
+                  {
+                    "example": {
+                      "code": "EXCLUSION_MANUAL_CORRESPONDENCE"
+                    }
+                  }
+                  ]
+                },
+                "examples": {
+                  "ExcManCor": {
+                    "description": "Manual Correspondence exclusion, the customer cannot be served digitally and needs to contact HMRC",
+                    "value": {
+                      "code": "EXCLUSION_MANUAL_CORRESPONDENCE"
+                    }
+                  },
+                  "ExcDead": {
+                    "description": "Death recorded, the customer needs to contact the National Insurance Helpline",
+                    "value": {
+                      "code": "EXCLUSION_DEAD"
+                    }
+                  },
+                  "ExcCopePro": {
+                    "description": "Cope data has an open work item meaning that the customer cannot enter the service and must come back at a later date.",
+                    "value": {
+                      "code": "EXCLUSION_COPE_PROCESSING"
+                    }
+                  },
+                  "ExcCopeProFail": {
+                    "description": "Cope data has a closed work item against it meaning that the customer cannot enter the service and is advised to contact DWP.",
+                    "value": {
+                      "code": "EXCLUSION_COPE_PROCESSING_FAILED"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "",
             "headers": {},
@@ -1122,7 +1110,7 @@
       },
       "ExclusionReasons": {
         "title": "ExclusionReasons",
-        ""enum": [
+        "enum": [
           "IsleOfMan"
         ],
         "type": "string",
@@ -1130,7 +1118,7 @@
       },
       "ExclusionReasons1": {
         "title": "ExclusionReasons1",
-        ""enum": [
+        "enum": [
           "AmountDissonance"
         ],
         "type": "string",
@@ -1138,7 +1126,7 @@
       },
       "ExclusionReasons2": {
         "title": "ExclusionReasons2",
-        ""enum": [
+        "enum": [
           "PostStatePensionAge"
         ],
         "type": "string",
