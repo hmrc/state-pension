@@ -138,12 +138,12 @@ class DocumentationControllerSpec
 
     "return the correct conf for a given version and path" in {
       implicit val materializer = app.materializer
-      val expectedRaml: String = getResource("/public/api/conf/1.0/application.raml")
+      val expectedYaml: String = getResource("/public/api/conf/1.0/application.yaml")
 
       val documentationController = inject[DocumentationController]
-      val result = documentationController.conf("1.0", "/application.raml")(FakeRequest())
+      val result = documentationController.conf("1.0", "/application.yaml")(FakeRequest())
       status(result) shouldBe OK
-      contentAsString(result).trim shouldBe expectedRaml.trim
+      contentAsString(result).trim shouldBe expectedYaml.trim
     }
   }
 }
