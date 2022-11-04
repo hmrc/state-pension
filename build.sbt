@@ -33,7 +33,7 @@ scalacOptions ++= Seq(
 )
 
 lazy val plugins: Seq[Plugins] = Seq(
-  play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin
+  play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory
 )
 
 lazy val microservice = Project(appName, file("."))
