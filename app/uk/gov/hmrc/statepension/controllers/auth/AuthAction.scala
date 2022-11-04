@@ -35,8 +35,7 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector, val parser: Bod
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-    val matchNinoInUriPattern = "/ni/([^/]+)/?.*".r
-
+    val matchNinoInUriPattern = "[ni|cope]/([^/]+)/?.*".r
     val matches = matchNinoInUriPattern.findAllIn(request.uri)
 
     def check(nino: String): Future[Option[Status]] = {
