@@ -35,7 +35,9 @@ object AppDependencies {
   val test: Seq[ModuleID] = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-28" % "7.0.0",
     "org.mockito" % "mockito-core" % "4.7.0",
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.26.3"
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.26.3",
+    "org.pegdown" % "pegdown" % "1.6.0"
+
   ).map(_ % "test,it")
 
   private val silencerDependencies: Seq[ModuleID] = Seq(
