@@ -34,19 +34,19 @@ import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
-import uk.gov.hmrc.statepension.repositories.CopeRepository
+import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 
 import scala.concurrent.Future
 
 class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting {
 
   val nino: Nino = generateNino()
-  val mockCopeRepository: CopeRepository = mock[CopeRepository]
+  val mockCopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
   val appConfig: AppConfig = inject[AppConfig]
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .configure("cope.feature.enabled" -> true)
-    .overrides(bind[CopeRepository].toInstance(mockCopeRepository)).build()
+    .overrides(bind[CopeProcessingRepository].toInstance(mockCopeRepository)).build()
 
   val copeErrorHandling: CopeErrorHandling = inject[CopeErrorHandling]
 

@@ -22,20 +22,20 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.statepension.repositories.CopeRepository
+import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 
 import scala.concurrent.Future
 
 trait CopeRepositoryHelper extends StatePensionBaseSpec { self: GuiceOneAppPerSuite =>
 
-  val mockCopeRepository: CopeRepository = mock[CopeRepository]
+  val mockCopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
 
   when(mockCopeRepository.find(any())).thenReturn(Future.successful(None))
   when(mockCopeRepository.insert(any())).thenReturn(Future.successful(true))
   when(mockCopeRepository.update(any(), any(), any())).thenReturn(Future.successful(None))
 
   val fakeAppWithOverrides =  new GuiceApplicationBuilder().overrides(
-    bind[CopeRepository].to(mockCopeRepository)
+    bind[CopeProcessingRepository].to(mockCopeRepository)
   )
 
   override def fakeApplication(): Application = fakeAppWithOverrides.build()

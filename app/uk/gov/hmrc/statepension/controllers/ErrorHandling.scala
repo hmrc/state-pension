@@ -17,6 +17,7 @@
 package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
+
 import java.time.LocalDate
 import play.api.Logging
 import play.api.libs.json.Json
@@ -29,7 +30,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
-import uk.gov.hmrc.statepension.repositories.CopeRepository
+import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -43,7 +44,7 @@ trait ErrorHandling {
   def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result]
 }
 
-class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeRepository) extends BackendController(cc)
+class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeProcessingRepository, copeFailedCache: CopeFailedCache) extends BackendController(cc)
   with ErrorHandling with Logging {
 
   override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result] = {
@@ -56,8 +57,11 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
         Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
       case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino)
       case e@WithStatusCode(UNPROCESSABLE_ENTITY) if  e.message.contains("CLOSED_COPE_WORK_ITEM") =>
-        copeRepository.delete(HashedNino(nino)) map { _ =>
-          Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
+        copeFailedCache.insert(HashedNino(nino)) flatMap {
+          _ =>
+            copeRepository.delete(HashedNino(nino)) map { _ =>
+              Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
+            }
         }
       case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); Future.successful(BadGateway)
       case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); Future.successful(BadGateway)

@@ -34,7 +34,8 @@ class CopeController @Inject()(
 
   def get(nino: Nino): Action[AnyContent] = authAction.async {
     copeService.getCopeCase(nino) map {
-      case Some(cope) => Forbidden(Json.toJson(cope))
+      case Some(Right(cope)) => Forbidden(Json.toJson(cope))
+      case Some(Left(failed)) => Forbidden(Json.toJson(failed))
       case _ => NotFound("User is not a cope case")
     }
   }
