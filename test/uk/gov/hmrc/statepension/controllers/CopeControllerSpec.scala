@@ -27,10 +27,9 @@ import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING_FAILED, ExclusionCopeProcessingFailed}
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.CopeController
-import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.services.CopeService
 import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
@@ -55,9 +54,9 @@ class CopeControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite w
     "return Forbidden and Json payload" when {
       "Right cope processing is returned from copeService" in {
         val today = LocalDate.now()
-        val copeProcessing = CopeRecord("nino", today, today)
+        val copeProcessing = ErrorResponseCopeProcessing(CODE_COPE_PROCESSING, today, Some(today))
 
-        when(mockCopeService.getCopeCase(any())).thenReturn(Future.successful(Some(Right(copeProcessing))))
+        when(mockCopeService.getCopeCase(any())).thenReturn(Future.successful(Some(copeProcessing)))
 
         val result = controller.get(nino)(FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json"))
 
@@ -66,14 +65,14 @@ class CopeControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite w
       }
 
       "Left cope failed is returned from copeService" in {
-        val copeFailed = ExclusionCopeProcessingFailed
+        val copeFailed = ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED)
 
-        when(mockCopeService.getCopeCase(any())).thenReturn(Future.successful(Some(Left(copeFailed))))
+        when(mockCopeService.getCopeCase(any())).thenReturn(Future.successful(Some(copeFailed)))
 
         val result = controller.get(nino)(FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json"))
 
         status(result) shouldBe FORBIDDEN
-        contentAsJson(result) shouldBe Json.toJson(ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED))
+        contentAsJson(result) shouldBe Json.toJson(copeFailed)
       }
     }
     "Return NotFound with message" when {

@@ -22,6 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
+import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
 import uk.gov.hmrc.statepension.services.CopeService
 
 import scala.concurrent.ExecutionContext
@@ -34,8 +35,8 @@ class CopeController @Inject()(
 
   def get(nino: Nino): Action[AnyContent] = authAction.async {
     copeService.getCopeCase(nino) map {
-      case Some(Right(cope)) => Forbidden(Json.toJson(cope))
-      case Some(Left(failed)) => Forbidden(Json.toJson(failed))
+      case Some(copeprocessing: ErrorResponseCopeProcessing) => Forbidden(Json.toJson(copeprocessing))
+      case Some(copeFailed: ErrorResponseCopeFailed) => Forbidden(Json.toJson(copeFailed))
       case _ => NotFound("User is not a cope case")
     }
   }

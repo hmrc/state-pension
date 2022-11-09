@@ -22,7 +22,8 @@ import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessingFailed
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
+import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
 import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec}
@@ -55,7 +56,7 @@ class CopeServiceSpec extends StatePensionBaseSpec with NinoGenerator with Eithe
 
       val result = await(sut.getCopeCase(nino))
 
-      result shouldBe Some(Right(CopeRecord("Nino", today, today)))
+      result shouldBe Some(ErrorResponseCopeProcessing(CODE_COPE_PROCESSING, today, None))
     }
 
     "return a Left CopeFailed when a record is found in CopeFailedCache" in {
@@ -64,7 +65,7 @@ class CopeServiceSpec extends StatePensionBaseSpec with NinoGenerator with Eithe
 
       val result = await(sut.getCopeCase(nino))
 
-      result shouldBe Some(Left(ExclusionCopeProcessingFailed))
+      result shouldBe Some(ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED))
     }
 
     "return None when both cache and repository return None" in {

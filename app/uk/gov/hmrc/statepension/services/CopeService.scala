@@ -18,9 +18,8 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessingFailed
-import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, HashedNino}
-import uk.gov.hmrc.statepension.models.CopeRecord
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
+import uk.gov.hmrc.statepension.controllers.{ErrorResponseCope, ErrorResponseCopeFailed, ErrorResponseCopeProcessing, HashedNino}
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,14 +27,21 @@ import scala.concurrent.{ExecutionContext, Future}
 class CopeService @Inject()(copeRepository: CopeProcessingRepository, copeFailedCache: CopeFailedCache)(implicit ec: ExecutionContext) {
 
 
-  def getCopeCase(nino: Nino): Future[Option[Either[ErrorResponseCopeFailed, CopeRecord]]] = {
+  def getCopeCase(nino: Nino): Future[Option[ErrorResponseCope]] = {
     for {
       copeProcessing <- copeRepository.find(HashedNino(nino))
       copeFailed <- copeFailedCache.get(HashedNino(nino))
     } yield {
       (copeProcessing, copeFailed) match {
-        case (Some(processing), None) => Some(Right(processing))
-        case (None, Some(_)) => Some(Left(ExclusionCopeProcessingFailed))
+        case (Some(processing), None) =>
+          Some(
+            ErrorResponseCopeProcessing(
+              CODE_COPE_PROCESSING,
+              processing.copeAvailableDate,
+              processing.previousCopeAvailableDate
+            )
+          )
+        case (None, Some(_)) => Some(ErrorResponseCopeFailed(CODE_COPE_PROCESSING_FAILED))
         case _ => None
       }
     }
