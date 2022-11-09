@@ -35,7 +35,7 @@ import uk.gov.hmrc.statepension.models.CopeRecord
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 
-class CopeRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext, appConfig: AppConfig)
+class CopeProcessingRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext, appConfig: AppConfig)
   extends PlayMongoRepository[CopeRecord](
     collectionName = "cope",
     mongoComponent = mongo,

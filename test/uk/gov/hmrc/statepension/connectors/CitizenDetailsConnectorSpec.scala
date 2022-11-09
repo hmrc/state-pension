@@ -28,7 +28,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.LOCKED
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.domain.nps.APIType
-import uk.gov.hmrc.statepension.repositories.CopeRepository
+import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
@@ -42,7 +42,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
   val context = mock[Timer.Context]
   val url = s"/citizen-details/$nino/designatory-details/"
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
-  val mockCopeRepository: CopeRepository = mock[CopeRepository]
+  val mockCopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -53,7 +53,7 @@ class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
     .configure("microservice.services.citizen-details.port" -> server.port())
     .overrides(
       bind[ApplicationMetrics].toInstance(mockMetrics),
-      bind[CopeRepository].toInstance(mockCopeRepository)
+      bind[CopeProcessingRepository].toInstance(mockCopeRepository)
     ).build()
 
   lazy val citizenDetailsConnector: CitizenDetailsConnector = app.injector.instanceOf[CitizenDetailsConnector]
