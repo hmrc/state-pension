@@ -25,7 +25,7 @@ paths:
             example: QQ123456A
       responses:
         '200':
-          description: ''
+          description: 'OK'
           headers: {}
           content:
             application/json:
@@ -312,7 +312,7 @@ paths:
             example: QQ123456A
       responses:
         '200':
-          description: ''
+          description: 'OK'
           headers: {}
           content:
             application/json:
