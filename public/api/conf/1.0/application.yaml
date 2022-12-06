@@ -299,7 +299,7 @@ paths:
       tags:
         - state-pension
       summary: Get State Pension Dashboard data
-      description: Returns a State Pension Dashboard data. ** DOCUMENTATION ONLY **
+      description: Returns a State Pension Dashboard data. DOCUMENTATION ONLY
       operationId: GetStatePensionDashboarddata
       parameters:
         - name: nino
