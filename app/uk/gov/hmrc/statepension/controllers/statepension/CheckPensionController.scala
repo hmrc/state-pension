@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorHandling
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
+import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.CheckPensionService
 
 import scala.concurrent.ExecutionContext
@@ -35,9 +36,10 @@ class CheckPensionController @Inject()(
                                         override val controllerComponents: ControllerComponents,
                                         val parser: BodyParsers.Default,
                                         val executionContext: ExecutionContext,
-                                        errorHandling: ErrorHandling
+                                        errorHandling: ErrorHandling,
+                                        copeProcessingRepository: CopeProcessingRepository
                                       )
-  extends StatePensionController(controllerComponents, errorHandling) {
+  extends StatePensionController(controllerComponents, errorHandling, copeProcessingRepository) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url
 }

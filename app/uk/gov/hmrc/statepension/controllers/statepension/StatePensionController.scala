@@ -25,15 +25,20 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.AuthAction
-import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalSupport, Links}
+import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalSupport, HashedNino, Links}
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
+import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.StatePensionService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-abstract class StatePensionController @Inject()(controllerComponents: ControllerComponents, errorHandling: ErrorHandling)
+abstract class StatePensionController @Inject()(
+                                                 controllerComponents: ControllerComponents,
+                                                 errorHandling: ErrorHandling,
+                                                 copeProcessingRepository: CopeProcessingRepository
+                                               )
   extends BackendController(controllerComponents)
     with HeaderValidator
     with HalSupport
@@ -75,6 +80,7 @@ abstract class StatePensionController @Inject()(controllerComponents: Controller
             statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount,
             statePension.statePensionAgeUnderConsideration))
 
+          copeProcessingRepository.delete(HashedNino(nino))
           Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
       }, nino)
   }

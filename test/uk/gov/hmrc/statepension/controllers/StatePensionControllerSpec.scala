@@ -50,7 +50,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
   val fakeErrorHandling: ErrorHandling = inject[ErrorHandling]
 
   def testStatePensionController(spService: StatePensionService): StatePensionController =
-    new StatePensionController(controllerComponents, fakeErrorHandling) {
+    new StatePensionController(controllerComponents, fakeErrorHandling, mockCopeRepository) {
       override lazy val context: String = "test"
       override val appConfig: AppConfig = _appContext
       override val statePensionService: StatePensionService = spService
@@ -92,6 +92,11 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     None,
     false
   )
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockCopeRepository)
+  }
 
   "get" should {
     "return status code 406 when the headers are invalid" in {
@@ -139,6 +144,8 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe false
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
+
+      verify(mockCopeRepository, times(1)).delete(HashedNino(nino))
     }
 
     "return 200 with a Response for RRE" in {
