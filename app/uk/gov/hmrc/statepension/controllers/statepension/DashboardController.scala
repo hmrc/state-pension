@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorHandling
 import uk.gov.hmrc.statepension.controllers.auth.PrivilegedAuthAction
+import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.DashboardService
 
 import scala.concurrent.ExecutionContext
@@ -34,10 +35,11 @@ class DashboardController @Inject()(
                                      override val customAuditConnector: AuditConnector,
                                      override val controllerComponents: ControllerComponents,
                                      errorHandling: ErrorHandling,
+                                     copeProcessingRepository: CopeProcessingRepository,
                                      val parser: BodyParsers.Default,
                                      val executionContext: ExecutionContext
                                    )
-  extends StatePensionController(controllerComponents, errorHandling) {
+  extends StatePensionController(controllerComponents, errorHandling, copeProcessingRepository) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.DashboardController.get(nino).url
 }
