@@ -23,10 +23,8 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "bootstrap-backend-play-28" % "7.0.0",
     "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
-    "uk.gov.hmrc" %% "play-hmrc-api" % "7.0.0-play-28",
-    "uk.gov.hmrc" %% "play-hal" % "3.1.0-play-28",
-    "uk.gov.hmrc" %% "time" % "3.25.0",
-    "com.jsuereth" %% "scala-arm" % "2.0",
+    "uk.gov.hmrc" %% "play-hmrc-api" % "7.1.0-play-28",
+    "uk.gov.hmrc" %% "play-hal" % "3.2.0-play-28",
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.71.0",
     "com.typesafe.play" %% "play-json" % "2.9.2",
     "commons-codec" % "commons-codec" % "1.15"

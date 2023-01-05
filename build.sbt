@@ -6,7 +6,7 @@ import scoverage.ScoverageKeys
 
 val appName = "state-pension"
 
-scalaVersion := "2.12.13"
+scalaVersion := "2.13.8"
 
 val suppressedImports = Seq("-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlFeatureImports._",
   "-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlHelperImports._",
