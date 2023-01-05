@@ -32,6 +32,7 @@ import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+import scala.collection.immutable.Seq
 
 abstract class NpsConnector @Inject()(appConfig: AppConfig)(
   implicit ec: ExecutionContext) extends Logging {
