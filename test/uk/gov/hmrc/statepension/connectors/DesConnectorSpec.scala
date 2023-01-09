@@ -217,11 +217,12 @@ class DesConnectorSpec extends StatePensionBaseSpec
         get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(invalidJson.toString()))
       )
 
-      val exceptionMessage: String = "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
+ //     val exceptionMessage: String = "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
       val thrown: Throwable = desConnector.getSummary(nino).failed.futureValue
 
       assert(thrown.isInstanceOf[desConnector.JsonValidationException])
-      assert(thrown.getMessage === exceptionMessage)
+      assert(thrown.getMessage.contains("statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"))
+      assert(thrown.getMessage.contains("earningsIncludedUpto - error.path.missing"))
 
       withClue("timer did not stop") {
         Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()

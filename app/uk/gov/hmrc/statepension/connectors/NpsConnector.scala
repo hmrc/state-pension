@@ -84,7 +84,7 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(
         case Right(httpResponse) =>
           Try(httpResponse.json.validate[A]).flatMap { jsResult =>
             jsResult.fold(
-              errs => Failure(new JsonValidationException(formatJsonErrors(errs))),
+              errs => Failure(new JsonValidationException(formatJsonErrors(errs.asInstanceOf[scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]]))),
               valid => Success(valid)
             )
           }
@@ -117,8 +117,8 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(
     }
   }
 
-  private def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String = {
-    errors.map(p => p._1 + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
+  private def formatJsonErrors(errors: scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]): String = {
+    errors.map(p => p._1.toString() + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
   }
 
   class JsonValidationException(message: String) extends Exception(message)

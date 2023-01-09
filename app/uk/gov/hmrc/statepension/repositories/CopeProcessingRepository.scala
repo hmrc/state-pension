@@ -61,7 +61,7 @@ class CopeProcessingRepository @Inject()(mongo: MongoComponent)(implicit ec: Exe
 
   def insert(copeRecord: CopeRecord): Future[Boolean] =
     {for {
-      insertOneResult <- collection.insertOne(copeRecord).toFuture
+      insertOneResult <- collection.insertOne(copeRecord).toFuture()
     } yield {
       insertOneResult.wasAcknowledged
     }} recover {
@@ -70,17 +70,17 @@ class CopeProcessingRepository @Inject()(mongo: MongoComponent)(implicit ec: Exe
       case e: Exception => logger.error(s"Exception when saving ErrorResponseCopeProcessing: $e", e); false
     }
 
-  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash)).headOption()
+  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash())).headOption()
 
   def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate, previousCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
     collection.findOneAndUpdate(
-      equal("nino", hashedNino.generateHash),
+      equal("nino", hashedNino.generateHash()),
       Seq(
         set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJavatimeFormats.localDateWrites)),
         set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJavatimeFormats.localDateWrites))
       )
     ).toFutureOption()
 
-  def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(equal("nino", hashedNino.generateHash)).toFuture
+  def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(equal("nino", hashedNino.generateHash())).toFuture()
 
 }

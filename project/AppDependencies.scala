@@ -26,7 +26,7 @@ object AppDependencies {
     "uk.gov.hmrc" %% "play-hmrc-api" % "7.1.0-play-28",
     "uk.gov.hmrc" %% "play-hal" % "3.2.0-play-28",
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.71.0",
-    "com.typesafe.play" %% "play-json" % "2.9.2",
+//    "com.typesafe.play" %% "play-json" % "2.9.2",
     "commons-codec" % "commons-codec" % "1.15"
   )
 

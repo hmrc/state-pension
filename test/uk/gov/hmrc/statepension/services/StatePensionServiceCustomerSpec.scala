@@ -66,8 +66,9 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
     dateOfBirth = LocalDate.of(1956, 7, 7)
   )
 
-  override def beforeEach: Unit = {
-    Mockito.reset(mockNpsConnector, mockMetrics)
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockNpsConnector)
+    Mockito.reset(mockMetrics)
 
     when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(NIRecord(
@@ -104,35 +105,35 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "return dead exclusion" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.exclusionReasons shouldBe List(Exclusion.Dead)
       }
 
       "have a pension age of 67" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 67
       }
 
       "have a pension date of 2050-7-7" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2050, 7, 7)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        service().getStatement(generateNino()).futureValue.left.get
+        service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.Dead)
@@ -171,35 +172,35 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
           summary
         ))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.exclusionReasons shouldBe List(Exclusion.PostStatePensionAge)
       }
 
       "have a pension age of 61" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2016-1-1" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2016, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        service().getStatement(generateNino()).futureValue.left.get
+        service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.PostStatePensionAge)
@@ -229,19 +230,10 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
           startingAmount2016 = 35.58,
           protectedPayment2016 = 0,
           AmountA2016(
-            basicStatePension = 31.81,
-            pre97AP = 0,
-            post97AP = 0,
-            post02AP = 0,
-            pre88GMP = 0,
-            post88GMP = 0,
-            pre88COD = 0,
-            post88COD = 0,
-            graduatedRetirementBenefit = 0
+            basicStatePension = 31.81
           ),
           AmountB2016(
-            mainComponent = 35.58,
-            rebateDerivedAmount = 0
+            mainComponent = 35.58
           )
         ),
         manualCorrespondenceIndicator = None
@@ -257,7 +249,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "statePension have RRE flag as true" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary1))
 
-        lazy val statePension: StatePension = service().getStatement(generateNino()).futureValue.right.get
+        lazy val statePension: StatePension = service().getStatement(generateNino()).futureValue.toOption.get
         statePension.reducedRateElection shouldBe true
       }
 
@@ -265,7 +257,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
           summary1
         ))
-        lazy val statePension: StatePension = service().getStatement(generateNino()).futureValue.right.get
+        lazy val statePension: StatePension = service().getStatement(generateNino()).futureValue.toOption.get
         statePension.reducedRateElectionCurrentWeeklyAmount shouldBe Some(32.61)
       }
 
@@ -276,7 +268,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
           NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
         ))
 
-        service().getStatement(generateNino()).futureValue.right.get
+        service().getStatement(generateNino()).futureValue.toOption.get
 
         verify(mockMetrics, times(1)).summary(
           ArgumentMatchers.eq[BigDecimal](155.65),
@@ -320,35 +312,35 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "return amount dissonance" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
       }
 
       "have a pension age of 61" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2018-1-1" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        service().getStatement(generateNino()).futureValue.left.get
+        service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.AmountDissonance)
@@ -370,7 +362,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.exclusionReasons shouldBe List(Exclusion.IsleOfMan)
       }
 
@@ -378,7 +370,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
@@ -386,7 +378,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
@@ -394,7 +386,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
@@ -402,7 +394,7 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        service().getStatement(generateNino()).futureValue.left.get
+        service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.IsleOfMan)
@@ -423,21 +415,21 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
       "return mci exclusion" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
       }
 
       "have a pension age of 61" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2018-1-1" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
@@ -445,14 +437,14 @@ class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List()))
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.get
+        lazy val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
 
-        service(true).getStatement(generateNino()).futureValue.left.get
+        service(true).getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
           ArgumentMatchers.eq(Exclusion.ManualCorrespondenceIndicator)

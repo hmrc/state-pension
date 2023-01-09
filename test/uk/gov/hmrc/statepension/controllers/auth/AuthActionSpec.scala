@@ -38,6 +38,7 @@ import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class AuthActionSpec
   extends StatePensionBaseSpec

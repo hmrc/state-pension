@@ -57,8 +57,9 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
       Future.successful(false)
   }
 
-  override def beforeEach: Unit = {
-    Mockito.reset(mockNpsConnector, mockMetrics)
+  override def beforeEach(): Unit = {
+    Mockito.reset(mockNpsConnector)
+    Mockito.reset(mockMetrics)
 
     when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
       .thenReturn(Future.successful(List()))
@@ -91,15 +92,10 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
               pre97AP = 17.79,
               post97AP = 6.03,
               post02AP = 15.4,
-              pre88GMP = 0,
-              post88GMP = 0,
-              pre88COD = 0,
-              post88COD = 0,
               graduatedRetirementBenefit = 2.66
             ),
             AmountB2016(
-              mainComponent = 155.65,
-              rebateDerivedAmount = 0
+              mainComponent = 155.65
             )
           ),
           manualCorrespondenceIndicator = None
@@ -112,7 +108,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).futureValue.right.get
+          service.getStatement(generateNino()).futureValue.toOption.get
 
           verify(mockMetrics, Mockito.atLeastOnce()).summary(
             ArgumentMatchers.eq[BigDecimal](161.18),
@@ -141,7 +137,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          //val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          //val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           verify(mockMetrics, never).exclusion(ArgumentMatchers.any())
         }
@@ -153,7 +149,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.earningsIncludedUpTo shouldBe LocalDate.of(2016, 4, 5)
         }
@@ -165,7 +161,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.numberOfQualifyingYears shouldBe 36
         }
@@ -177,7 +173,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.pensionDate shouldBe LocalDate.of(2019, 9, 6)
         }
@@ -189,7 +185,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
@@ -201,7 +197,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
         }
@@ -212,7 +208,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.oldRules.basicStatePension shouldBe 119.3
         }
@@ -224,7 +220,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.newRules.grossStatePension shouldBe 155.65
         }
@@ -236,7 +232,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
@@ -248,7 +244,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.reducedRateElectionCurrentWeeklyAmount shouldBe None
         }
@@ -260,7 +256,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.reducedRateElection shouldBe false
         }
@@ -272,7 +268,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.statePensionAgeUnderConsideration shouldBe false
         }
@@ -284,7 +280,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.finalRelevantYear shouldBe "2018-19"
         }
@@ -296,7 +292,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).futureValue.right.get.pensionSharingOrder shouldBe true
+          service.getStatement(generateNino()).futureValue.toOption.get.pensionSharingOrder shouldBe true
         }
 
         "when there is no pensionSharingOrder return false" in {
@@ -306,7 +302,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).futureValue.right.get.pensionSharingOrder shouldBe false
+          service.getStatement(generateNino()).futureValue.toOption.get.pensionSharingOrder shouldBe false
         }
 
         "return pension age of 65" in {
@@ -316,7 +312,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.pensionAge shouldBe 65
         }
@@ -328,7 +324,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.currentFullWeeklyPensionAmount shouldBe 155.65
         }
@@ -342,7 +338,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).futureValue.right.get.amounts.protectedPayment shouldBe false
+          service.getStatement(generateNino()).futureValue.toOption.get.amounts.protectedPayment shouldBe false
         }
 
         "when there is a protected payment of 0 return false" in {
@@ -355,7 +351,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-          service.getStatement(generateNino()).futureValue.right.get.amounts.protectedPayment shouldBe true
+          service.getStatement(generateNino()).futureValue.toOption.get.amounts.protectedPayment shouldBe true
         }
 
         "when there is a rebate derived amount of 12.34 it" should {
@@ -370,7 +366,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.cope.weeklyAmount shouldBe 12.34
           }
@@ -385,7 +381,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.cope.monthlyAmount shouldBe 53.66
           }
@@ -400,7 +396,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.cope.annualAmount shouldBe 643.88
           }
@@ -415,7 +411,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.starting.weeklyAmount shouldBe 161.18
           }
@@ -430,7 +426,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.starting.monthlyAmount shouldBe 700.85
           }
@@ -445,7 +441,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.starting.annualAmount shouldBe 8410.14
           }
@@ -463,7 +459,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.cope.weeklyAmount shouldBe 0
           }
@@ -478,7 +474,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.cope.monthlyAmount shouldBe 0
           }
@@ -493,7 +489,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.cope.annualAmount shouldBe 0
           }
@@ -507,28 +503,15 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
                 protectedPayment2016 = 0,
-                AmountA2016(
-                  basicStatePension = 0,
-                  pre97AP = 0,
-                  post97AP = 0,
-                  post02AP = 0,
-                  pre88GMP = 0,
-                  post88GMP = 0,
-                  pre88COD = 0,
-                  post88COD = 0,
-                  graduatedRetirementBenefit = 0
-                ),
-                AmountB2016(
-                  mainComponent = 0,
-                  rebateDerivedAmount = 0
-                )
+                AmountA2016(),
+                AmountB2016()
               ))
             ))
 
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.starting.weeklyAmount shouldBe 0
           }
@@ -539,28 +522,15 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
                 protectedPayment2016 = 0,
-                AmountA2016(
-                  basicStatePension = 0,
-                  pre97AP = 0,
-                  post97AP = 0,
-                  post02AP = 0,
-                  pre88GMP = 0,
-                  post88GMP = 0,
-                  pre88COD = 0,
-                  post88COD = 0,
-                  graduatedRetirementBenefit = 0
-                ),
-                AmountB2016(
-                  mainComponent = 0,
-                  rebateDerivedAmount = 0
-                )
+                AmountA2016(),
+                AmountB2016()
               ))
             ))
 
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.starting.monthlyAmount shouldBe 0
           }
@@ -571,28 +541,15 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
                 pensionEntitlement = 0,
                 startingAmount2016 = 0,
                 protectedPayment2016 = 0,
-                AmountA2016(
-                  basicStatePension = 0,
-                  pre97AP = 0,
-                  post97AP = 0,
-                  post02AP = 0,
-                  pre88GMP = 0,
-                  post88GMP = 0,
-                  pre88COD = 0,
-                  post88COD = 0,
-                  graduatedRetirementBenefit = 0
-                ),
-                AmountB2016(
-                  mainComponent = 0,
-                  rebateDerivedAmount = 0
-                )
+                AmountA2016(),
+                AmountB2016()
               ))
             ))
 
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.starting.annualAmount shouldBe 0
           }
@@ -609,7 +566,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.current.weeklyAmount shouldBe 161.18
           }
@@ -623,7 +580,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.current.monthlyAmount shouldBe 700.85
           }
@@ -637,7 +594,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.current.annualAmount shouldBe 8410.14
           }
@@ -653,7 +610,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.forecast.weeklyAmount shouldBe 161.18
           }
@@ -667,7 +624,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
             statement.amounts.forecast.monthlyAmount shouldBe 700.85
           }
 
@@ -680,7 +637,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.forecast.annualAmount shouldBe 8410.14
           }
@@ -694,7 +651,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.forecast.yearsToWork.get shouldBe 0
           }
@@ -710,7 +667,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.current.weeklyAmount shouldBe 0
           }
@@ -723,7 +680,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.current.monthlyAmount shouldBe 0
           }
@@ -736,7 +693,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.right.get
+            val statement = service.getStatement(generateNino()).futureValue.toOption.get
 
             statement.amounts.current.annualAmount shouldBe 0
           }
@@ -763,15 +720,10 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
               pre97AP = 17.79,
               post97AP = 6.03,
               post02AP = 15.4,
-              pre88GMP = 0,
-              post88GMP = 0,
-              pre88COD = 0,
-              post88COD = 0,
               graduatedRetirementBenefit = 2.66
             ),
             AmountB2016(
               mainComponent = 155.65,
-              rebateDerivedAmount = 0
             )
           ),
           manualCorrespondenceIndicator = None
@@ -786,12 +738,12 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
               .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
 
-            val statement = service.getStatement(generateNino()).futureValue.left
+            val statement = service.getStatement(generateNino()).futureValue.swap
 
-            statement.get.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
-            statement.get.pensionAge shouldBe 65
-            statement.get.pensionDate.toString shouldBe "2019-09-06"
-            statement.get.statePensionAgeUnderConsideration.toString shouldBe "false"
+            statement.toOption.get.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
+            statement.toOption.get.pensionAge shouldBe 65
+            statement.toOption.get.pensionDate.toString shouldBe "2019-09-06"
+            statement.toOption.get.statePensionAgeUnderConsideration.toString shouldBe "false"
           }
         }
       }
@@ -814,15 +766,10 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
-            pre88GMP = 0,
-            post88GMP = 0,
-            pre88COD = 0,
-            post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
           AmountB2016(
             mainComponent = 88.94,
-            rebateDerivedAmount = 0
           )
         ),
         manualCorrespondenceIndicator = None
@@ -838,7 +785,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.oldRules.additionalStatePension shouldBe 39.22
         }
@@ -852,7 +799,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
         }
@@ -866,7 +813,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.oldRules.basicStatePension shouldBe 79.53
         }
@@ -882,7 +829,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.newRules.grossStatePension shouldBe 88.94
         }
@@ -896,7 +843,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
         }
@@ -913,7 +860,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.forecast.weeklyAmount shouldBe 134.75
         }
@@ -927,7 +874,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.forecast.monthlyAmount shouldBe 585.92
         }
@@ -941,7 +888,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.forecast.annualAmount shouldBe 7031.06
         }
@@ -955,7 +902,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             NIRecord(qualifyingYears = 20, List())
           ))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.forecast.yearsToWork.get shouldBe 3
         }
@@ -966,7 +913,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
         when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
-        service.getStatement(generateNino()).futureValue.right.get
+        service.getStatement(generateNino()).futureValue.toOption.get
 
         verify(mockMetrics, times(1)).summary(
           ArgumentMatchers.eq[BigDecimal](134.75),
@@ -1010,10 +957,6 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
-            pre88GMP = 0,
-            post88GMP = 0,
-            pre88COD = 0,
-            post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
           AmountB2016(
@@ -1033,7 +976,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.newRules.grossStatePension shouldBe 84.50
         }
@@ -1045,7 +988,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(NIRecord(qualifyingYears = 20, List())))
 
-          val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.newRules.rebateDerivedAmount shouldBe 18.13
         }
@@ -1070,15 +1013,10 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
             pre97AP = 17.79,
             post97AP = 6.03,
             post02AP = 15.4,
-            pre88GMP = 0,
-            post88GMP = 0,
-            pre88COD = 0,
-            post88COD = 0,
             graduatedRetirementBenefit = 2.66
           ),
           AmountB2016(
-            mainComponent = 88.94,
-            rebateDerivedAmount = 0
+            mainComponent = 88.94
           )
         ),
         manualCorrespondenceIndicator = None
@@ -1090,7 +1028,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.maximum.weeklyAmount shouldBe 142.71
         }
@@ -1099,7 +1037,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.maximum.monthlyAmount shouldBe 620.53
         }
@@ -1108,7 +1046,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.maximum.annualAmount shouldBe 7446.40
         }
@@ -1117,7 +1055,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.maximum.gapsToFill shouldBe Some(2)
         }
@@ -1126,7 +1064,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
             .thenReturn(Future.successful(regularStatement))
 
-          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+          lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
           statement.amounts.maximum.yearsToWork shouldBe Some(3)
         }
@@ -1180,7 +1118,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
         statement.amounts.oldRules.additionalStatePension shouldBe 39.22
       }
@@ -1189,7 +1127,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
         statement.amounts.oldRules.graduatedRetirementBenefit shouldBe 2.66
       }
@@ -1198,7 +1136,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
           .thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
         statement.amounts.oldRules.basicStatePension shouldBe 79.53
       }
@@ -1206,7 +1144,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
       "statePension have grossStatePension as 88.94" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
         statement.amounts.newRules.grossStatePension shouldBe 88.94
       }
@@ -1214,7 +1152,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
       "statePension have rebateDerivedAmount as 0.00" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
         statement.amounts.newRules.rebateDerivedAmount shouldBe 0.00
       }
@@ -1222,7 +1160,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
       "log a summary metric" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
 
-        service.getStatement(generateNino()).futureValue.right.get
+        service.getStatement(generateNino()).futureValue.toOption.get
 
         verify(mockMetrics, times(1)).summary(
           ArgumentMatchers.eq[BigDecimal](134.75),
@@ -1265,18 +1203,10 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
           protectedPayment2016 = 0,
           AmountA2016(
             basicStatePension = 35.79,
-            pre97AP = 0,
-            post97AP = 0,
-            post02AP = 4.74,
-            pre88GMP = 0,
-            post88GMP = 0,
-            pre88COD = 0,
-            post88COD = 0,
-            graduatedRetirementBenefit = 0
+            post02AP = 4.74
           ),
           AmountB2016(
-            mainComponent = 40.02,
-            rebateDerivedAmount = 0
+            mainComponent = 40.02
           )
         ),
         manualCorrespondenceIndicator = None
@@ -1286,7 +1216,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(regularStatement))
         when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(NIRecord(qualifyingYears = 9, List())))
 
-        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.right.get
+        lazy val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
         statement.amounts.current.weeklyAmount shouldBe 0
       }
     }
