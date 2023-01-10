@@ -104,7 +104,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
         NIRecord(qualifyingYears = 36, List())
       ))
 
-      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
@@ -154,7 +154,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
         NIRecord(qualifyingYears = 36, List())
       ))
 
-      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
@@ -224,7 +224,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
         manualCorrespondenceIndicator = None
       )
 
-      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
 
@@ -278,7 +278,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
       "statePension have statePensionAgeUnderConsideration flag as true" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
@@ -330,7 +330,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.right.get
+      lazy val statePension: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
       "statePension have statePensionAgeUnderConsideration flag as false" in {
         when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))

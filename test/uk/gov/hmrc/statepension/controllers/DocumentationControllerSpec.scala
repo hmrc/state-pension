@@ -23,7 +23,6 @@ import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers.{contentAsJson, contentAsString, stubControllerComponents, _}
 import play.api.test.{FakeRequest, Injecting}
-import resource._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
@@ -32,6 +31,7 @@ import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 import scala.io.Source
+import scala.util.Using
 
 class DocumentationControllerSpec
   extends StatePensionBaseSpec
@@ -132,8 +132,7 @@ class DocumentationControllerSpec
   "conf" should {
 
     def getResource(path: String): String = {
-      managed(Source.fromInputStream(getClass.getResourceAsStream(path)))
-        .acquireAndGet(_.getLines().mkString("\n"))
+      Using(Source.fromInputStream(getClass.getResourceAsStream(path))) { _.getLines().mkString("\n") }.get
     }
 
     "return the correct conf for a given version and path" in {

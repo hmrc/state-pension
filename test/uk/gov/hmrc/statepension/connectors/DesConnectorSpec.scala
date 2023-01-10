@@ -68,7 +68,7 @@ class DesConnectorSpec extends StatePensionBaseSpec
     Mockito.reset(mockMetrics)
   }
 
-  lazy val desConnector = app.injector.instanceOf[DesConnector]
+  lazy val desConnector: DesConnector = app.injector.instanceOf[DesConnector]
 
   "getSummary" should {
 
@@ -135,7 +135,7 @@ class DesConnectorSpec extends StatePensionBaseSpec
         startingAmount2016 = 161.18,
         protectedPayment2016 = 5.53,
         amountA2016 = AmountA2016(119.3,17.79,6.03,15.4,0,0,0,0,2.66),
-        amountB2016 = AmountB2016(155.65,0))
+        amountB2016 = AmountB2016(155.65))
 
       val expectedSummary =  Summary(
         earningsIncludedUpTo = LocalDate.of(2016, 4,5),
@@ -217,11 +217,11 @@ class DesConnectorSpec extends StatePensionBaseSpec
         get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(invalidJson.toString()))
       )
 
-      val exceptionMessage: String = "/earningsIncludedUpto - error.path.missing | /statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"
       val thrown: Throwable = desConnector.getSummary(nino).failed.futureValue
 
       assert(thrown.isInstanceOf[desConnector.JsonValidationException])
-      assert(thrown.getMessage === exceptionMessage)
+      assert(thrown.getMessage.contains("statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"))
+      assert(thrown.getMessage.contains("earningsIncludedUpto - error.path.missing"))
 
       withClue("timer did not stop") {
         Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
