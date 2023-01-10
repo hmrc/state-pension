@@ -79,8 +79,7 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
           .withHeaders(defaultHeaders:_*)
         val result = route(app, request)
 
-        val r = result.map(statusResult)
-        r shouldBe Some(statusCode)
+        result.map(statusResult) shouldBe Some(statusCode)
       }
     }
   }
