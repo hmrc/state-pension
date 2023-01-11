@@ -38,8 +38,10 @@ class CheckPensionController @Inject()(
                                         val executionContext: ExecutionContext,
                                         errorHandling: ErrorHandling,
                                         copeProcessingRepository: CopeProcessingRepository
-                                      )
+                                      )(override implicit val ec: ExecutionContext)
   extends StatePensionController(controllerComponents, errorHandling, copeProcessingRepository) {
-  override def endpointUrl(nino: Nino): String =
+//  override implicit val ec: ExecutionContext = controllerComponents.executionContext
+  override def endpointUrl(nino: Nino): String = {
     uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url
+  }
 }

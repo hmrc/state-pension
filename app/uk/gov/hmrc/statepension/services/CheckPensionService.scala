@@ -35,5 +35,5 @@ class CheckPensionService @Inject()(
                                      override val executionContext: ExecutionContext
                                    ) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
-    citizenDetailsService.checkManualCorrespondenceIndicator(nino)
+    citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, executionContext)
 }

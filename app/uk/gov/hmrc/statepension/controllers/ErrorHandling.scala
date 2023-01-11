@@ -32,8 +32,7 @@ import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[CopeErrorHandling])
 trait ErrorHandling {
@@ -41,13 +40,13 @@ trait ErrorHandling {
 
   val app: String = "State-Pension"
 
-  def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result]
+  def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result]
 }
 
 class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeProcessingRepository, copeFailedCache: CopeFailedCache) extends BackendController(cc)
   with ErrorHandling with Logging {
 
-  override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier): Future[Result] = {
+  override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     func.recoverWith {
       case WithStatusCode(NOT_FOUND) => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
       case _: NotFoundException => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
@@ -71,7 +70,7 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
     }
   }
 
-  private def defineCopeResponse(nino: Nino): Future[Result] = {
+  private def defineCopeResponse(nino: Nino)(implicit ec: ExecutionContext): Future[Result] = {
     val today = LocalDate.now()
 
     copeRepository.find(HashedNino(nino)) map {

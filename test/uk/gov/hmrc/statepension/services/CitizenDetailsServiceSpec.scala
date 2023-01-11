@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
 
+import scala.concurrent.ExecutionContext.global
 import scala.concurrent.Future
 
 class CitizenDetailsServiceSpec extends StatePensionBaseSpec {
@@ -39,14 +40,14 @@ class CitizenDetailsServiceSpec extends StatePensionBaseSpec {
       when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
         Future.successful(OK)
       )
-      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc)
+      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, global)
       resultF.futureValue shouldBe false
     }
     "return ManualCorrespondenceIndicator status is true when Response is 423" in {
       when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn
         Future.successful(LOCKED)
 
-      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc)
+      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, global)
       resultF.futureValue shouldBe true
     }
   }

@@ -19,14 +19,13 @@ package uk.gov.hmrc.statepension.services
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class CitizenDetailsService @Inject()(citizenDetailsConnector: CitizenDetailsConnector) {
 
-  def checkManualCorrespondenceIndicator(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
+  def checkManualCorrespondenceIndicator(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     citizenDetailsConnector.connectToGetPersonDetails(nino).map(status => status == play.api.http.Status.LOCKED)
   }
 }

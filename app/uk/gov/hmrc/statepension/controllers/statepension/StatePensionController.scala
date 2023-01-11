@@ -31,7 +31,8 @@ import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.StatePensionService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
+
 
 @Singleton
 abstract class StatePensionController @Inject()(
@@ -48,40 +49,44 @@ abstract class StatePensionController @Inject()(
   val statePensionService: StatePensionService
   val customAuditConnector: AuditConnector
   val authAction: AuthAction
+  implicit val ec: ExecutionContext = executionContext
 
   override lazy val context: String = appConfig.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = (authAction andThen validateAccept(acceptHeaderValidationRules)).async {
     implicit request =>
-      errorHandling.errorWrapper(statePensionService.getStatement(nino).map {
+      errorHandling.errorWrapper(
+        statePensionService.getStatement(nino).map {
 
-        case Left(exclusion) if exclusion.exclusionReasons.contains(Dead) =>
-          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Dead),
-            exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
-          Forbidden(Json.toJson[ErrorResponse](ErrorResponses.ExclusionDead))
+          case Left(exclusion) if exclusion.exclusionReasons.contains(Dead) =>
+            customAuditConnector.sendEvent(StatePensionExclusion(nino, List(Dead),
+              exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
+            Forbidden(Json.toJson[ErrorResponse](ErrorResponses.ExclusionDead))
 
-        case Left(exclusion) if exclusion.exclusionReasons.contains(ManualCorrespondenceIndicator) =>
-          customAuditConnector.sendEvent(StatePensionExclusion(nino, List(ManualCorrespondenceIndicator),
-            exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
-          Forbidden(Json.toJson[ErrorResponse](ErrorResponses.ExclusionManualCorrespondence))
+          case Left(exclusion) if exclusion.exclusionReasons.contains(ManualCorrespondenceIndicator) =>
+            customAuditConnector.sendEvent(StatePensionExclusion(nino, List(ManualCorrespondenceIndicator),
+              exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
+            Forbidden(Json.toJson[ErrorResponse](ErrorResponses.ExclusionManualCorrespondence))
 
-        case Left(exclusion) =>
-          customAuditConnector.sendEvent(StatePensionExclusion(nino, exclusion.exclusionReasons,
-            exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
-          Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
+          case Left(exclusion) =>
+            customAuditConnector.sendEvent(StatePensionExclusion(nino, exclusion.exclusionReasons,
+              exclusion.pensionAge, exclusion.pensionDate, exclusion.statePensionAgeUnderConsideration))
+            Ok(halResourceSelfLink(Json.toJson(exclusion), statePensionHref(nino)))
 
-        case Right(statePension) =>
-          customAuditConnector.sendEvent(StatePension(nino, statePension.earningsIncludedUpTo, statePension.amounts,
-            statePension.pensionAge, statePension.pensionDate, statePension.finalRelevantYear, statePension.numberOfQualifyingYears,
-            statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount,
-            statePension.amounts.starting.weeklyAmount, statePension.amounts.oldRules.basicStatePension,
-            statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
-            statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
-            statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount,
-            statePension.statePensionAgeUnderConsideration))
+          case Right(statePension) =>
+            customAuditConnector.sendEvent(StatePension(nino, statePension.earningsIncludedUpTo, statePension.amounts,
+              statePension.pensionAge, statePension.pensionDate, statePension.finalRelevantYear, statePension.numberOfQualifyingYears,
+              statePension.pensionSharingOrder, statePension.currentFullWeeklyPensionAmount,
+              statePension.amounts.starting.weeklyAmount, statePension.amounts.oldRules.basicStatePension,
+              statePension.amounts.oldRules.additionalStatePension, statePension.amounts.oldRules.graduatedRetirementBenefit,
+              statePension.amounts.newRules.grossStatePension, statePension.amounts.newRules.rebateDerivedAmount,
+              statePension.reducedRateElection, statePension.reducedRateElectionCurrentWeeklyAmount,
+              statePension.statePensionAgeUnderConsideration))
 
-          copeProcessingRepository.delete(HashedNino(nino))
-          Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
-      }, nino)
+            copeProcessingRepository.delete(HashedNino(nino))
+            Ok(halResourceSelfLink(Json.toJson(statePension), statePensionHref(nino)))
+        },
+        nino
+      )
   }
 }
