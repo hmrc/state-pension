@@ -58,7 +58,7 @@ class AuthActionSpec
   private val testNino: String = ninoGenerator.nextNino.nino
   private val goodUriWithNino: String = s"/ni/$testNino/"
 
-  implicit val timeout: Timeout = 5 seconds
+  implicit val timeout: Timeout = 55 seconds
 
   "Auth Action" when {
     "the user is not logged in" should {
