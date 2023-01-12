@@ -98,7 +98,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     reset(mockCopeRepository)
   }
 
-  "get" should
+  "get" should {
     "return status code 406 when the headers are invalid" in {
       val mockStatePensionService = mock[StatePensionService]
 
