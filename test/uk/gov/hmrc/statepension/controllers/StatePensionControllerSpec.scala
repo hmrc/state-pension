@@ -271,7 +271,7 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
           List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
           0,
           LocalDate.of(2050, 1, 1),
-          false
+          statePensionAgeUnderConsideration = false
         )
         ))
       )

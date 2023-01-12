@@ -42,7 +42,7 @@ class DocumentationControllerSpec
   val controllerComponents: ControllerComponents = stubControllerComponents()
   val serviceConfig: ServicesConfig = inject[ServicesConfig]
   val assets: Assets = inject[Assets]
-  val systemLocalDate = inject[SystemLocalDate]
+  val systemLocalDate: SystemLocalDate = inject[SystemLocalDate]
 
   def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Future[Result] = {
 
