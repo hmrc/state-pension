@@ -36,6 +36,7 @@ import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting {

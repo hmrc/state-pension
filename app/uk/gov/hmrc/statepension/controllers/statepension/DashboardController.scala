@@ -38,7 +38,7 @@ class DashboardController @Inject()(
                                      copeProcessingRepository: CopeProcessingRepository,
                                      val parser: BodyParsers.Default,
                                      val executionContext: ExecutionContext
-                                   )
+                                   )(override implicit val ec: ExecutionContext)
   extends StatePensionController(controllerComponents, errorHandling, copeProcessingRepository) {
   override def endpointUrl(nino: Nino): String =
     uk.gov.hmrc.statepension.controllers.statepension.routes.DashboardController.get(nino).url

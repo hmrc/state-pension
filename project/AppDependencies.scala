@@ -21,16 +21,16 @@ object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-backend-play-28" % "7.0.0",
+    "uk.gov.hmrc" %% "bootstrap-backend-play-28" % "7.12.0",
     "uk.gov.hmrc" %% "domain" % "8.1.0-play-28",
     "uk.gov.hmrc" %% "play-hmrc-api" % "7.1.0-play-28",
     "uk.gov.hmrc" %% "play-hal" % "3.2.0-play-28",
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.71.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % "0.74.0",
     "commons-codec" % "commons-codec" % "1.15"
   )
 
   val test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc" %% "bootstrap-test-play-28" % "7.0.0",
+    "uk.gov.hmrc" %% "bootstrap-test-play-28" % "7.12.0",
     "org.mockito" % "mockito-core" % "4.7.0",
     "com.github.tomakehurst" % "wiremock-jre8" % "2.26.3",
     "org.pegdown" % "pegdown" % "1.6.0"

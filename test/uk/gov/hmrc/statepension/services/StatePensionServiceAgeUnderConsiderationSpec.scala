@@ -29,7 +29,6 @@ import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
 import uk.gov.hmrc.statepension.StatePensionBaseSpec
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -73,15 +72,10 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
           pre97AP = 17.79,
           post97AP = 6.03,
           post02AP = 15.4,
-          pre88GMP = 0,
-          post88GMP = 0,
-          pre88COD = 0,
-          post88COD = 0,
           graduatedRetirementBenefit = 2.66
         ),
         AmountB2016(
-          mainComponent = 155.65,
-          rebateDerivedAmount = 0
+          mainComponent = 155.65
         )
       ),
       manualCorrespondenceIndicator = None

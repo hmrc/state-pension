@@ -66,7 +66,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with NinoGenerator wi
   "getStatement" should {
     "return StatePension data" when {
       "citizen details returns false for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(false))
 
         val result = sut.getStatement(generateNino()).futureValue
@@ -76,7 +76,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with NinoGenerator wi
 
     "return MCI exclusion" when {
       "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
           .thenReturn(Future.successful(true))
 
         val result = sut.getStatement(generateNino()).futureValue
