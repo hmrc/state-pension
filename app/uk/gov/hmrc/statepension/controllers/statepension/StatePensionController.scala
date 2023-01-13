@@ -49,7 +49,7 @@ abstract class StatePensionController @Inject()(
   val statePensionService: StatePensionService
   val customAuditConnector: AuditConnector
   val authAction: AuthAction
-  implicit val ec: ExecutionContext = executionContext
+  implicit val ec: ExecutionContext = controllerComponents.executionContext
 
   override lazy val context: String = appConfig.apiGatewayContext
 
