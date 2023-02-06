@@ -24,7 +24,7 @@ import play.api.libs.json.{JsPath, Reads}
 import scala.math.BigDecimal.RoundingMode
 
 final case class Summary(
-                       earningsIncludedUpTo: LocalDate,
+                       earningsIncludedUpTo: LocalDate, //Value to remain mandatory as per decision from DDCNL-2563
                        statePensionAgeDate: LocalDate,
                        finalRelevantStartYear: Int,
                        pensionSharingOrderSERPS: Boolean,
