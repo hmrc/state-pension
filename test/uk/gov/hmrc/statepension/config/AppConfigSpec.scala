@@ -103,7 +103,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
           198.03,
           203.85)
 
-        appConfig.taxRates shouldBe TaxRates(130.9668, 123.5924, spRates)
+        appConfig.taxRates shouldBe TaxRates(1.309668, 1.235924, spRates)
       }
 
       "return current tax year rates when currentLocalDate is after effectiveFromDate and is after 1st January in current tax year" in {
@@ -146,7 +146,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
           198.03,
           203.85)
 
-        appConfig.taxRates shouldBe TaxRates(130.9668, 123.5924, spRates)
+        appConfig.taxRates shouldBe TaxRates(1.309668, 1.235924, spRates)
       }
 
       "return current tax year rates when currentLocalDate is after effectiveFromDate and is before 1st January in current tax year" in {
@@ -189,7 +189,7 @@ class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
           198.03,
           203.85)
 
-        appConfig.taxRates shouldBe TaxRates(130.9668, 123.5924, spRates)
+        appConfig.taxRates shouldBe TaxRates(1.309668, 1.235924, spRates)
       }
 
       "return previous tax year rates when currentLocalDate is before effectiveFromDate" in {
