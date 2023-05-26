@@ -69,13 +69,11 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
     ).foreach {case ((response, statusCode), errorDescription) =>
 
       s"return $statusCode $errorDescription" in {
-
         stubGetServer(response, npsSummaryUrl)
         stubGetServer(response, npsLiabilitiesUrl)
         stubGetServer(response, npsNiRecordUrl)
 
         val request = FakeRequest(GET, checkPensionControllerUrl)
-
           .withHeaders(defaultHeaders:_*)
         val result = route(app, request)
 

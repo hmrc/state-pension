@@ -68,5 +68,5 @@ trait TaxYearResolver {
 
 
 object TaxYearResolver extends TaxYearResolver {
-  override lazy val now = () => LocalDateTime.now
+  override lazy val now: () => LocalDateTime = () => LocalDateTime.now.truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
 }
