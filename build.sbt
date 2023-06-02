@@ -1,7 +1,6 @@
 import play.sbt.routes.RoutesKeys._
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import scoverage.ScoverageKeys
 
 val appName = "state-pension"
@@ -41,7 +40,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     scalaSettings,
     scoverageSettings,
-    publishingSettings,
     defaultSettings(),
     majorVersion := 2,
     PlayKeys.playDefaultPort := 9311,
