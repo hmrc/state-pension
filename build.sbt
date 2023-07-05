@@ -45,7 +45,10 @@ lazy val microservice = Project(appName, file("."))
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
-    routesImport += "uk.gov.hmrc.statepension.config.Binders._"
+    routesImport ++= Seq(
+      "uk.gov.hmrc.statepension.config.Binders._",
+      "uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName"
+    )
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)

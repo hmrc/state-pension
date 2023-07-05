@@ -67,4 +67,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
       authorizationToken = getConfString(s"$serviceName.token", empty)
     )
   }
+
+  lazy val internalAuthResourceType: String =
+    configuration.get[String]("microservice.services.internal-auth.resource-type")
 }

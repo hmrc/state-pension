@@ -1,0 +1,9 @@
+#admin
+
+GET        /metrics                       @com.kenshoo.play.metrics.MetricsController.metrics
+->         /featureFlags                  mongoFeatureTogglesAdmin.Routes
++nocsrf
+PUT        /featureFlags/:flagName        uk.gov.hmrc.statepension.controllers.admin.FeatureFlagController.put(flagName: FeatureFlagName)
+GET        /featureFlags                  uk.gov.hmrc.statepension.controllers.admin.FeatureFlagController.get
++nocsrf
+PUT        /featureFlags                  uk.gov.hmrc.statepension.controllers.admin.FeatureFlagController.putAll
