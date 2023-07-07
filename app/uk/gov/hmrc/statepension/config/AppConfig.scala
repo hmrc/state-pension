@@ -26,7 +26,11 @@ import uk.gov.hmrc.statepension.util.FileReader.getTaxRatesByTaxYear
 import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 
-class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig, systemLocalDate: SystemLocalDate) {
+class AppConfig @Inject()(
+  configuration: Configuration,
+  servicesConfig: ServicesConfig,
+  systemLocalDate: SystemLocalDate
+) {
   import servicesConfig._
 
   implicit val dateLoader: ConfigLoader[LocalDate] = ConfigLoader(_.getString).map(LocalDate.parse(_))
@@ -48,6 +52,7 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
 
   val citizenDetailsBaseUrl: String = baseUrl("citizen-details")
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
+  val proxyCacheUrl: String = baseUrl("ni-and-sp-proxy-cache")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
   def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
@@ -57,17 +62,13 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   val ttlInWeeks: Int = configuration.get[Int]("cope.ttlInWeeks")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
-    val empty = ""
-
     new ConnectorConfig(
       serviceUrl = baseUrl(serviceName),
-      serviceOriginatorIdKey = getConfString(s"$serviceName.originatoridkey", empty),
-      serviceOriginatorIdValue = getConfString(s"$serviceName.originatoridvalue", empty),
-      environment = getConfString(s"$serviceName.environment", empty),
-      authorizationToken = getConfString(s"$serviceName.token", empty)
+      serviceOriginatorIdKey = getConfString(s"$serviceName.originatoridkey", ""),
+      serviceOriginatorIdValue = getConfString(s"$serviceName.originatoridvalue", ""),
+      environment = getConfString(s"$serviceName.environment", ""),
+      authorizationToken = getConfString(s"$serviceName.token", "")
     )
   }
 
-  lazy val internalAuthResourceType: String =
-    configuration.get[String]("microservice.services.internal-auth.resource-type")
 }

@@ -25,8 +25,7 @@ object AppDependencies {
     "uk.gov.hmrc"       %%  "domain"                        % "8.1.0-play-28",
     "uk.gov.hmrc"       %%  "play-hmrc-api"                 % "7.1.0-play-28",
     "uk.gov.hmrc"       %%  "play-hal"                      % "3.2.0-play-28",
-    "uk.gov.hmrc"       %%  "internal-auth-client-play-28"  % "1.6.0",
-    "uk.gov.hmrc"       %%  "mongo-feature-toggles-client"  % "0.1.0",
+    "uk.gov.hmrc"       %% "mongo-feature-toggles-client"   % "0.2.0-SNAPSHOT",
     "uk.gov.hmrc.mongo" %%  "hmrc-mongo-play-28"            % "0.74.0",
     "commons-codec"     %   "commons-codec"                 % "1.15"
   )

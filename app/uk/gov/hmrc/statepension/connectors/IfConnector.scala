@@ -23,13 +23,15 @@ import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.nps.APIType.{IfLiabilities, IfNIRecord, IfSummary}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class IfConnector @Inject()(
-                             val http: HttpClient,
-                             val metrics: ApplicationMetrics,
-                             appConfig: AppConfig
-                           )(implicit ec: ExecutionContext) extends NpsConnector(appConfig) {
+  val http: HttpClient,
+  val metrics: ApplicationMetrics,
+  appConfig: AppConfig
+)(
+  implicit ec: ExecutionContext
+) extends NpsConnector(appConfig) {
 
   import appConfig.ifConnectorConfig._
 
@@ -39,9 +41,12 @@ class IfConnector @Inject()(
   override val environmentHeader: (String, String) = ("Environment", environment)
   override val token: String = authorizationToken
 
-  override def summaryUrl(nino: Nino): String = s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary"
-  override def liabilitiesUrl(nino: Nino): String =  s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities"
-  override def niRecordUrl(nino: Nino): String = s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details"
+  override def summaryUrl(nino: Nino): Future[String] =
+    Future(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary")
+  override def liabilitiesUrl(nino: Nino): Future[String] =
+    Future(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities")
+  override def niRecordUrl(nino: Nino): Future[String] =
+    Future(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details")
 
   override val summaryMetricType: APIType = IfSummary
   override val liabilitiesMetricType: APIType = IfLiabilities

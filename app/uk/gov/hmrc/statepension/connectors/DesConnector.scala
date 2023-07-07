@@ -19,21 +19,26 @@ package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType.{Liabilities, NIRecord, Summary}
 import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class DesConnector @Inject()(val http: HttpClient,
-                             val metrics: ApplicationMetrics,
-                             appConfig: AppConfig
-                             )(implicit ec: ExecutionContext) extends NpsConnector(appConfig) {
+class DesConnector @Inject()(
+  val http: HttpClient,
+  val metrics: ApplicationMetrics,
+  appConfig: AppConfig,
+  featureFlagService: FeatureFlagService
+)(
+  implicit ec: ExecutionContext
+) extends NpsConnector(appConfig) {
 
   import appConfig.desConnectorConfig._
 
-  val desBaseUrl: String = serviceUrl
   override val originatorIdKey: String = serviceOriginatorIdKey
   override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
@@ -43,8 +48,20 @@ class DesConnector @Inject()(val http: HttpClient,
   override val liabilitiesMetricType: APIType = Liabilities
   override val niRecordMetricType: APIType = NIRecord
 
-  override def summaryUrl(nino: Nino): String = s"$desBaseUrl/individuals/${nino.withoutSuffix}/pensions/summary"
-  override def liabilitiesUrl(nino: Nino): String = s"$desBaseUrl/individuals/${nino.withoutSuffix}/pensions/liabilities"
-  override def niRecordUrl(nino: Nino): String = s"$desBaseUrl/individuals/${nino.withoutSuffix}/pensions/ni"
+  private def url(nino: Nino, path: String): Future[String] =
+    featureFlagService.get(ProxyCacheToggle) map {
+      proxyCache =>
+        val baseUrl =
+          if (proxyCache.isEnabled) appConfig.proxyCacheUrl else appConfig.desConnectorConfig.serviceUrl
+
+        s"$baseUrl/individuals/${nino.withoutSuffix}/pensions/$path"
+    }
+
+  override def summaryUrl(nino: Nino): Future[String] =
+    url(nino, "summary")
+  override def liabilitiesUrl(nino: Nino): Future[String] =
+    url(nino, "liabilities")
+  override def niRecordUrl(nino: Nino): Future[String] =
+    url(nino, "ni")
 
 }
