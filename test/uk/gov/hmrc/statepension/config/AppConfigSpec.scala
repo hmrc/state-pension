@@ -22,9 +22,9 @@ import org.scalatest.{Assertion, BeforeAndAfterEach}
 import play.api.inject.Injector
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.statepension.UnitSpec
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.util.SystemLocalDate
+import utils.UnitSpec
 
 class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
 

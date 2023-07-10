@@ -2,6 +2,7 @@ package test_utils
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.domain.{Generator, Nino}
+import utils.{UnitSpec, WireMockHelper}
 
 import java.util.UUID
 import scala.util.Random

@@ -31,7 +31,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, UpstreamErrorRespo
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec, WireMockHelper}
+import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec}
+import utils.WireMockHelper
 
 class IfConnectorSpec extends StatePensionBaseSpec
   with ScalaFutures
