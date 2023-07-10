@@ -64,7 +64,7 @@ abstract class NpsConnector @Inject()(
     }
 
   def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
-    summaryUrl(nino) flatMap {
+    liabilitiesUrl(nino) flatMap {
       url =>
         connectToHOD[Liabilities](
           url          = url,
@@ -74,7 +74,7 @@ abstract class NpsConnector @Inject()(
     }
 
   def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
-    summaryUrl(nino) flatMap {
+    niRecordUrl(nino) flatMap {
       url =>
         connectToHOD[NIRecord](
           url          = url,
@@ -122,11 +122,9 @@ abstract class NpsConnector @Inject()(
         case ex =>
           Failure(ex)
       } flatMap(handleResult(api, _))
-
-
   }
 
-  private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] = {
+  private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] =
     tryResult match {
       case Failure(ex) =>
         metrics.incrementFailedCounter(api)
@@ -134,21 +132,23 @@ abstract class NpsConnector @Inject()(
       case Success(value) =>
         Future.successful(value)
     }
-  }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
     headerCarrier.headers(Seq(key)).toMap.getOrElse(key, "Header not found")
 
   private def setServiceOriginatorId(value: String)(implicit headerCarrier: HeaderCarrier): String = {
     appConfig.dwpApplicationId match {
-      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") => appConfig.dwpOriginatorId
-      case _ => value
+      case Some(appIds) if appIds contains getHeaderValueByKey("x-application-id") =>
+        appConfig.dwpOriginatorId
+      case _ =>
+        value
     }
   }
 
-  private def formatJsonErrors(errors: scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]): String = {
-    errors.map(p => p._1.toString() + " - " + p._2.map(_.message).mkString(",")).mkString(" | ")
-  }
+  private def formatJsonErrors(errors: scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]): String =
+    errors
+      .map(p => s"${p._1.toString()} - ${p._2.map(_.message).mkString(",")}")
+      .mkString(" | ")
 
   class JsonValidationException(message: String) extends Exception(message)
 }

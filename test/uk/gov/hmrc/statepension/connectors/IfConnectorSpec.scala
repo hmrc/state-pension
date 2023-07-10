@@ -42,7 +42,6 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
   val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
-
   lazy val ifConnector: IfConnector = GuiceApplicationBuilder()
     .overrides(
       bind[AppConfig].toInstance(mockAppContext),
@@ -63,8 +62,11 @@ class IfConnectorSpec extends StatePensionBaseSpec
     when(mockAppContext.ifConnectorConfig.authorizationToken).thenReturn(ifToken)
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSessionId")),
-    requestId = Some(RequestId("testRequestId")))
+  implicit val hc: HeaderCarrier =
+    HeaderCarrier(
+      sessionId = Some(SessionId("testSessionId")),
+      requestId = Some(RequestId("testRequestId"))
+    )
   val nino: Nino = generateNino()
 
   def stub(url: String, status: Int, body: String): StubMapping = server.stubFor(
@@ -77,10 +79,10 @@ class IfConnectorSpec extends StatePensionBaseSpec
   )
 
   "getSummary" should {
-    def stubGetSummary(status: Int = OK, body: String = "{}"): StubMapping =
+    def stubSummary(status: Int = OK, body: String = "{}"): StubMapping =
       stub(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/summary", status, body)
     "make a request to the correct URI with Environment, serviceOriginatorId and Authorization headers" in {
-      stubGetSummary(body = SummaryFixture.exampleSummaryJson)
+      stubSummary(body = SummaryFixture.exampleSummaryJson)
 
       ifConnector.getSummary(nino).futureValue
 
@@ -96,7 +98,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
     "return the response object" when {
       "response json is valid" in {
-        stubGetSummary(body = SummaryFixture.exampleSummaryJson)
+        stubSummary(body = SummaryFixture.exampleSummaryJson)
 
         ifConnector.getSummary(nino).futureValue mustBe SummaryFixture.exampleSummary
       }
@@ -104,7 +106,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
     "return JsonValidationException" when {
       "response json is invalid" in {
-        stubGetSummary()
+        stubSummary()
 
         val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
 
@@ -114,7 +116,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
     "return UpstreamErrorResponse" when {
       "response status is UpstreamErrorResponse" in {
-        stubGetSummary(INTERNAL_SERVER_ERROR)
+        stubSummary(INTERNAL_SERVER_ERROR)
 
         val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
 

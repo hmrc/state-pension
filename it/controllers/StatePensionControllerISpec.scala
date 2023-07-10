@@ -1,25 +1,43 @@
+/*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
+import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => statusResult, _}
 import test_utils.{IntegrationBaseSpec, ResponseHelpers}
+import uk.gov.hmrc.domain.Nino
 
 class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpers {
 
-  val nino = generateNino
-  val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
-  val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
-  val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
-  val checkPensionControllerUrl: String = s"/ni/$nino"
+  private val nino: Nino = generateNino
+  private val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
+  private val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
+  private val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
+  private val checkPensionControllerUrl: String = s"/ni/$nino"
 
-  val defaultHeaders = Seq(
+  private val defaultHeaders: Seq[(String, String)] = Seq(
     "Accept" -> "application/vnd.hmrc.1.0+json",
     "Authorization" -> "Bearer 123"
   )
 
-  def generateAuthHeaderResponse = {
+  private def generateAuthHeaderResponse: String =
     s"""
        |{
        |  "nino": "$nino",
@@ -34,22 +52,22 @@ class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpe
        |  }
        |}"""
       .stripMargin
-  }
 
-  override def fakeApplication() = GuiceApplicationBuilder().configure(
-    "microservice.services.auth.port" -> server.port(),
-    "microservice.services.nps-hod.host" -> "127.0.0.1",
-    "microservice.services.nps-hod.port" -> server.port(),
-    "microservice.services.des-hod.host" -> "127.0.0.1",
-    "microservice.services.des-hod.port" -> server.port(),
-    "microservice.services.if-hod.host" -> "127.0.0.1",
-    "microservice.services.if-hod.port" -> server.port(),
-    "play.ws.timeout.request" -> "1000ms",
-    "play.ws.timeout.connection" -> "500ms",
-    "auditing.enabled" -> false
-  ).build()
+  override def fakeApplication(): Application =
+    GuiceApplicationBuilder().configure(
+      "microservice.services.auth.port" -> server.port(),
+      "microservice.services.nps-hod.host" -> "127.0.0.1",
+      "microservice.services.nps-hod.port" -> server.port(),
+      "microservice.services.des-hod.host" -> "127.0.0.1",
+      "microservice.services.des-hod.port" -> server.port(),
+      "microservice.services.if-hod.host" -> "127.0.0.1",
+      "microservice.services.if-hod.port" -> server.port(),
+      "play.ws.timeout.request" -> "1000ms",
+      "play.ws.timeout.connection" -> "500ms",
+      "auditing.enabled" -> false
+    ).build()
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
   }

@@ -34,34 +34,40 @@ import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import uk.gov.hmrc.statepension.{StatePensionBaseSpec, WireMockHelper}
 
-class DesConnectorSpec extends StatePensionBaseSpec
-  with GuiceOneAppPerSuite
-  with ScalaFutures
-  with IntegrationPatience
-  with WireMockHelper {
+class DesConnectorSpec
+  extends StatePensionBaseSpec
+    with GuiceOneAppPerSuite
+    with ScalaFutures
+    with IntegrationPatience
+    with WireMockHelper {
 
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
-  val mockcopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
+  val mockCopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
   val nino: Nino = generateNino()
   val ninoWithoutSuffix: String = nino.withoutSuffix
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSessionId")),
-    requestId = Some(RequestId("testRequestId")))
-
-  override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .configure("microservice.services.des-hod.port" -> server.port(),
-                      "microservice.services.des-hod.token" -> "testToken",
-                      "microservice.services.des-hod.originatoridkey" -> "testOriginatorKey",
-                      "microservice.services.des-hod.originatoridvalue" -> "testOriginatorId",
-                      "microservice.services.des-hod.environment" -> "testEnvironment",
-                      "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
-                      "api.access.type" -> "PRIVATE",
-                      "cope.dwp.originatorId" -> "dwpId"
+  implicit val hc: HeaderCarrier =
+    HeaderCarrier(
+      sessionId = Some(SessionId("testSessionId")),
+      requestId = Some(RequestId("testRequestId"))
     )
-    .overrides(
-      bind[ApplicationMetrics].toInstance(mockMetrics),
-      bind[CopeProcessingRepository].toInstance(mockcopeRepository)
-    ).build()
+
+  override def fakeApplication(): Application =
+    GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.des-hod.port" -> server.port(),
+        "microservice.services.des-hod.token" -> "testToken",
+        "microservice.services.des-hod.originatoridkey" -> "testOriginatorKey",
+        "microservice.services.des-hod.originatoridvalue" -> "testOriginatorId",
+        "microservice.services.des-hod.environment" -> "testEnvironment",
+        "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
+        "api.access.type" -> "PRIVATE",
+        "cope.dwp.originatorId" -> "dwpId"
+      )
+      .overrides(
+        bind[ApplicationMetrics].toInstance(mockMetrics),
+        bind[CopeProcessingRepository].toInstance(mockCopeRepository)
+      ).build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
