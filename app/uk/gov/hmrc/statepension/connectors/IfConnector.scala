@@ -35,18 +35,18 @@ class IfConnector @Inject()(
 
   import appConfig.ifConnectorConfig._
 
-  val ifBaseUrl: String = serviceUrl
+  private val ifBaseUrl: String = serviceUrl
   override val originatorIdKey: String = serviceOriginatorIdKey
   override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
   override val token: String = authorizationToken
 
   override def summaryUrl(nino: Nino): Future[String] =
-    Future(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary")
+    Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary")
   override def liabilitiesUrl(nino: Nino): Future[String] =
-    Future(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities")
+    Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities")
   override def niRecordUrl(nino: Nino): Future[String] =
-    Future(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details")
+    Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details")
 
   override val summaryMetricType: APIType = IfSummary
   override val liabilitiesMetricType: APIType = IfLiabilities

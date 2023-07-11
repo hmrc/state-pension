@@ -39,6 +39,7 @@ class DesConnector @Inject()(
 
   import appConfig.desConnectorConfig._
 
+  private val desBaseUrl: String = serviceUrl
   override val originatorIdKey: String = serviceOriginatorIdKey
   override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
@@ -52,7 +53,7 @@ class DesConnector @Inject()(
     featureFlagService.get(ProxyCacheToggle) map {
       proxyCache =>
         val baseUrl =
-          if (proxyCache.isEnabled) appConfig.proxyCacheUrl else appConfig.desConnectorConfig.serviceUrl
+          if (proxyCache.isEnabled) appConfig.proxyCacheUrl else desBaseUrl
 
         s"$baseUrl/individuals/${nino.withoutSuffix}/pensions/$path"
     }
