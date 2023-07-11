@@ -17,10 +17,10 @@
 package uk.gov.hmrc.statepension.services
 
 import java.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.domain.Forecast
 import uk.gov.hmrc.statepension.models.TaxRates
+import utils.StatePensionBaseSpec
 
 class ForecastingServiceSpec extends StatePensionBaseSpec {
 

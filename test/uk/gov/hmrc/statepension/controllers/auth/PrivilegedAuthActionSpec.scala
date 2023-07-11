@@ -32,7 +32,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, InternalError}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.StatePensionBaseSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 

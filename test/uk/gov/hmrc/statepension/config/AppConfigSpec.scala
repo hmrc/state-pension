@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.statepension.config
 
-import java.time.LocalDate
 import org.mockito.Mockito.{reset, when}
-import org.scalatest.{Assertion, BeforeAndAfterEach}
-import play.api.inject.Injector
-import play.api.inject.bind
+import org.scalatest.Assertion
+import play.api.inject.{Injector, bind}
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.util.SystemLocalDate
-import utils.UnitSpec
+import utils.StatePensionBaseSpec
 
-class AppConfigSpec extends UnitSpec with BeforeAndAfterEach {
+import java.time.LocalDate
+
+class AppConfigSpec extends StatePensionBaseSpec {
 
   val mockSystemLocalDate: SystemLocalDate = mock[SystemLocalDate]
 

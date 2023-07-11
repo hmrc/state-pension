@@ -22,8 +22,8 @@ import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import play.api.http.Status.{LOCKED, OK}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.connectors.CitizenDetailsConnector
+import utils.StatePensionBaseSpec
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.Future

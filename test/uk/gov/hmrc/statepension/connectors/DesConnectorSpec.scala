@@ -33,8 +33,7 @@ import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture.exampleSummaryJson
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
-import utils.WireMockHelper
+import utils.{StatePensionBaseSpec, WireMockHelper}
 
 class DesConnectorSpec
   extends StatePensionBaseSpec

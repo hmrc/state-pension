@@ -30,8 +30,7 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
-import utils.WireMockHelper
+import utils.{StatePensionBaseSpec, WireMockHelper}
 
 class CitizenDetailsConnectorSpec extends StatePensionBaseSpec
   with ScalaFutures

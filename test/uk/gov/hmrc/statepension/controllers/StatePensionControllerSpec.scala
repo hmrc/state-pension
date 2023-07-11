@@ -31,7 +31,7 @@ import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
+import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}

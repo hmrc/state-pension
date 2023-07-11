@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.statepension.services
 
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
+import utils.StatePensionBaseSpec
 
 class RateServiceSpec extends StatePensionBaseSpec {
 

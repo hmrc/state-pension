@@ -23,10 +23,10 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => statusResult, _}
 import uk.gov.hmrc.domain.Nino
-import utils.{NinoGenerator, ResponseHelpers, UnitSpec, WireMockHelper}
+import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
 
 class StatePensionControllerISpec
-  extends UnitSpec
+  extends StatePensionBaseSpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with ResponseHelpers

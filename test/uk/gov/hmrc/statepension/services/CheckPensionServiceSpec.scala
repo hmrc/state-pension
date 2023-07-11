@@ -16,26 +16,22 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.when
+import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.DesConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
-import utils.NinoGenerator
+import utils.StatePensionBaseSpec
 
 import scala.concurrent.Future
 
-class CheckPensionServiceSpec extends StatePensionBaseSpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
-
-  override implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
   val mockCitizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
   val mockDesConnector: DesConnector = mock[DesConnector]
@@ -56,18 +52,18 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with NinoGenerator wi
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockDesConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
+    when(mockDesConnector.getSummary(any())(any()))
       .thenReturn(Future.successful(summary))
-    when(mockDesConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
+    when(mockDesConnector.getLiabilities(any())(any()))
       .thenReturn(Future.successful(List()))
-    when(mockDesConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
+    when(mockDesConnector.getNIRecord(any())(any()))
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
   "getStatement" should {
     "return StatePension data" when {
       "citizen details returns false for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
           .thenReturn(Future.successful(false))
 
         val result = sut.getStatement(generateNino()).futureValue
@@ -77,7 +73,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with NinoGenerator wi
 
     "return MCI exclusion" when {
       "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
           .thenReturn(Future.successful(true))
 
         val result = sut.getStatement(generateNino()).futureValue

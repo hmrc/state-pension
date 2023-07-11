@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.domain
 
 import play.api.libs.json.{JsError, JsString, JsSuccess}
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.StatePensionBaseSpec
 
 class StatePensionExclusionSpec extends StatePensionBaseSpec {
 
