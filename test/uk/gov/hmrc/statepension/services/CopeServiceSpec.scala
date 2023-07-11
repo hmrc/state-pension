@@ -26,7 +26,8 @@ import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING
 import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
-import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec}
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.NinoGenerator
 
 import java.time.LocalDate
 import scala.concurrent.Future

@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension
 
 import org.scalatest.BeforeAndAfterEach
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.UnitSpec
+import utils.{NinoGenerator, UnitSpec}
 
 trait StatePensionBaseSpec extends UnitSpec with NinoGenerator with BeforeAndAfterEach {
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()

@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package controllers
+package uk.gov.hmrc.statepension.controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => statusResult, _}
-import test_utils.{IntegrationBaseSpec, ResponseHelpers}
 import uk.gov.hmrc.domain.Nino
+import utils.{NinoGenerator, ResponseHelpers, UnitSpec, WireMockHelper}
 
-class StatePensionControllerISpec extends IntegrationBaseSpec with ResponseHelpers {
+class StatePensionControllerISpec
+  extends UnitSpec
+    with GuiceOneAppPerSuite
+    with WireMockHelper
+    with ResponseHelpers
+    with NinoGenerator {
 
-  private val nino: Nino = generateNino
+  private val nino: Nino = generateNino()
   private val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
   private val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
   private val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"

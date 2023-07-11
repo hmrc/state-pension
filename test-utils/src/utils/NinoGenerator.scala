@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension
+package utils
 
 import uk.gov.hmrc.domain.{Generator, Nino}
 
@@ -23,8 +23,4 @@ import scala.util.Random
 trait NinoGenerator {
   private val ninoGenerator = new Generator(new Random())
   def generateNino(): Nino = ninoGenerator.nextNino
-  def generateNinoWithPrefix(prefix: String): Nino = {
-    require(prefix.length == 2)
-    Nino(ninoGenerator.nextNino.toString().replaceFirst("[A-Z]{2}", prefix))
-  }
 }

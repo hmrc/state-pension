@@ -28,7 +28,8 @@ import uk.gov.hmrc.statepension.connectors.DesConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
-import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec}
+import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.NinoGenerator
 
 import scala.concurrent.Future
 
