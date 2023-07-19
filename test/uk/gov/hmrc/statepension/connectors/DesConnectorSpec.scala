@@ -17,6 +17,8 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 
 import java.time.LocalDate
 import org.mockito.{ArgumentMatchers, Mockito}
@@ -28,12 +30,17 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
+import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.fixtures.NIRecordFixture
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture.exampleSummaryJson
+import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import utils.{StatePensionBaseSpec, WireMockHelper}
+
+import scala.concurrent.Future
 
 class DesConnectorSpec
   extends StatePensionBaseSpec
@@ -44,6 +51,7 @@ class DesConnectorSpec
 
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
   val mockCopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
+  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   val nino: Nino = generateNino()
   val ninoWithoutSuffix: String = nino.withoutSuffix
 
@@ -61,17 +69,23 @@ class DesConnectorSpec
         "microservice.services.des-hod.originatoridkey" -> "testOriginatorKey",
         "microservice.services.des-hod.originatoridvalue" -> "testOriginatorId",
         "microservice.services.des-hod.environment" -> "testEnvironment",
+        "microservice.services.ni-and-sp-proxy-cache.port" -> server.port(),
+        "microservice.services.ni-and-sp-proxy-cache.host" -> "127.0.0.1",
         "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
         "api.access.type" -> "PRIVATE",
         "cope.dwp.originatorId" -> "dwpId"
       )
       .overrides(
         bind[ApplicationMetrics].toInstance(mockMetrics),
-        bind[CopeProcessingRepository].toInstance(mockCopeRepository)
+        bind[CopeProcessingRepository].toInstance(mockCopeRepository),
+        bind[FeatureFlagService].toInstance(mockFeatureFlagService)
       ).build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
+    when(mockFeatureFlagService.get(any())).thenReturn(
+      Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, None))
+    )
     Mockito.reset(mockMetrics)
   }
 
@@ -596,6 +610,37 @@ class DesConnectorSpec
         server.verify(
           getRequestedFor(urlEqualTo(niRecordUrl))
             .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+        )
+      }
+    }
+
+    "call proxy cache with correct url and headers" when {
+      val nino = generateNino()
+
+      val headers: HeaderCarrier = hc.withExtraHeaders(
+        "X-Session-ID" -> "testSessionId",
+        "X-Request-ID" -> "testRequestId"
+      )
+
+      val proxyCacheNiRecordUrl: String =
+        s"/ni-and-sp-proxy-cache/${nino.nino}/ni"
+
+      "ProxyCacheToggle enabled" in {
+        when(mockFeatureFlagService.get(any())).thenReturn(
+          Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true, None))
+        )
+
+        server.stubFor(get(urlEqualTo(proxyCacheNiRecordUrl))
+          .willReturn(ok().withBody("{}")))
+
+        desConnector.getNIRecord(nino)(headers).futureValue
+
+        server.verify(getRequestedFor(urlEqualTo(proxyCacheNiRecordUrl))
+          .withHeader("Authorization", equalTo("Bearer testToken"))
+          .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
+          .withHeader("Environment", equalTo("testEnvironment"))
+          .withHeader("X-Request-ID", equalTo("testRequestId"))
+          .withHeader("X-Session-ID", equalTo("testSessionId"))
         )
       }
     }

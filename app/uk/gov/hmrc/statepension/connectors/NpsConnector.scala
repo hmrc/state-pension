@@ -51,11 +51,12 @@ abstract class NpsConnector @Inject()(
   val liabilitiesMetricType: APIType
   val niRecordMetricType: APIType
 
-  val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
+  private val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
     summaryUrl(nino) flatMap {
       url =>
+
         connectToHOD[Summary](
           url          = url,
           api          = summaryMetricType,

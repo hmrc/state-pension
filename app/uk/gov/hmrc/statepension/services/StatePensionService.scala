@@ -44,9 +44,9 @@ trait StatePensionService {
   def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] =
 
     for {
-      summary <- nps.getSummary(nino)
-      liablities <- nps.getLiabilities(nino)
-      niRecord <- nps.getNIRecord(nino)
+      summary              <- nps.getSummary(nino)
+      liabilities          <- nps.getLiabilities(nino)
+      niRecord             <- nps.getNIRecord(nino)
       manualCorrespondence <- getMCI(summary, nino)
     } yield {
 
@@ -57,7 +57,7 @@ trait StatePensionService {
         summary.amounts.pensionEntitlement,
         summary.amounts.startingAmount2016,
         forecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
-        liablities,
+        liabilities,
         manualCorrespondence
       ).getExclusions
 

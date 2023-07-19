@@ -52,10 +52,11 @@ class DesConnector @Inject()(
   private def url(nino: Nino, path: String): Future[String] =
     featureFlagService.get(ProxyCacheToggle) map {
       proxyCache =>
-        val baseUrl =
-          if (proxyCache.isEnabled) appConfig.proxyCacheUrl else desBaseUrl
-
-        s"$baseUrl/individuals/${nino.withoutSuffix}/pensions/$path"
+        if (proxyCache.isEnabled) {
+          s"${appConfig.proxyCacheUrl}/ni-and-sp-proxy-cache/$nino/$path"
+        } else {
+          s"$desBaseUrl/individuals/${nino.withoutSuffix}/pensions/$path"
+        }
     }
 
   override def summaryUrl(nino: Nino): Future[String] =
