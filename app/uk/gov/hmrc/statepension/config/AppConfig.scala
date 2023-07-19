@@ -50,6 +50,9 @@ class AppConfig @Inject()(configuration: Configuration, servicesConfig: Services
   val desConnectorConfig: ConnectorConfig = connectorConfig("des-hod")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
+  val proxyCacheToggle: Boolean = true
+  val internalAuthToken: String = configuration.get[String]("internal-auth.token")
+
   def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")

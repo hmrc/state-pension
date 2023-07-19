@@ -65,8 +65,10 @@ abstract class NpsConnector @Inject()(appConfig: AppConfig)(
     val timerContext = metrics.startTimer(api)
     val correlationId: (String, String) = "CorrelationId" -> randomUUID().toString
 
+    val authHeader: String = if (appConfig.proxyCacheToggle) appConfig.internalAuthToken else s"Bearer $token"
+
     val headers = Seq(
-      HeaderNames.authorisation -> s"Bearer $token",
+      HeaderNames.authorisation -> authHeader,
       correlationId,
       environmentHeader,
       originatorId
