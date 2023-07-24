@@ -29,12 +29,12 @@ import play.api.test.Injecting
 import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorResponse}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
 import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
+import utils.StatePensionBaseSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

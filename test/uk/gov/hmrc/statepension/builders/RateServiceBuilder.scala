@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.statepension.builders
 
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.RateService
+import utils.StatePensionBaseSpec
 
 object RateServiceBuilder extends StatePensionBaseSpec {
 

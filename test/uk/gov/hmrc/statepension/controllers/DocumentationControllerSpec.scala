@@ -21,13 +21,13 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
 import play.api.mvc.{ControllerComponents, Result}
-import play.api.test.Helpers.{contentAsJson, contentAsString, stubControllerComponents, _}
+import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 import uk.gov.hmrc.statepension.util.SystemLocalDate
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
+import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 import scala.io.Source

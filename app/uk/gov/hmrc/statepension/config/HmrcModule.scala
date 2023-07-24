@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.domain.nps
+package uk.gov.hmrc.statepension.config
 
-import utils.StatePensionBaseSpec
+import play.api.inject.{Binding, Module}
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.statepension.module.ApplicationStartUp
 
-class LiabilityTypeSpec extends StatePensionBaseSpec {
-    "ISLE_OF_MAN" should {
-      "be 5" in {
-        LiabilityType.ISLE_OF_MAN shouldBe 5
-      }
-      "not be 15 (other than 5)" in {
-        LiabilityType.ISLE_OF_MAN should not be 15
-      }
-    }
+class HmrcModule extends Module {
+  override def bindings(environment: Environment, configuration: Configuration): collection.Seq[Binding[_]] = Seq(
+    bind[ApplicationStartUp].toSelf.eagerly()
+  )
 }

@@ -36,11 +36,10 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 abstract class StatePensionController @Inject()(
-                                                 controllerComponents: ControllerComponents,
-                                                 errorHandling: ErrorHandling,
-                                                 copeProcessingRepository: CopeProcessingRepository
-                                               )
-  extends BackendController(controllerComponents)
+  controllerComponents: ControllerComponents,
+  errorHandling: ErrorHandling,
+  copeProcessingRepository: CopeProcessingRepository
+) extends BackendController(controllerComponents)
     with HeaderValidator
     with HalSupport
     with Links {

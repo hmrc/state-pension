@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
-
+import utils.StatePensionBaseSpec
 import java.time.{LocalDate, LocalDateTime}
 
 class TaxYearResolverSpec extends StatePensionBaseSpec {

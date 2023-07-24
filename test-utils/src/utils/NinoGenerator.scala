@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.domain.nps
+package utils
 
-import utils.StatePensionBaseSpec
+import uk.gov.hmrc.domain.{Generator, Nino}
 
-class LiabilityTypeSpec extends StatePensionBaseSpec {
-    "ISLE_OF_MAN" should {
-      "be 5" in {
-        LiabilityType.ISLE_OF_MAN shouldBe 5
-      }
-      "not be 15 (other than 5)" in {
-        LiabilityType.ISLE_OF_MAN should not be 15
-      }
-    }
+import scala.util.Random
+
+trait NinoGenerator {
+  private val ninoGenerator = new Generator(new Random())
+  def generateNino(): Nino = ninoGenerator.nextNino
 }

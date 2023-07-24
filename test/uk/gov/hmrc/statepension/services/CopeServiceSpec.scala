@@ -18,7 +18,6 @@ package uk.gov.hmrc.statepension.services
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Nino
@@ -26,12 +25,12 @@ import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING
 import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
-import uk.gov.hmrc.statepension.{NinoGenerator, StatePensionBaseSpec}
+import utils.StatePensionBaseSpec
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class CopeServiceSpec extends StatePensionBaseSpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
+class CopeServiceSpec extends StatePensionBaseSpec {
 
   val nino: Nino = generateNino()
 
