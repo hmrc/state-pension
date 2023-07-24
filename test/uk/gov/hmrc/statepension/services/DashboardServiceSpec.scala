@@ -16,25 +16,22 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.when
+import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.IfConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
-import uk.gov.hmrc.statepension.{NinoGenerator, UnitSpec}
+import utils.StatePensionBaseSpec
 
 import scala.concurrent.Future
 
-class DashboardServiceSpec extends UnitSpec with NinoGenerator with EitherValues with BeforeAndAfterEach {
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
 
   val mockIfConnector: IfConnector = mock[IfConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -53,16 +50,16 @@ class DashboardServiceSpec extends UnitSpec with NinoGenerator with EitherValues
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockIfConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
+    when(mockIfConnector.getLiabilities(any())(any()))
       .thenReturn(Future.successful(List()))
-    when(mockIfConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
+    when(mockIfConnector.getNIRecord(any())(any()))
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
   "getStatement" should {
     "return StatePension data" when {
       "Summary data has false for MCI check" in {
-        when(mockIfConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockIfConnector.getSummary(any())(any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
 
         val result = sut.getStatement(generateNino()).futureValue
@@ -72,11 +69,11 @@ class DashboardServiceSpec extends UnitSpec with NinoGenerator with EitherValues
 
     "return MCI exclusion" when {
       "summary data has true for MCI check" in {
-        when(mockIfConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
+        when(mockIfConnector.getSummary(any())(any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(true))))
 
         val result = sut.getStatement(generateNino()).futureValue
-        result.left.value.exclusionReasons mustBe List(Exclusion.ManualCorrespondenceIndicator)
+        result.left.value.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
       }
     }
   }

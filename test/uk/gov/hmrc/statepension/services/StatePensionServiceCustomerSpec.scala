@@ -30,7 +30,7 @@ import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
+import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.{ExecutionContext, Future}
 

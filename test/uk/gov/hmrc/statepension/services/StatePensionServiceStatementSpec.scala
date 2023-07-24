@@ -29,7 +29,7 @@ import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.connectors.NpsConnector
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Exclusion, Scenario, StatePension}
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
+import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.{ExecutionContext, Future}
 

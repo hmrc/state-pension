@@ -53,6 +53,14 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+   <logger name="org.mongodb" level="OFF">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+   <logger name="play.shaded.ahc.org.asynchttpclient" level="OFF">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
     <logger name="com.google.inject" level="INFO"/>
 
     <root level="DEBUG">

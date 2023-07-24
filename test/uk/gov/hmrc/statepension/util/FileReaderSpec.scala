@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.statepension.util
 
-import uk.gov.hmrc.statepension.UnitSpec
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.TaxYearResolver
+import utils.StatePensionBaseSpec
 
-class FileReaderSpec extends UnitSpec {
+class FileReaderSpec extends StatePensionBaseSpec {
 
   "getTaxRatesByYear" should {
     "return Exception" when {

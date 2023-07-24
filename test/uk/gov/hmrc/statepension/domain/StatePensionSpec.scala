@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.statepension.domain
 
+import utils.StatePensionBaseSpec
 import java.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 
 class StatePensionSpec extends StatePensionBaseSpec {
 

@@ -17,9 +17,9 @@
 package uk.gov.hmrc.statepension.services
 
 import java.time.LocalDate
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.Liability
+import utils.StatePensionBaseSpec
 
 class ExclusionServiceSpec extends StatePensionBaseSpec {
 

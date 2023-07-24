@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension
+package uk.gov.hmrc.statepension.models
 
-import org.scalatest.BeforeAndAfterEach
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
-trait StatePensionBaseSpec extends UnitSpec with NinoGenerator with BeforeAndAfterEach {
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+case object ProxyCacheToggle extends FeatureFlagName {
+  val name = "ni-and-sp-proxy-cache"
 }

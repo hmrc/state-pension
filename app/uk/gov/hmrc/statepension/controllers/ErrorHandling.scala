@@ -43,42 +43,53 @@ trait ErrorHandling {
   def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result]
 }
 
-class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig, copeRepository: CopeProcessingRepository, copeFailedCache: CopeFailedCache) extends BackendController(cc)
-  with ErrorHandling with Logging {
+class CopeErrorHandling @Inject()(
+  cc: ControllerComponents,
+  appConfig: AppConfig,
+  copeRepository: CopeProcessingRepository,
+  copeFailedCache: CopeFailedCache
+) extends BackendController(cc)
+    with ErrorHandling
+    with Logging {
 
-  override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  override def errorWrapper(func: => Future[Result], nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     func.recoverWith {
-      case WithStatusCode(NOT_FOUND) => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
-      case _: NotFoundException => Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
-      case e@WithStatusCode(GATEWAY_TIMEOUT) => logger.error(s"$app Gateway Timeout: ${e.getMessage}", e); Future.successful(GatewayTimeout)
-      case e@WithStatusCode(BAD_GATEWAY) => logger.error(s"$app Bad Gateway: ${e.getMessage}", e); Future.successful(BadGateway)
+      case WithStatusCode(NOT_FOUND) | _: NotFoundException =>
+        Future.successful(NotFound(Json.toJson[ErrorResponse](ErrorNotFound)))
+      case e@WithStatusCode(GATEWAY_TIMEOUT) =>
+        logger.error(s"$app Gateway Timeout: ${e.getMessage}", e)
+        Future.successful(GatewayTimeout)
+      case e@WithStatusCode(BAD_GATEWAY) =>
+        logger.error(s"$app Bad Gateway: ${e.getMessage}", e)
+        Future.successful(BadGateway)
       case WithStatusCode(BAD_REQUEST) =>
         Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
-      case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") => defineCopeResponse(nino)
-      case e@WithStatusCode(UNPROCESSABLE_ENTITY) if  e.message.contains("CLOSED_COPE_WORK_ITEM") =>
-        copeFailedCache.insert(HashedNino(nino)) flatMap {
-          _ =>
-            copeRepository.delete(HashedNino(nino)) map { _ =>
-              Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
-            }
+      case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
+        defineCopeResponse(nino)
+      case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("CLOSED_COPE_WORK_ITEM") =>
+        copeFailedCache.insert(HashedNino(nino)) flatMap { _ =>
+          copeRepository.delete(HashedNino(nino)) map { _ =>
+            Forbidden(Json.toJson[ErrorResponseCopeFailed](ErrorResponses.ExclusionCopeProcessingFailed))
+          }
         }
-      case Upstream4xxResponse(e) => logger.error(s"$app Upstream4XX: ${e.getMessage}", e); Future.successful(BadGateway)
-      case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e); Future.successful(BadGateway)
+      case Upstream4xxResponse(e) =>
+        logger.error(s"$app Upstream4XX: ${e.getMessage}", e)
+        Future.successful(BadGateway)
+      case Upstream5xxResponse(e) => logger.error(s"$app Upstream5XX: ${e.getMessage}", e)
+        Future.successful(BadGateway)
       case e: Throwable =>
         logger.error(s"$app Internal server error: ${e.getMessage}", e)
         Future.successful(InternalServerError(Json.toJson(ErrorInternalServerError)))
     }
-  }
 
   private def defineCopeResponse(nino: Nino)(implicit ec: ExecutionContext): Future[Result] = {
     val today = LocalDate.now()
 
     copeRepository.find(HashedNino(nino)) map {
-      case None => {
+      case None =>
         copeRepository.insert(CopeRecord(HashedNino(nino).generateHash()(appConfig), today, today.plusWeeks(appConfig.returnToServiceWeeks), None))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
-      }
-      case Some(entry) => {
+      case Some(entry) =>
         val availableDateFromEntry: LocalDate = entry.copeAvailableDate
         val availableDateFromConfig: LocalDate = entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)
 
@@ -95,8 +106,6 @@ class CopeErrorHandling @Inject()(cc: ControllerComponents, appConfig: AppConfig
             )
           ))
         }
-
-      }
     }
   }
 }

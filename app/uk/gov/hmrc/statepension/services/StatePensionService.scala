@@ -41,16 +41,12 @@ trait StatePensionService {
 
   def now: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
 
-  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] = {
-
-    val summaryF =  nps.getSummary(nino)
-    val liablitiesF = nps.getLiabilities(nino)
-    val niRecordF = nps.getNIRecord(nino)
+  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] =
 
     for {
-      summary <- summaryF
-      liablities <- liablitiesF
-      niRecord <- niRecordF
+      summary              <- nps.getSummary(nino)
+      liabilities          <- nps.getLiabilities(nino)
+      niRecord             <- nps.getNIRecord(nino)
       manualCorrespondence <- getMCI(summary, nino)
     } yield {
 
@@ -61,7 +57,7 @@ trait StatePensionService {
         summary.amounts.pensionEntitlement,
         summary.amounts.startingAmount2016,
         forecastingService.calculateStartingAmount(summary.amounts.amountA2016.total, summary.amounts.amountB2016.mainComponent),
-        liablities,
+        liabilities,
         manualCorrespondence
       ).getExclusions
 
@@ -139,9 +135,8 @@ trait StatePensionService {
         Right(statePension)
       }
     }
-  }
 
-  private[services] def filterExclusions(exclusions: List[Exclusion]): Exclusion = {
+  private[services] def filterExclusions(exclusions: List[Exclusion]): Exclusion =
     if (exclusions.contains(Dead)) {
       Dead
     } else if (exclusions.contains(ManualCorrespondenceIndicator)) {
@@ -155,9 +150,8 @@ trait StatePensionService {
     } else {
       throw new RuntimeException(s"Un-accounted for exclusion in NpsConnection: $exclusions")
     }
-  }
 
-  private[services] def auditSummary(nino: Nino, summary: Summary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit = {
+  private[services] def auditSummary(nino: Nino, summary: Summary, qualifyingYears: Int, exclusions: List[Exclusion])(implicit hc: HeaderCarrier): Unit =
     //Audit Des Data used in calculation
     customAuditConnector.sendEvent(Forecasting(
       nino,
@@ -168,13 +162,10 @@ trait StatePensionService {
       summary.finalRelevantStartYear,
       exclusions
     ))
-  }
 
   final val CHANGE_SPA_MIN_DATE = LocalDate.of(1970, 4, 6)
   final val CHANGE_SPA_MAX_DATE = LocalDate.of(1978, 4, 5)
 
-  private def checkStatePensionAgeUnderConsideration(dateOfBirth: LocalDate): Boolean = {
+  private def checkStatePensionAgeUnderConsideration(dateOfBirth: LocalDate): Boolean =
     !dateOfBirth.isBefore(CHANGE_SPA_MIN_DATE)  && !dateOfBirth.isAfter(CHANGE_SPA_MAX_DATE)
-  }
-
 }

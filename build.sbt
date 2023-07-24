@@ -7,7 +7,8 @@ val appName = "state-pension"
 
 scalaVersion := "2.13.8"
 
-val suppressedImports = Seq("-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlFeatureImports._",
+val suppressedImports = Seq(
+  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlFeatureImports._",
   "-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlHelperImports._",
   "-P:silencer:lineContentFilters=import _root_.play.twirl.api.Html",
   "-P:silencer:lineContentFilters=import _root_.play.twirl.api.JavaScript",
@@ -19,7 +20,8 @@ val suppressedImports = Seq("-P:silencer:lineContentFilters=import _root_.play.t
   "-P:silencer:lineContentFilters=import views.html._",
   "-P:silencer:lineContentFilters=import play.api.templates.PlayMagic._",
   "-P:silencer:lineContentFilters=import play.api.mvc._",
-  "-P:silencer:lineContentFilters=import play.api.data._")
+  "-P:silencer:lineContentFilters=import play.api.data._"
+)
 
 scalacOptions ++= Seq("-P:silencer:pathFilters=routes")
 scalacOptions ++= suppressedImports
@@ -45,15 +47,31 @@ lazy val microservice = Project(appName, file("."))
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
-    routesImport += "uk.gov.hmrc.statepension.config.Binders._"
+    routesImport ++= Seq(
+      "uk.gov.hmrc.statepension.config.Binders._",
+      "uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName"
+    )
   )
+  .settings(inConfig(Test)(testSettings): _*)
   .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
+  .settings(inConfig(IntegrationTest)(itSettings): _*)
   .settings(
-    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory) (base => Seq(base / "it")).value,
-    addTestReportOption(IntegrationTest, "int-test-reports"),
-    IntegrationTest / parallelExecution := false
+    addTestReportOption(IntegrationTest, "int-test-reports")
   )
+
+lazy val testSettings: Seq[Def.Setting[_]] = Seq(
+  fork := true,
+  unmanagedSourceDirectories += baseDirectory.value / "test-utils" / "src"
+)
+
+lazy val itSettings = Defaults.itSettings ++ Seq(
+  fork := true,
+  parallelExecution := false,
+  unmanagedSourceDirectories := Seq(
+    baseDirectory.value / "it",
+    baseDirectory.value / "test-utils" / "src"
+  )
+)
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(

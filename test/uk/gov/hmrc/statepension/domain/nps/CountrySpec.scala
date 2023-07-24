@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.StatePensionBaseSpec
 
 class CountrySpec extends StatePensionBaseSpec {
 

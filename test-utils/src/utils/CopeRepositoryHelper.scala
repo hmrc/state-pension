@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension
+package utils
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -34,9 +34,10 @@ trait CopeRepositoryHelper extends StatePensionBaseSpec { self: GuiceOneAppPerSu
   when(mockCopeRepository.insert(any())).thenReturn(Future.successful(true))
   when(mockCopeRepository.update(any(), any(), any())).thenReturn(Future.successful(None))
 
-  val fakeAppWithOverrides =  new GuiceApplicationBuilder().overrides(
-    bind[CopeProcessingRepository].to(mockCopeRepository)
-  )
+  val fakeAppWithOverrides: GuiceApplicationBuilder =
+    new GuiceApplicationBuilder().overrides(
+      bind[CopeProcessingRepository].to(mockCopeRepository)
+    )
 
   override def fakeApplication(): Application = fakeAppWithOverrides.build()
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.config
 
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.StatePensionBaseSpec
 
 class BindersSpec extends StatePensionBaseSpec {
 

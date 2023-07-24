@@ -34,7 +34,7 @@ import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.controllers.auth.AuthActionSpec.retrievalsTestingSyntax
-import uk.gov.hmrc.statepension.{CopeRepositoryHelper, StatePensionBaseSpec}
+import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

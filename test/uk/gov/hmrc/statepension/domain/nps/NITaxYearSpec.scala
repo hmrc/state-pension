@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.statepension.StatePensionBaseSpec
+import utils.StatePensionBaseSpec
 
 class NITaxYearSpec extends StatePensionBaseSpec {
 
