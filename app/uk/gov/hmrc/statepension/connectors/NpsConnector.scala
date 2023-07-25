@@ -39,7 +39,7 @@ abstract class NpsConnector @Inject()(
 
   val http: HttpClient
   val metrics: ApplicationMetrics
-  val token: String
+  val token: Future[String]
   val originatorIdKey: String
   val originatorIdValue: String
   val environmentHeader: (String, String)

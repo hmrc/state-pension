@@ -39,7 +39,7 @@ class IfConnector @Inject()(
   override val originatorIdKey: String = serviceOriginatorIdKey
   override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
-  override val token: String = authorizationToken
+  override val token: Future[String] = Future.successful(authorizationToken)
 
   override def summaryUrl(nino: Nino): Future[String] =
     Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary")

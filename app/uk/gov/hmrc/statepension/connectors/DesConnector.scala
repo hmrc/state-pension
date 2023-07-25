@@ -43,7 +43,12 @@ class DesConnector @Inject()(
   override val originatorIdKey: String = serviceOriginatorIdKey
   override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
-  override val token: String = authorizationToken
+  override val token: Future[String] =
+    featureFlagService.get(ProxyCacheToggle) map {
+      proxyCache =>
+        if (proxyCache.isEnabled) appConfig.internalAuthToken
+        else authorizationToken
+    }
 
   override val summaryMetricType: APIType = Summary
   override val liabilitiesMetricType: APIType = Liabilities

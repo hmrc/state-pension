@@ -33,6 +33,8 @@ import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, S
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import utils.{NinoGenerator, StatePensionBaseSpec, WireMockHelper}
 
+import scala.concurrent.Future
+
 class IfConnectorSpec extends StatePensionBaseSpec
   with ScalaFutures
   with IntegrationPatience
@@ -43,6 +45,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
   val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
   lazy val ifConnector: IfConnector = GuiceApplicationBuilder()
+    .configure("internal-auth.isTestOnlyEndpoint" -> false)
     .overrides(
       bind[AppConfig].toInstance(mockAppContext),
       bind[ApplicationMetrics].toInstance(mockApplicationMetrics)
@@ -88,7 +91,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/summary"))
-          .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
+          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful(ifToken)}"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -136,7 +139,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities"))
-          .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
+          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful(ifToken)}"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -183,7 +186,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details"))
-          .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
+          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful(ifToken)}"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
