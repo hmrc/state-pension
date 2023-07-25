@@ -5,7 +5,7 @@ import scoverage.ScoverageKeys
 
 val appName = "state-pension"
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.8"
 
 scalacOptions ++= Seq(
   "-Xfatal-warnings",
