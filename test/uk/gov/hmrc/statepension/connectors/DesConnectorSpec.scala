@@ -173,7 +173,7 @@ class DesConnectorSpec
       response shouldBe expectedSummary
 
       server.verify(getRequestedFor(urlEqualTo(summaryUrl))
-        .withHeader("Authorization", equalTo(s"Bearer ${Future.successful("testToken")}"))
+        .withHeader("Authorization", equalTo("Bearer testToken"))
         .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
         .withHeader("Environment", equalTo("testEnvironment"))
         .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -309,7 +309,7 @@ class DesConnectorSpec
         Liability(Some(liabilityType))
       )
       server.verify(getRequestedFor(urlEqualTo(liabilitiesUrl))
-        .withHeader("Authorization", equalTo(s"Bearer ${Future.successful("testToken")}"))
+        .withHeader("Authorization", equalTo("Bearer testToken"))
         .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
         .withHeader("Environment", equalTo("testEnvironment"))
         .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -504,7 +504,7 @@ class DesConnectorSpec
      response shouldBe expectedNiRecord
 
      server.verify(getRequestedFor(urlEqualTo(niRecordUrl))
-       .withHeader("Authorization", equalTo(s"Bearer ${Future.successful("testToken")}"))
+       .withHeader("Authorization", equalTo("Bearer testToken"))
        .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
        .withHeader("Environment", equalTo("testEnvironment"))
        .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -635,7 +635,7 @@ class DesConnectorSpec
         desConnector.getNIRecord(nino)(headers).futureValue
 
         server.verify(getRequestedFor(urlEqualTo(proxyCacheNiRecordUrl))
-          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful("testToken")}"))
+          .withHeader("Authorization", equalTo("placeholderAuthToken"))
           .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
           .withHeader("Environment", equalTo("testEnvironment"))
           .withHeader("X-Request-ID", equalTo("testRequestId"))

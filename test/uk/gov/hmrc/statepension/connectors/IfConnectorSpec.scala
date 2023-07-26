@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
@@ -28,8 +29,11 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, UpstreamErrorResponse}
+import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
+import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import utils.{NinoGenerator, StatePensionBaseSpec, WireMockHelper}
 
@@ -44,11 +48,13 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
   val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
+  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   lazy val ifConnector: IfConnector = GuiceApplicationBuilder()
     .configure("internal-auth.isTestOnlyEndpoint" -> false)
     .overrides(
       bind[AppConfig].toInstance(mockAppContext),
-      bind[ApplicationMetrics].toInstance(mockApplicationMetrics)
+      bind[ApplicationMetrics].toInstance(mockApplicationMetrics),
+      bind[FeatureFlagService].toInstance(mockFeatureFlagService)
     ).injector().instanceOf[IfConnector]
 
   val originatorIdKey: String = "originatorIdKey"
@@ -63,6 +69,9 @@ class IfConnectorSpec extends StatePensionBaseSpec
     when(mockAppContext.ifConnectorConfig.serviceOriginatorIdValue).thenReturn(ifOriginatorIdValue)
     when(mockAppContext.ifConnectorConfig.environment).thenReturn(ifEnvironment)
     when(mockAppContext.ifConnectorConfig.authorizationToken).thenReturn(ifToken)
+    when(mockFeatureFlagService.get(any())).thenReturn(
+      Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, None))
+    )
   }
 
   implicit val hc: HeaderCarrier =
@@ -91,7 +100,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/summary"))
-          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful(ifToken)}"))
+          .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -139,7 +148,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities"))
-          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful(ifToken)}"))
+          .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
@@ -186,7 +195,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
       server.verify(1,
         getRequestedFor(urlEqualTo(s"/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details"))
-          .withHeader("Authorization", equalTo(s"Bearer ${Future.successful(ifToken)}"))
+          .withHeader("Authorization", equalTo(s"Bearer $ifToken"))
           .withHeader(originatorIdKey, equalTo(ifOriginatorIdValue))
           .withHeader("Environment", equalTo(ifEnvironment))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
