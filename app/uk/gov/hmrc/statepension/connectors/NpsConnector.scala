@@ -67,7 +67,7 @@ abstract class NpsConnector @Inject()(
         )
     }
 
-  def getLiabilities(nino: Nino): Future[List[Liability]] =
+  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
     liabilitiesUrl(nino) flatMap {
       url =>
         connectToHOD[Liabilities](
@@ -77,7 +77,7 @@ abstract class NpsConnector @Inject()(
         ).map(_.liabilities)
     }
 
-  def getNIRecord(nino: Nino): Future[NIRecord] =
+  def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
     niRecordUrl(nino) flatMap {
       url =>
         connectToHOD[NIRecord](
@@ -92,15 +92,17 @@ abstract class NpsConnector @Inject()(
     api: APIType,
     originatorId: (String, String)
   )(
-    implicit reads: Reads[A]
+    implicit headerCarrier: HeaderCarrier,
+    reads: Reads[A]
   ): Future[A] = {
     val timerContext = metrics.startTimer(api)
 
     featureFlagService.get(ProxyCacheToggle) flatMap{
       proxyCache =>
-        implicit val hc: HeaderCarrier = HeaderCarrier()
         val authToken = if (proxyCache.isEnabled) appConfig.internalAuthToken
           else s"Bearer $token"
+
+        val hc: HeaderCarrier = headerCarrier.copy(Some(Authorization(authToken)))
 
         val headers = Seq(
           HeaderNames.authorisation -> authToken,
@@ -110,7 +112,7 @@ abstract class NpsConnector @Inject()(
         )
 
         http
-          .GET[Either[UpstreamErrorResponse, HttpResponse]](url, Seq(), headers)
+          .GET[Either[UpstreamErrorResponse, HttpResponse]](url, Seq(), headers)(readEitherOf, hc, ec)
           .transform {
             result =>
               timerContext.stop()

@@ -635,7 +635,7 @@ class DesConnectorSpec
         desConnector.getNIRecord(nino)(headers).futureValue
 
         server.verify(getRequestedFor(urlEqualTo(proxyCacheNiRecordUrl))
-          .withHeader("Authorization", equalTo("placeholderAuthToken"))
+          .withHeader("Authorization", equalTo("9c75d48e-82aa-4400-8c35-b8aadb182b68"))
           .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
           .withHeader("Environment", equalTo("testEnvironment"))
           .withHeader("X-Request-ID", equalTo("testRequestId"))
