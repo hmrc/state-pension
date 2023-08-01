@@ -22,7 +22,7 @@ import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
@@ -67,7 +67,7 @@ abstract class NpsConnector @Inject()(
         )
     }
 
-  def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
+  def getLiabilities(nino: Nino): Future[List[Liability]] =
     liabilitiesUrl(nino) flatMap {
       url =>
         connectToHOD[Liabilities](
@@ -77,7 +77,7 @@ abstract class NpsConnector @Inject()(
         ).map(_.liabilities)
     }
 
-  def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
+  def getNIRecord(nino: Nino): Future[NIRecord] =
     niRecordUrl(nino) flatMap {
       url =>
         connectToHOD[NIRecord](
@@ -92,13 +92,13 @@ abstract class NpsConnector @Inject()(
     api: APIType,
     originatorId: (String, String)
   )(
-    implicit headerCarrier: HeaderCarrier,
-    reads: Reads[A]
+    implicit reads: Reads[A]
   ): Future[A] = {
     val timerContext = metrics.startTimer(api)
 
     featureFlagService.get(ProxyCacheToggle) flatMap{
       proxyCache =>
+        implicit val hc: HeaderCarrier = HeaderCarrier()
         val authToken = if (proxyCache.isEnabled) appConfig.internalAuthToken
           else s"Bearer $token"
 
