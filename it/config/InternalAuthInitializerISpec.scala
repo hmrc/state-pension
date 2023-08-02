@@ -1,5 +1,6 @@
 package config
 
+import akka.Done
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, getRequestedFor, post, postRequestedFor, urlMatching}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -8,7 +9,6 @@ import play.api.http.Status.{CREATED, NOT_FOUND, OK}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.statepension.config.InternalAuthTokenInitializer
-import uk.gov.hmrc.statepension.models.Done
 import utils.{ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
 
 class InternalAuthInitializerISpec extends StatePensionBaseSpec
