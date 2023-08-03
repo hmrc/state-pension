@@ -40,7 +40,6 @@ class InternalAuthInitializerISpec extends StatePensionBaseSpec
             "microservice.services.internal-auth.port" -> server.port(),
             "appName" -> appName,
             "internal-auth.token" -> authToken,
-            "internal-auth.isTestOnlyEndpoint" -> false
           )
           .build()
 
@@ -71,7 +70,8 @@ class InternalAuthInitializerISpec extends StatePensionBaseSpec
           .configure(
             "microservice.services.internal-auth.port" -> server.port(),
             "appName" -> appName,
-            "internal-auth.token" -> authToken
+            "internal-auth.token" -> authToken,
+            "internal-auth.isTestOnlyEndpoint" -> true
           )
           .build()
 
@@ -102,7 +102,8 @@ class InternalAuthInitializerISpec extends StatePensionBaseSpec
           .configure(
             "microservice.services.internal-auth.port" -> server.port(),
             "appName" -> appName,
-            "internal-auth.token" -> authToken
+            "internal-auth.token" -> authToken,
+            "internal-auth.isTestOnlyEndpoint" -> true
           )
           .build()
 
