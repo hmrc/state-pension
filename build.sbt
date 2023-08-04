@@ -63,8 +63,7 @@ lazy val microservice = Project(appName, file("."))
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
   unmanagedSourceDirectories += baseDirectory.value / "test-utils" / "src",
-  Test / javaOptions += "-Dconfig.file=conf/test.application.conf",
-  IntegrationTest / javaOptions += "-Dconfig.file=conf/test.application.conf"
+  Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
 lazy val itSettings = Defaults.itSettings ++ Seq(
@@ -73,7 +72,8 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
     baseDirectory.value / "it",
     baseDirectory.value / "test-utils" / "src"
-  )
+  ),
+  javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
