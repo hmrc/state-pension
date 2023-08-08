@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.nps.APIType.{IfLiabilities, IfNIRecord, IfSummary}
@@ -28,10 +29,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class IfConnector @Inject()(
   val http: HttpClient,
   val metrics: ApplicationMetrics,
-  appConfig: AppConfig
+  appConfig: AppConfig,
+  featureFlagService: FeatureFlagService
 )(
   implicit ec: ExecutionContext
-) extends NpsConnector(appConfig) {
+) extends NpsConnector(appConfig, featureFlagService) {
 
   import appConfig.ifConnectorConfig._
 

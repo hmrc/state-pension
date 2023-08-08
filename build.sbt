@@ -1,4 +1,5 @@
 import play.sbt.routes.RoutesKeys._
+import sbt.Test
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import scoverage.ScoverageKeys
@@ -44,7 +45,8 @@ lazy val microservice = Project(appName, file("."))
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
-  unmanagedSourceDirectories += baseDirectory.value / "test-utils" / "src"
+  unmanagedSourceDirectories += baseDirectory.value / "test-utils" / "src",
+  Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
 lazy val itSettings = Defaults.itSettings ++ Seq(
@@ -53,7 +55,8 @@ lazy val itSettings = Defaults.itSettings ++ Seq(
   unmanagedSourceDirectories := Seq(
     baseDirectory.value / "it",
     baseDirectory.value / "test-utils" / "src"
-  )
+  ),
+  javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {

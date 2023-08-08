@@ -16,6 +16,7 @@
 
 package utils
 
+import akka.Done
 import akka.stream.Materializer
 import akka.util.ByteString
 import org.mockito.Mockito
@@ -23,6 +24,7 @@ import org.mockito.stubbing.Answer
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import play.api.cache.AsyncCacheApi
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
@@ -83,4 +85,17 @@ trait StatePensionBaseSpec
 
   def mock[T](answer: Answer[Object])(implicit ev: ClassTag[T]): T =
     Mockito.mock(ev.runtimeClass.asInstanceOf[Class[T]], answer)
+
+  val mockCacheApi: AsyncCacheApi = new AsyncCacheApi {
+    override def set(key: String, value: Any, expiration: Duration): Future[Done] = ???
+
+    override def remove(key: String): Future[Done] = Future.successful(Done)
+
+    override def getOrElseUpdate[A](key: String, expiration: Duration)(orElse: => Future[A])
+                                   (implicit evidence$1: ClassTag[A]): Future[A] = orElse
+
+    override def get[T](key: String)(implicit evidence$2: ClassTag[T]): Future[Option[T]] = ???
+
+    override def removeAll(): Future[Done] = ???
+  }
 }

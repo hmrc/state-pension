@@ -35,7 +35,7 @@ class DesConnector @Inject()(
   featureFlagService: FeatureFlagService
 )(
   implicit ec: ExecutionContext
-) extends NpsConnector(appConfig) {
+) extends NpsConnector(appConfig, featureFlagService) {
 
   import appConfig.desConnectorConfig._
 
@@ -43,7 +43,8 @@ class DesConnector @Inject()(
   override val originatorIdKey: String = serviceOriginatorIdKey
   override val originatorIdValue: String =  serviceOriginatorIdValue
   override val environmentHeader: (String, String) = ("Environment", environment)
-  override val token: String = authorizationToken
+  override val token: String  = authorizationToken
+
 
   override val summaryMetricType: APIType = Summary
   override val liabilitiesMetricType: APIType = Liabilities

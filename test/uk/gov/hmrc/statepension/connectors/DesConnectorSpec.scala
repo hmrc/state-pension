@@ -19,14 +19,11 @@ package uk.gov.hmrc.statepension.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-
-import java.time.LocalDate
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
-import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.inject.{Injector, bind}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}
@@ -40,6 +37,7 @@ import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import utils.{StatePensionBaseSpec, WireMockHelper}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class DesConnectorSpec
@@ -61,7 +59,7 @@ class DesConnectorSpec
       requestId = Some(RequestId("testRequestId"))
     )
 
-  override def fakeApplication(): Application =
+  lazy val injector: Injector =
     GuiceApplicationBuilder()
       .configure(
         "microservice.services.des-hod.port" -> server.port(),
@@ -73,13 +71,14 @@ class DesConnectorSpec
         "microservice.services.ni-and-sp-proxy-cache.host" -> "127.0.0.1",
         "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
         "api.access.type" -> "PRIVATE",
-        "cope.dwp.originatorId" -> "dwpId"
+        "cope.dwp.originatorId" -> "dwpId",
+        "internal-auth.isTestOnlyEndpoint" -> false
       )
       .overrides(
         bind[ApplicationMetrics].toInstance(mockMetrics),
         bind[CopeProcessingRepository].toInstance(mockCopeRepository),
         bind[FeatureFlagService].toInstance(mockFeatureFlagService)
-      ).build()
+      ).injector()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -89,7 +88,7 @@ class DesConnectorSpec
     Mockito.reset(mockMetrics)
   }
 
-  lazy val desConnector: DesConnector = app.injector.instanceOf[DesConnector]
+  lazy val desConnector: DesConnector = injector.instanceOf[DesConnector]
 
   "getSummary" should {
 
@@ -636,7 +635,7 @@ class DesConnectorSpec
         desConnector.getNIRecord(nino)(headers).futureValue
 
         server.verify(getRequestedFor(urlEqualTo(proxyCacheNiRecordUrl))
-          .withHeader("Authorization", equalTo("Bearer testToken"))
+          .withHeader("Authorization", equalTo("9c75d48e-82aa-4400-8c35-b8aadb182b68"))
           .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
           .withHeader("Environment", equalTo("testEnvironment"))
           .withHeader("X-Request-ID", equalTo("testRequestId"))

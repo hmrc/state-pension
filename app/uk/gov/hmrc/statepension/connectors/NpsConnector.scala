@@ -22,9 +22,11 @@ import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import java.util.UUID.randomUUID
@@ -32,7 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 abstract class NpsConnector @Inject()(
-  appConfig: AppConfig
+  appConfig: AppConfig,
+  featureFlagService: FeatureFlagService
 )(
   implicit ec: ExecutionContext
 ) extends Logging {
@@ -93,36 +96,45 @@ abstract class NpsConnector @Inject()(
     reads: Reads[A]
   ): Future[A] = {
     val timerContext = metrics.startTimer(api)
-    val headers = Seq(
-      HeaderNames.authorisation -> s"Bearer $token",
-      "CorrelationId" -> randomUUID().toString,
-      environmentHeader,
-      originatorId
-    )
 
-    http
-      .GET[Either[UpstreamErrorResponse, HttpResponse]](url, Seq(), headers)
-      .transform {
-        result =>
-          timerContext.stop()
-          result
-      }.map {
-        case Right(httpResponse) =>
-          Try(httpResponse.json.validate[A]).flatMap {
-            _.fold(
-              errs =>
-                Failure(new JsonValidationException(formatJsonErrors(errs.asInstanceOf[scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]]))),
-              valid =>
-                Success(valid)
-            )
-          }
-        case Left(error) =>
-          Failure(error)
-      } recover {
-        // http-verbs throws exceptions, convert to Try
-        case ex =>
-          Failure(ex)
-      } flatMap(handleResult(api, _))
+    featureFlagService.get(ProxyCacheToggle) flatMap{
+      proxyCache =>
+        val authToken = if (proxyCache.isEnabled) appConfig.internalAuthToken
+          else s"Bearer $token"
+
+        val hc: HeaderCarrier = headerCarrier.copy(Some(Authorization(authToken)))
+
+        val headers = Seq(
+          HeaderNames.authorisation -> authToken,
+          "CorrelationId" -> randomUUID().toString,
+          environmentHeader,
+          originatorId
+        )
+
+        http
+          .GET[Either[UpstreamErrorResponse, HttpResponse]](url, Seq(), headers)(readEitherOf, hc, ec)
+          .transform {
+            result =>
+              timerContext.stop()
+              result
+          }.map {
+          case Right(httpResponse) =>
+            Try(httpResponse.json.validate[A]).flatMap {
+              _.fold(
+                errs =>
+                  Failure(new JsonValidationException(formatJsonErrors(errs.asInstanceOf[scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]]))),
+                valid =>
+                  Success(valid)
+              )
+            }
+          case Left(error) =>
+            Failure(error)
+        } recover {
+          // http-verbs throws exceptions, convert to Try
+          case ex =>
+            Failure(ex)
+        } flatMap(handleResult(api, _))
+    }
   }
 
   private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] =
