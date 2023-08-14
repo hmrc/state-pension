@@ -18,7 +18,7 @@ import play.sbt.PlayImport._
 import sbt._
 
 object AppDependencies {
-  val bootstrapVersion = "7.19.0"
+  val bootstrapVersion = "7.20.0"
 
   val compile: Seq[ModuleID] = Seq(
     ws,
@@ -38,11 +38,6 @@ object AppDependencies {
     "uk.gov.hmrc"             %%  "play-hal"                % "3.4.0-play-28"
   ).map(_ % "test,it")
 
-  private val silencerDependencies: Seq[ModuleID] = Seq(
-    compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.8" cross CrossVersion.full),
-    "com.github.ghik" % "silencer-lib" % "1.7.8" % Provided cross CrossVersion.full
-  )
-
-  val all: Seq[ModuleID] = compile ++ test ++ silencerDependencies
+  val all: Seq[ModuleID] = compile ++ test
 
 }

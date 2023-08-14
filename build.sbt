@@ -8,24 +8,6 @@ val appName = "state-pension"
 
 scalaVersion := "2.13.8"
 
-val suppressedImports = Seq(
-  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlFeatureImports._",
-  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.TwirlHelperImports._",
-  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.Html",
-  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.JavaScript",
-  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.Txt",
-  "-P:silencer:lineContentFilters=import _root_.play.twirl.api.Xml",
-  "-P:silencer:lineContentFilters=import models._",
-  "-P:silencer:lineContentFilters=import controllers._",
-  "-P:silencer:lineContentFilters=import play.api.i18n._",
-  "-P:silencer:lineContentFilters=import views.html._",
-  "-P:silencer:lineContentFilters=import play.api.templates.PlayMagic._",
-  "-P:silencer:lineContentFilters=import play.api.mvc._",
-  "-P:silencer:lineContentFilters=import play.api.data._"
-)
-
-scalacOptions ++= Seq("-P:silencer:pathFilters=routes")
-scalacOptions ++= suppressedImports
 scalacOptions ++= Seq(
   "-Xfatal-warnings",
   "-Xmaxerrs", "1000", // Maximum errors to print
@@ -47,6 +29,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 2,
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
+    ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     retrieveManaged := true,
     routesImport ++= Seq(
       "uk.gov.hmrc.statepension.config.Binders._",
