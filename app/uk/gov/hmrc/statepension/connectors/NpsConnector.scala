@@ -18,37 +18,35 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.{JsPath, JsonValidationError, Reads}
+import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 
 abstract class NpsConnector @Inject()(
   appConfig: AppConfig,
-  featureFlagService: FeatureFlagService
+  connectorUtil: ConnectorUtil
 )(
   implicit ec: ExecutionContext
 ) extends Logging {
 
-  val http: HttpClient
+  val http: HttpClientV2
   val metrics: ApplicationMetrics
   val token: String
   val originatorIdKey: String
   val originatorIdValue: String
   val environmentHeader: (String, String)
-  def summaryUrl(nino: Nino): Future[String]
-  def liabilitiesUrl(nino: Nino): Future[String]
-  def niRecordUrl(nino: Nino): Future[String]
+  def summaryUrl(nino: Nino): String
+  def liabilitiesUrl(nino: Nino): String
+  def niRecordUrl(nino: Nino): String
 
   val summaryMetricType: APIType
   val liabilitiesMetricType: APIType
@@ -57,34 +55,39 @@ abstract class NpsConnector @Inject()(
   private val serviceOriginatorId: String  => (String, String) = (originatorIdKey, _)
 
   def getSummary(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[Summary] =
-    summaryUrl(nino) flatMap {
-      url =>
-
-        connectToHOD[Summary](
-          url          = url,
-          api          = summaryMetricType,
-          originatorId = serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
-        )
+    connectToHOD[Summary](
+      url          = summaryUrl(nino),
+      api          = summaryMetricType,
+      originatorId = serviceOriginatorId(setServiceOriginatorId(originatorIdValue))
+    ) flatMap {
+      case Right(summary) =>
+        Future.successful(summary)
+      case Left(error) =>
+        Future.failed(error)
     }
 
   def getLiabilities(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[List[Liability]] =
-    liabilitiesUrl(nino) flatMap {
-      url =>
-        connectToHOD[Liabilities](
-          url          = url,
-          api          = liabilitiesMetricType,
-          originatorId = serviceOriginatorId(originatorIdValue)
-        ).map(_.liabilities)
+    connectToHOD[Liabilities](
+      url          = liabilitiesUrl(nino),
+      api          = liabilitiesMetricType,
+      originatorId = serviceOriginatorId(originatorIdValue)
+    ) flatMap {
+      case Right(liabilities) =>
+        Future.successful(liabilities.liabilities)
+      case Left(error) =>
+        Future.failed(error)
     }
 
   def getNIRecord(nino: Nino)(implicit headerCarrier: HeaderCarrier): Future[NIRecord] =
-    niRecordUrl(nino) flatMap {
-      url =>
-        connectToHOD[NIRecord](
-          url          = url,
-          api          = niRecordMetricType,
-          originatorId = serviceOriginatorId(originatorIdValue)
-        )
+    connectToHOD[NIRecord](
+      url          = niRecordUrl(nino),
+      api          = niRecordMetricType,
+      originatorId = serviceOriginatorId(originatorIdValue)
+    ) flatMap {
+      case Right(niRecord) =>
+        Future.successful(niRecord)
+      case Left(error) =>
+        Future.failed(error)
     }
 
   private def connectToHOD[A](
@@ -94,57 +97,33 @@ abstract class NpsConnector @Inject()(
   )(
     implicit headerCarrier: HeaderCarrier,
     reads: Reads[A]
-  ): Future[A] = {
+  ): Future[Either[Exception, A]] = {
     val timerContext = metrics.startTimer(api)
 
-    featureFlagService.get(ProxyCacheToggle) flatMap{
-      proxyCache =>
-        val authToken = if (proxyCache.isEnabled) appConfig.internalAuthToken
-          else s"Bearer $token"
-
-        val hc: HeaderCarrier = headerCarrier.copy(Some(Authorization(authToken)))
-
-        val headers = Seq(
-          HeaderNames.authorisation -> authToken,
-          "CorrelationId" -> randomUUID().toString,
-          environmentHeader,
-          originatorId
-        )
-
-        http
-          .GET[Either[UpstreamErrorResponse, HttpResponse]](url, Seq(), headers)(readEitherOf, hc, ec)
-          .transform {
-            result =>
-              timerContext.stop()
-              result
-          }.map {
-          case Right(httpResponse) =>
-            Try(httpResponse.json.validate[A]).flatMap {
-              _.fold(
-                errs =>
-                  Failure(new JsonValidationException(formatJsonErrors(errs.asInstanceOf[scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]]))),
-                valid =>
-                  Success(valid)
-              )
-            }
-          case Left(error) =>
-            Failure(error)
-        } recover {
-          // http-verbs throws exceptions, convert to Try
-          case ex =>
-            Failure(ex)
-        } flatMap(handleResult(api, _))
+    connectorUtil.handleConnectorResponse(
+      http
+        .get(url"$url")
+        .setHeader(HeaderNames.authorisation -> s"Bearer $token")
+        .setHeader("CorrelationId" -> randomUUID().toString)
+        .setHeader(environmentHeader)
+        .setHeader(originatorId)
+        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+        .transform {
+          result =>
+            timerContext.stop()
+            result
+        }
+    ) map {
+      result =>
+        result match {
+          case Left(_) =>
+            metrics.incrementFailedCounter(api)
+          case Right(_) =>
+            ()
+        }
+        result
     }
   }
-
-  private def handleResult[A](api: APIType, tryResult: Try[A]): Future[A] =
-    tryResult match {
-      case Failure(ex) =>
-        metrics.incrementFailedCounter(api)
-        Future.failed(ex)
-      case Success(value) =>
-        Future.successful(value)
-    }
 
   private def getHeaderValueByKey(key: String)(implicit headerCarrier: HeaderCarrier): String =
     headerCarrier.headers(Seq(key)).toMap.getOrElse(key, "Header not found")
@@ -157,12 +136,5 @@ abstract class NpsConnector @Inject()(
         value
     }
   }
-
-  private def formatJsonErrors(errors: scala.collection.immutable.Seq[(JsPath, scala.collection.immutable.Seq[JsonValidationError])]): String =
-    errors
-      .map(p => s"${p._1.toString()} - ${p._2.map(_.message).mkString(",")}")
-      .mkString(" | ")
-
-  class JsonValidationException(message: String) extends Exception(message)
 }
 

@@ -17,38 +17,13 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.libs.json.Json
+import utils.ProxyCacheTestData.liabilitiesJson
 import utils.StatePensionBaseSpec
 
 class LiabilitySpec extends StatePensionBaseSpec {
 
   "Liability" should {
     "deserialise correctly" in {
-      val jsonPayload =
-        """
-          |{
-          |    "liabilities": [
-          |        {
-          |            "awardAmount": 123.49,
-          |            "liabilityOccurrenceNo": 89,
-          |            "liabilityType": 45,
-          |            "liabilityTypeEndDate": "2014-08-25",
-          |            "liabilityTypeEndDateReason": "END DATE HELD",
-          |            "liabilityTypeStartDate": "2014-08-25",
-          |            "nino":"SK196234"
-          |        },
-          |        {
-          |            "awardAmount": 456.54,
-          |            "liabilityOccurrenceNo": 90,
-          |            "liabilityType": 45,
-          |            "liabilityTypeEndDate": "2018-08-25",
-          |            "liabilityTypeEndDateReason": "END DATE HELD",
-          |            "liabilityTypeStartDate": "2017-08-26",
-          |            "nino":"SK196234"
-          |        }
-          |
-          |    ]
-          |}
-        """.stripMargin
 
       val testData = Liabilities(
         List(
@@ -57,7 +32,7 @@ class LiabilitySpec extends StatePensionBaseSpec {
         )
       )
 
-      Json.parse(jsonPayload).as[Liabilities] shouldBe testData
+      Json.parse(liabilitiesJson).as[Liabilities] shouldBe testData
     }
 
     "give an emptyList for empty json object" in {
