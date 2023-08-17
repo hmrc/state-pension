@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.ArgumentMatchers._
+import org.mockito.ArgumentMatchers.{eq => mockEq, _}
+import org.mockito.Mockito
 import org.mockito.Mockito.{never, times, verify, when}
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.Injecting
@@ -161,7 +161,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.Dead)
+          mockEq(Exclusion.Dead)
         )
       }
 
@@ -232,7 +232,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.PostStatePensionAge)
+          mockEq(Exclusion.PostStatePensionAge)
         )
       }
 
@@ -312,22 +312,22 @@ class StatePensionServiceCustomerProxyCacheSpec
         await(service().getStatement(generateNino()).toOption.get)
 
         verify(mockMetrics, times(1)).summary(
-          ArgumentMatchers.eq[BigDecimal](155.65),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq(false),
-          ArgumentMatchers.eq(Scenario.ContinueWorkingMax),
-          ArgumentMatchers.eq[BigDecimal](155.65),
-          ArgumentMatchers.eq(28),
-          ArgumentMatchers.eq(Some(ContinueWorking)),
-          ArgumentMatchers.eq[BigDecimal](35.58),
-          ArgumentMatchers.eq[BigDecimal](31.81),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq[BigDecimal](35.58),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq(true),
-          ArgumentMatchers.eq(Some(32.61)),
-          ArgumentMatchers.eq(false)
+          mockEq[BigDecimal](155.65),
+          mockEq[BigDecimal](0),
+          mockEq(false),
+          mockEq(Scenario.ContinueWorkingMax),
+          mockEq[BigDecimal](155.65),
+          mockEq(28),
+          mockEq(Some(ContinueWorking)),
+          mockEq[BigDecimal](35.58),
+          mockEq[BigDecimal](31.81),
+          mockEq[BigDecimal](0),
+          mockEq[BigDecimal](0),
+          mockEq[BigDecimal](35.58),
+          mockEq[BigDecimal](0),
+          mockEq(true),
+          mockEq(Some(32.61)),
+          mockEq(false)
         )
       }
     }
@@ -386,7 +386,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         await(service().getStatement(generateNino()).futureValue.left.toOption.get)
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.AmountDissonance)
+          mockEq(Exclusion.AmountDissonance)
         )
       }
 
@@ -443,7 +443,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         await(service().getStatement(generateNino()).left.toOption.get)
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.IsleOfMan)
+          mockEq(Exclusion.IsleOfMan)
         )
       }
 
@@ -505,7 +505,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         await(service(true).getStatement(generateNino()).left.toOption.get)
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.ManualCorrespondenceIndicator)
+          mockEq(Exclusion.ManualCorrespondenceIndicator)
         )
       }
 

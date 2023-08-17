@@ -600,37 +600,5 @@ class DesConnectorSpec
         )
       }
     }
-
-//    "call proxy cache with correct url and headers" when {
-//      val nino = generateNino()
-//
-//      val headers: HeaderCarrier = hc.withExtraHeaders(
-//        "X-Session-ID" -> "testSessionId",
-//        "X-Request-ID" -> "testRequestId"
-//      )
-//
-//      val proxyCacheNiRecordUrl: String =
-//        s"/ni-and-sp-proxy-cache/${nino.nino}/ni"
-//
-//      "ProxyCacheToggle enabled" in {
-//        when(mockFeatureFlagService.get(any())).thenReturn(
-//          Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true, None))
-//        )
-//
-//        server.stubFor(get(urlEqualTo(proxyCacheNiRecordUrl))
-//          .willReturn(ok().withBody("{}")))
-//
-//        desConnector.getNIRecord(nino)(headers).futureValue
-//
-//        server.verify(getRequestedFor(urlEqualTo(proxyCacheNiRecordUrl))
-//          .withHeader("Authorization", equalTo("9c75d48e-82aa-4400-8c35-b8aadb182b68"))
-//          .withHeader("testOriginatorKey", equalTo("testOriginatorId"))
-//          .withHeader("Environment", equalTo("testEnvironment"))
-//          .withHeader("X-Request-ID", equalTo("testRequestId"))
-//          .withHeader("X-Session-ID", equalTo("testSessionId"))
-//        )
-//      }
-//    }
-
   }
 }
