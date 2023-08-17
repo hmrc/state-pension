@@ -35,13 +35,4 @@ object ProxyCacheData {
       (summary, niRecord, liabilities) =>
         ProxyCacheData(summary, niRecord, liabilities)
     )
-
-//  implicit def writes: Writes[ProxyCacheData] =
-//    (
-//      (__ \ "summary").write[Summary] and
-//      (__ \ "niRecord").write[NIRecord] and
-//      (__ \ "liabilities").write[List[Liability]]
-//    )(
-//      unlift(ProxyCacheData.unapply)
-//    )
 }
