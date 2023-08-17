@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import java.time.LocalDate
 import play.api.libs.json.Json
-import utils.ProxyCacheTestData.summary
+import utils.ProxyCacheTestData.summaryJson
 import utils.StatePensionBaseSpec
+
+import java.time.LocalDate
 
 class SummarySpec extends StatePensionBaseSpec {
 
@@ -57,7 +58,7 @@ class SummarySpec extends StatePensionBaseSpec {
         manualCorrespondenceIndicator = None
       )
 
-      Json.parse(summary).as[Summary] shouldBe result
+      Json.parse(summaryJson).as[Summary] shouldBe result
     }
   }
 

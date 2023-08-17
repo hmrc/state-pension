@@ -44,7 +44,6 @@ class ConnectorUtil @Inject()(
       case Left(error) =>
         Left(error)
     } recover {
-      // http-verbs throws exceptions, convert to Try
       case ex: HttpException =>
         Left(ex)
       case ex =>
@@ -52,7 +51,7 @@ class ConnectorUtil @Inject()(
     }
   }
 
-  def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String =
+  private def formatJsonErrors(errors: Seq[(JsPath, Seq[JsonValidationError])]): String =
     errors
       .map(p => s"${p._1.toString()} - ${p._2.map(_.message).mkString(",")}")
       .mkString(" | ")

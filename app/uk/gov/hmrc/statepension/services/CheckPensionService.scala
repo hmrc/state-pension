@@ -17,11 +17,14 @@
 package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.{DesConnector, ProxyCacheConnector}
+import uk.gov.hmrc.statepension.domain.nps.Summary
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class CheckPensionService @Inject()(
   override val nps: DesConnector,
@@ -31,5 +34,9 @@ class CheckPensionService @Inject()(
   override val customAuditConnector: AuditConnector,
   override val executionContext: ExecutionContext,
   override val featureFlagService: FeatureFlagService,
-  override val proxyCacheConnector: ProxyCacheConnector
-) extends StatePensionService
+  override val proxyCacheConnector: ProxyCacheConnector,
+  val citizenDetailsService: CitizenDetailsService
+) extends StatePensionService {
+  override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+    citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, executionContext)
+}

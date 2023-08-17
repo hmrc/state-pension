@@ -29,6 +29,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.models.ProxyCacheToggle
+import uk.gov.hmrc.statepension.services.CitizenDetailsService
 import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
 
 import scala.concurrent.Future
@@ -44,9 +45,7 @@ class StatePensionControllerISpec
   private val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
   private val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
   private val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
-  private val proxyCacheSummaryUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}/summary"
-  private val proxyCacheLiabilitiesUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}/liabilities"
-  private val proxyCacheNiRecordUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}/ni"
+  private val proxyCacheUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}"
   private val checkPensionControllerUrl: String = s"/ni/$nino"
 
   private val defaultHeaders: Seq[(String, String)] = Seq(
@@ -56,6 +55,8 @@ class StatePensionControllerISpec
 
   private val mockFeatureFlagService: FeatureFlagService =
     mock[FeatureFlagService]
+  private val mockCitizenDetailsService: CitizenDetailsService =
+    mock[CitizenDetailsService]
 
   private def generateAuthHeaderResponse: String =
     s"""
@@ -90,14 +91,16 @@ class StatePensionControllerISpec
         "auditing.enabled" -> false
       )
       .overrides(
-        bind[FeatureFlagService].toInstance(mockFeatureFlagService)
+        bind[FeatureFlagService].toInstance(mockFeatureFlagService),
+        bind[CitizenDetailsService].toInstance(mockCitizenDetailsService),
       )
       .build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
-//    Mockito.reset(mockFeatureFlagService)
+    when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(false))
   }
 
   private val requests = List(
@@ -145,9 +148,8 @@ class StatePensionControllerISpec
           when(mockFeatureFlagService.get(ArgumentMatchers.any[FeatureFlagName]())).thenReturn(
             Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true))
           )
-          stubGetServer(response, proxyCacheSummaryUrl)
-          stubGetServer(response, proxyCacheLiabilitiesUrl)
-          stubGetServer(response, proxyCacheNiRecordUrl)
+
+          stubGetServer(response, proxyCacheUrl)
 
           val request = FakeRequest(GET, checkPensionControllerUrl)
             .withHeaders(defaultHeaders: _*)

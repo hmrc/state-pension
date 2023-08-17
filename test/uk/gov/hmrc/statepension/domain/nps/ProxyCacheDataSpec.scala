@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.domain.nps
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import utils.ProxyCacheTestData._
 
 class ProxyCacheDataSpec
   extends AnyWordSpecLike
@@ -25,9 +26,9 @@ class ProxyCacheDataSpec
 
   "ProxyCacheData" must {
     "read correctly" in {
-      proxyCacheData.summary shouldBe desSummary
-      proxyCacheData.nIRecord shouldBe desNIRecord
-      proxyCacheData.liabilities shouldBe desLiabilities
+      proxyCacheData.summary shouldBe summary
+      proxyCacheData.nIRecord shouldBe niRecord
+      proxyCacheData.liabilities shouldBe liabilities
     }
   }
 }

@@ -22,7 +22,7 @@ import play.api.libs.json._
 case class ProxyCacheData(
   summary: Summary,
   nIRecord: NIRecord,
-  liabilities: List[Liability]
+  liabilities: Liabilities
 )
 
 object ProxyCacheData {
@@ -30,7 +30,7 @@ object ProxyCacheData {
     (
       (__ \ "summary" ).read[Summary] and
       (__ \ "niRecord" ).read[NIRecord] and
-      (__ \ "liabilities" ).read[List[Liability]]
+      (__ \ "liabilities" ).read[Liabilities]
     )(
       (summary, niRecord, liabilities) =>
         ProxyCacheData(summary, niRecord, liabilities)

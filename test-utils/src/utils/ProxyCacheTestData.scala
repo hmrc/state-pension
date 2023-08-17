@@ -17,10 +17,7 @@
 package utils
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.statepension.domain.nps.{Liability, NIRecord, ProxyCacheData, Summary}
-
-import java.time.LocalDate
-import scala.io.Source
+import uk.gov.hmrc.statepension.domain.nps.{Liabilities, NIRecord, ProxyCacheData, Summary}
 
 object ProxyCacheTestData {
   val niRecordJson: String =
@@ -168,7 +165,7 @@ object ProxyCacheTestData {
       |        {
       |            "awardAmount": 123.49,
       |            "liabilityOccurrenceNo": 89,
-      |            "liabilityType": 17,
+      |            "liabilityType": 45,
       |            "liabilityTypeEndDate": "2014-08-25",
       |            "liabilityTypeEndDateReason": "END DATE HELD",
       |            "liabilityTypeStartDate": "2014-08-25",
@@ -192,7 +189,7 @@ object ProxyCacheTestData {
 
   val niRecord: NIRecord = Json.parse(niRecordJson).as[NIRecord]
 
-  val liabilities: List[Liability] = Json.parse(liabilitiesJson).as[List[Liability]]
+  val liabilities: Liabilities = Json.parse(liabilitiesJson).as[Liabilities]
 
   val proxyCacheData: ProxyCacheData =
     ProxyCacheData(
