@@ -29,7 +29,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.statepension.models.ProxyCacheToggle
-import uk.gov.hmrc.statepension.services.CitizenDetailsService
 import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
 
 import scala.concurrent.Future
@@ -55,8 +54,6 @@ class StatePensionControllerISpec
 
   private val mockFeatureFlagService: FeatureFlagService =
     mock[FeatureFlagService]
-  private val mockCitizenDetailsService: CitizenDetailsService =
-    mock[CitizenDetailsService]
 
   private def generateAuthHeaderResponse: String =
     s"""
@@ -91,16 +88,13 @@ class StatePensionControllerISpec
         "auditing.enabled" -> false
       )
       .overrides(
-        bind[FeatureFlagService].toInstance(mockFeatureFlagService),
-        bind[CitizenDetailsService].toInstance(mockCitizenDetailsService),
+        bind[FeatureFlagService].toInstance(mockFeatureFlagService)
       )
       .build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
-    when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
-      .thenReturn(Future.successful(false))
   }
 
   private val requests = List(
