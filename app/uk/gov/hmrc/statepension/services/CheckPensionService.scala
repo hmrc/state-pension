@@ -23,20 +23,40 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.{DesConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.nps.Summary
+import uk.gov.hmrc.statepension.domain.{StatePension, StatePensionExclusion}
+import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class CheckPensionService @Inject()(
-  override val nps: DesConnector,
+  val nps: DesConnector,
+  val proxyCacheConnector: ProxyCacheConnector,
   override val forecastingService: ForecastingService,
   override val rateService: RateService,
   override val metrics: ApplicationMetrics,
   override val customAuditConnector: AuditConnector,
-  override val executionContext: ExecutionContext,
-  override val featureFlagService: FeatureFlagService,
-  override val proxyCacheConnector: ProxyCacheConnector,
+  implicit val executionContext: ExecutionContext,
+  val featureFlagService: FeatureFlagService,
   val citizenDetailsService: CitizenDetailsService
 ) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, executionContext)
+
+  override def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] =
+    featureFlagService.get(ProxyCacheToggle) flatMap {
+      proxyCache =>
+        if (proxyCache.isEnabled) {
+          for {
+            pcd <- proxyCacheConnector.getProxyCacheData(nino)
+            mci <- getMCI(pcd.summary, nino)
+          } yield buildStatePension(pcd.summary, pcd.liabilities.liabilities, pcd.niRecord, mci, nino)
+        } else {
+          for {
+            summary     <- nps.getSummary(nino)
+            liabilities <- nps.getLiabilities(nino)
+            niRecord    <- nps.getNIRecord(nino)
+            mci         <- getMCI(summary, nino)
+          } yield buildStatePension(summary, liabilities, niRecord, mci, nino)
+        }
+    }
 }

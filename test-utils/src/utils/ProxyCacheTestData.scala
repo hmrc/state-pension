@@ -185,16 +185,19 @@ object ProxyCacheTestData {
       |}
   """.stripMargin
 
-  val summary: Summary = Json.parse(summaryJson).as[Summary]
+  val summary: Summary =
+    Json.parse(summaryJson).as[Summary]
 
-  val niRecord: NIRecord = Json.parse(niRecordJson).as[NIRecord]
+  val niRecord: NIRecord =
+    Json.parse(niRecordJson).as[NIRecord]
 
-  val liabilities: Liabilities = Json.parse(liabilitiesJson).as[Liabilities]
+  val liabilities: Liabilities =
+    Json.parse(liabilitiesJson).as[Liabilities]
 
   val proxyCacheData: ProxyCacheData =
     ProxyCacheData(
       summary = summary,
-      nIRecord = niRecord,
+      niRecord = niRecord,
       liabilities = liabilities
     )
 }

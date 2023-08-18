@@ -125,7 +125,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
-          nIRecord = NIRecord(qualifyingYears = 36, List()),
+          niRecord = NIRecord(qualifyingYears = 36, List()),
           liabilities = liabilities
         )))
 
@@ -140,7 +140,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
-            nIRecord = NIRecord(qualifyingYears = 36, List()),
+            niRecord = NIRecord(qualifyingYears = 36, List()),
             liabilities = liabilities
           )))
 
@@ -175,7 +175,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
-          nIRecord = NIRecord(qualifyingYears = 36, List()),
+          niRecord = NIRecord(qualifyingYears = 36, List()),
           liabilities = liabilities
         )))
 
@@ -190,7 +190,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
-            nIRecord = NIRecord(qualifyingYears = 36, List()),
+            niRecord = NIRecord(qualifyingYears = 36, List()),
             liabilities = liabilities
           )))
 
@@ -244,7 +244,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = liabilities
         )))
 
@@ -260,7 +260,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -297,7 +297,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
-          nIRecord = NIRecord(qualifyingYears = 36, List()),
+          niRecord = NIRecord(qualifyingYears = 36, List()),
           liabilities = liabilities
         )))
 
@@ -312,7 +312,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
-            nIRecord = NIRecord(qualifyingYears = 36, List()),
+            niRecord = NIRecord(qualifyingYears = 36, List()),
             liabilities = liabilities
           )))
 
@@ -349,7 +349,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
-          nIRecord = NIRecord(qualifyingYears = 36, List()),
+          niRecord = NIRecord(qualifyingYears = 36, List()),
           liabilities = liabilities
         )))
 
@@ -364,7 +364,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
-            nIRecord = NIRecord(qualifyingYears = 36, List()),
+            niRecord = NIRecord(qualifyingYears = 36, List()),
             liabilities = liabilities
           )))
 

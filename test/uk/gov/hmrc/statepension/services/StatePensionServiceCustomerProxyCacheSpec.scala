@@ -127,7 +127,7 @@ class StatePensionServiceCustomerProxyCacheSpec
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = liabilities
         )))
 
@@ -154,7 +154,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -169,7 +169,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -199,7 +199,7 @@ class StatePensionServiceCustomerProxyCacheSpec
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = liabilities
         )))
 
@@ -225,7 +225,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -271,7 +271,7 @@ class StatePensionServiceCustomerProxyCacheSpec
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = liabilities
         )))
 
@@ -289,7 +289,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = NIRecord(
+            niRecord = NIRecord(
               qualifyingYears = 9,
               taxYears = List(
                 NITaxYear(
@@ -353,7 +353,7 @@ class StatePensionServiceCustomerProxyCacheSpec
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = liabilities
         )))
 
@@ -379,7 +379,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -394,7 +394,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -409,7 +409,7 @@ class StatePensionServiceCustomerProxyCacheSpec
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = Liabilities(List(Liability(Some(5))))
         )))
 
@@ -436,7 +436,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = Liabilities(List(Liability(Some(5))))
           )))
 
@@ -451,7 +451,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = Liabilities(List(Liability(Some(5))))
           )))
 
@@ -465,7 +465,7 @@ class StatePensionServiceCustomerProxyCacheSpec
       when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
-          nIRecord = niRecord,
+          niRecord = niRecord,
           liabilities = liabilities
         )))
 
@@ -487,7 +487,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -498,7 +498,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 
@@ -513,7 +513,7 @@ class StatePensionServiceCustomerProxyCacheSpec
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
-            nIRecord = niRecord,
+            niRecord = niRecord,
             liabilities = liabilities
           )))
 

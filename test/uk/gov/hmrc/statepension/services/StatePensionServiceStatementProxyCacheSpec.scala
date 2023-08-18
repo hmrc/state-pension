@@ -101,7 +101,7 @@ class StatePensionServiceStatementProxyCacheSpec
   ): ProxyCacheData =
     ProxyCacheData(
       summary = summary,
-      nIRecord = natInRecord,
+      niRecord = natInRecord,
       liabilities = liabilities
     )
 

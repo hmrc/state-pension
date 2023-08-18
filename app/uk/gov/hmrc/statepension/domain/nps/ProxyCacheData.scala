@@ -16,23 +16,15 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class ProxyCacheData(
   summary: Summary,
-  nIRecord: NIRecord,
+  niRecord: NIRecord,
   liabilities: Liabilities
 )
 
 object ProxyCacheData {
   implicit def reads: Reads[ProxyCacheData] =
-    (
-      (__ \ "summary" ).read[Summary] and
-      (__ \ "niRecord" ).read[NIRecord] and
-      (__ \ "liabilities" ).read[Liabilities]
-    )(
-      (summary, niRecord, liabilities) =>
-        ProxyCacheData(summary, niRecord, liabilities)
-    )
+    Json.reads[ProxyCacheData]
 }

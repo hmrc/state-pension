@@ -18,52 +18,29 @@ package uk.gov.hmrc.statepension.services
 
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.events.Forecasting
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 
 import java.time.{LocalDate, ZoneId}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait StatePensionService {
-
-  val nps: NpsConnector
-  val proxyCacheConnector: ProxyCacheConnector
   val forecastingService: ForecastingService
   val rateService: RateService
   val metrics: ApplicationMetrics
   val customAuditConnector: AuditConnector
   implicit val executionContext: ExecutionContext
-  val featureFlagService: FeatureFlagService
 
   def now: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
 
   def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
-  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]] =
-    featureFlagService.get(ProxyCacheToggle) flatMap {
-      proxyCache =>
-        if (proxyCache.isEnabled) {
-          for {
-            pcd <- proxyCacheConnector.getProxyCacheData(nino)
-            mci <- getMCI(pcd.summary, nino)
-          } yield buildStatePension(pcd.summary, pcd.liabilities.liabilities, pcd.nIRecord, mci, nino)
-        } else {
-          for {
-            summary     <- nps.getSummary(nino)
-            liabilities <- nps.getLiabilities(nino)
-            niRecord    <- nps.getNIRecord(nino)
-            mci         <- getMCI(summary, nino)
-          } yield buildStatePension(summary, liabilities, niRecord, mci, nino)
-        }
-      }
+  def getStatement(nino: Nino)(implicit hc: HeaderCarrier): Future[Either[StatePensionExclusion, StatePension]]
 
-  private def buildStatePension(
+  def buildStatePension(
     summary: Summary,
     liabilities: List[Liability],
     niRecord: NIRecord,

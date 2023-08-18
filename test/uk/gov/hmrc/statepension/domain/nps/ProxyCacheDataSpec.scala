@@ -27,7 +27,7 @@ class ProxyCacheDataSpec
   "ProxyCacheData" must {
     "read correctly" in {
       proxyCacheData.summary shouldBe summary
-      proxyCacheData.nIRecord shouldBe niRecord
+      proxyCacheData.niRecord shouldBe niRecord
       proxyCacheData.liabilities shouldBe liabilities
     }
   }

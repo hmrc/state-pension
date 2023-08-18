@@ -92,7 +92,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary.copy(manualCorrespondenceIndicator = Some(false)),
-            nIRecord = NIRecord(qualifyingYears = 36, List()),
+            niRecord = NIRecord(qualifyingYears = 36, List()),
             liabilities = Liabilities(List())
           )))
 
@@ -108,7 +108,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
         when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary.copy(manualCorrespondenceIndicator = Some(true)),
-            nIRecord = NIRecord(qualifyingYears = 36, List()),
+            niRecord = NIRecord(qualifyingYears = 36, List()),
             liabilities = Liabilities(List())
           )))
 

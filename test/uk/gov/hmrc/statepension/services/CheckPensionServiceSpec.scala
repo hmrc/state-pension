@@ -98,7 +98,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
     when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
       .thenReturn(Future.successful(ProxyCacheData(
         summary = summary,
-        nIRecord = NIRecord(qualifyingYears = 36, List()),
+        niRecord = NIRecord(qualifyingYears = 36, List()),
         liabilities = Liabilities(List())
       )))
 
