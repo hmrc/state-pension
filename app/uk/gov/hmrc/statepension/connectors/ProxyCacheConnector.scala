@@ -39,19 +39,19 @@ class ProxyCacheConnector @Inject ()(
 
   import appConfig.desConnectorConfig._
 
-  def getProxyCacheData(
+  def get(
     nino: Nino
   )(
     implicit headerCarrier: HeaderCarrier
   ): Future[ProxyCacheData] =
-    connectToProxyCache(nino).flatMap {
+    connect(nino).flatMap {
       case Right(proxyCacheData) =>
         Future.successful(proxyCacheData)
       case Left(error) =>
         Future.failed(error)
     }
 
-  private def connectToProxyCache(
+  private def connect(
     nino: Nino
   )(
     implicit headerCarrier: HeaderCarrier,

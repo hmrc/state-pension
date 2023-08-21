@@ -50,16 +50,17 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
   val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
   lazy val service: StatePensionService = new StatePensionService {
+    val nps: NpsConnector = mockNpsConnector
+    val proxyCacheConnector: ProxyCacheConnector = mockProxyCacheConnector
+    val featureFlagService: FeatureFlagService = mockFeatureFlagService
     override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
-    override val nps: NpsConnector = mockNpsConnector
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = fakeRateService
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
     override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
 
-    override val proxyCacheConnector: ProxyCacheConnector = mockProxyCacheConnector
-    override val featureFlagService: FeatureFlagService = mockFeatureFlagService
+    override def checkPensionRequest: Boolean = true
 
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)

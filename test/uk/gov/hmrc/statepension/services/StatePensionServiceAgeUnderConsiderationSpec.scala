@@ -59,6 +59,8 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)
 
+    override def checkPensionRequest: Boolean = true
+
     when(mockFeatureFlagService.get(ArgumentMatchers.any()))
       .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
   }

@@ -95,7 +95,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
   "getStatement when Proxy Cache Toggle enabled" should {
     when(mockFeatureFlagService.get(any()))
       .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true, description = None)))
-    when(mockProxyCacheConnector.getProxyCacheData(any())(any()))
+    when(mockProxyCacheConnector.get(any())(any()))
       .thenReturn(Future.successful(ProxyCacheData(
         summary = summary,
         niRecord = NIRecord(qualifyingYears = 36, List()),

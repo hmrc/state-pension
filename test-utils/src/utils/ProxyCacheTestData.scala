@@ -200,4 +200,11 @@ object ProxyCacheTestData {
       niRecord = niRecord,
       liabilities = liabilities
     )
+
+  val proxyCacheDataJson: String =
+    Json.obj(
+      "summary" -> Json.parse(summaryJson),
+      "niRecord" -> Json.parse(niRecordJson),
+      "liabilities" -> Json.parse(liabilitiesJson)
+    ).toString()
 }
