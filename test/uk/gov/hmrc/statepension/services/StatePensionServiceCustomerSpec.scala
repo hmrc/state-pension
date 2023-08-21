@@ -20,6 +20,9 @@ import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.cache.AsyncCacheApi
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,11 +40,18 @@ import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
-class StatePensionServiceCustomerSpec extends StatePensionBaseSpec
-  with ScalaFutures
-  with GuiceOneAppPerSuite
-  with Injecting
-  with CopeRepositoryHelper {
+class StatePensionServiceCustomerSpec
+  extends StatePensionBaseSpec
+    with ScalaFutures
+    with GuiceOneAppPerSuite
+    with Injecting
+    with CopeRepositoryHelper {
+
+  override lazy val app = GuiceApplicationBuilder()
+    .overrides(
+      bind[AsyncCacheApi].toInstance(mockCacheApi)
+    )
+    .build()
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
