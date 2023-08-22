@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.libs.json.Json
-import utils.ProxyCacheTestData.summaryJson
+import utils.TestData.summaryJson
 import utils.StatePensionBaseSpec
 
 import java.time.LocalDate

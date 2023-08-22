@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.domain.nps
 
 import play.api.libs.json.Json
-import utils.ProxyCacheTestData.liabilitiesJson
+import utils.TestData.liabilitiesJson
 import utils.StatePensionBaseSpec
 
 class LiabilitySpec extends StatePensionBaseSpec {

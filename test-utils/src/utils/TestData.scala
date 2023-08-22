@@ -19,7 +19,7 @@ package utils
 import play.api.libs.json.Json
 import uk.gov.hmrc.statepension.domain.nps.{Liabilities, NIRecord, ProxyCacheData, Summary}
 
-object ProxyCacheTestData {
+object TestData {
   val niRecordJson: String =
     """
       |{

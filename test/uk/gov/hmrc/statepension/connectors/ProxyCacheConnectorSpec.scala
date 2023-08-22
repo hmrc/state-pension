@@ -27,7 +27,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HeaderNames, RequestId, UpstreamErrorResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
-import utils.ProxyCacheTestData._
+import utils.TestData._
 import utils.{StatePensionBaseSpec, WireMockHelper}
 
 import scala.concurrent.ExecutionContext.Implicits.global
