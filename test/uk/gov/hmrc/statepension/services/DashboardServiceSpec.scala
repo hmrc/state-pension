@@ -19,9 +19,9 @@ package uk.gov.hmrc.statepension.services
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.IfConnector
 import uk.gov.hmrc.statepension.domain.Exclusion
@@ -47,6 +47,8 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
 
   val summary: Summary = SummaryFixture.exampleSummary
 
+  val nino: Nino = generateNino()
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -62,7 +64,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
         when(mockIfConnector.getSummary(any())(any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
 
-        val result = sut.getStatement(generateNino()).futureValue
+        val result = await(sut.getStatement(nino))
         result shouldBe a[Right[_, _]]
       }
     }
@@ -72,7 +74,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
         when(mockIfConnector.getSummary(any())(any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(true))))
 
-        val result = sut.getStatement(generateNino()).futureValue
+        val result = await(sut.getStatement(nino))
         result.left.value.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
       }
     }
