@@ -23,7 +23,8 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.domain.nps.ProxyCacheData
+import uk.gov.hmrc.statepension.domain.nps.{APIType, ProxyCacheData}
+import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
 import java.util.UUID
 import javax.inject.Inject
@@ -31,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ProxyCacheConnector @Inject ()(
   httpClient: HttpClientV2,
+  metrics: ApplicationMetrics,
   appConfig: AppConfig,
   connectorUtil: ConnectorUtil
 )(
@@ -57,6 +59,8 @@ class ProxyCacheConnector @Inject ()(
     implicit headerCarrier: HeaderCarrier,
     reads: Reads[ProxyCacheData]
   ): Future[Either[Exception, ProxyCacheData]] = {
+    val timerContext = metrics.startTimer(APIType.ProxyCache)
+
     connectorUtil.handleConnectorResponse(
       futureResponse = httpClient
         .get(url"${appConfig.proxyCacheUrl}/ni-and-sp-proxy-cache/$nino")
@@ -66,6 +70,20 @@ class ProxyCacheConnector @Inject ()(
         .setHeader("CorrelationId"           -> UUID.randomUUID().toString)
         .setHeader(HeaderNames.xRequestId    -> headerCarrier.requestId.fold("-")(_.value))
         .execute[Either[UpstreamErrorResponse, HttpResponse]]
-    )
+        .transform {
+          result =>
+            timerContext.stop()
+            result
+        }
+    ) map {
+      result =>
+        result match {
+          case Left(_) =>
+            metrics.incrementFailedCounter(APIType.ProxyCache)
+          case Right(_) =>
+            ()
+        }
+        result
+    }
   }
 }

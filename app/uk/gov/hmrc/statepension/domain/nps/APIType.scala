@@ -26,4 +26,6 @@ object APIType {
   case object IfSummary extends APIType
   case object IfNIRecord extends APIType
   case object IfLiabilities extends APIType
+
+  case object ProxyCache extends APIType
 }
