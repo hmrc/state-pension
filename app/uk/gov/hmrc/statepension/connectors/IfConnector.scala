@@ -17,23 +17,22 @@
 package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.nps.APIType.{IfLiabilities, IfNIRecord, IfSummary}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class IfConnector @Inject()(
-  val http: HttpClient,
+  val http: HttpClientV2,
   val metrics: ApplicationMetrics,
   appConfig: AppConfig,
-  featureFlagService: FeatureFlagService
+  connectorUtil: ConnectorUtil
 )(
   implicit ec: ExecutionContext
-) extends NpsConnector(appConfig, featureFlagService) {
+) extends NpsConnector(appConfig, connectorUtil) {
 
   import appConfig.ifConnectorConfig._
 
@@ -43,12 +42,12 @@ class IfConnector @Inject()(
   override val environmentHeader: (String, String) = ("Environment", environment)
   override val token: String = authorizationToken
 
-  override def summaryUrl(nino: Nino): Future[String] =
-    Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary")
-  override def liabilitiesUrl(nino: Nino): Future[String] =
-    Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities")
-  override def niRecordUrl(nino: Nino): Future[String] =
-    Future.successful(s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details")
+  override def summaryUrl(nino: Nino): String =
+    s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/summary"
+  override def liabilitiesUrl(nino: Nino): String =
+    s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/liabilities"
+  override def niRecordUrl(nino: Nino): String =
+    s"$ifBaseUrl/individuals/state-pensions/nino/${nino.withoutSuffix}/ni-details"
 
   override val summaryMetricType: APIType = IfSummary
   override val liabilitiesMetricType: APIType = IfLiabilities

@@ -18,19 +18,25 @@ package uk.gov.hmrc.statepension.services
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.statepension.connectors.IfConnector
+import uk.gov.hmrc.statepension.connectors.{IfConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.nps.Summary
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class DashboardService @Inject()(
-                                  override val nps: IfConnector,
-                                  override val forecastingService: ForecastingService,
-                                  override val rateService: RateService,
-                                  override val metrics: ApplicationMetrics,
-                                  override val customAuditConnector: AuditConnector,
-                                  override val executionContext: ExecutionContext
-                                ) extends StatePensionService {
+  val nps: IfConnector,
+  val proxyCacheConnector: ProxyCacheConnector,
+  val featureFlagService: FeatureFlagService,
+  override val forecastingService: ForecastingService,
+  override val rateService: RateService,
+  override val metrics: ApplicationMetrics,
+  override val customAuditConnector: AuditConnector,
+  implicit val executionContext: ExecutionContext
+) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     Future.successful(summary.manualCorrespondenceIndicator.getOrElse(false))
+
+  override def checkPensionRequest = false
 }

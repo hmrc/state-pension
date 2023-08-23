@@ -44,9 +44,7 @@ class StatePensionControllerISpec
   private val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
   private val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
   private val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
-  private val proxyCacheSummaryUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}/summary"
-  private val proxyCacheLiabilitiesUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}/liabilities"
-  private val proxyCacheNiRecordUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}/ni"
+  private val proxyCacheUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}"
   private val checkPensionControllerUrl: String = s"/ni/$nino"
 
   private val defaultHeaders: Seq[(String, String)] = Seq(
@@ -97,7 +95,6 @@ class StatePensionControllerISpec
   override def beforeEach(): Unit = {
     super.beforeEach()
     stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
-//    Mockito.reset(mockFeatureFlagService)
   }
 
   private val requests = List(
@@ -145,9 +142,8 @@ class StatePensionControllerISpec
           when(mockFeatureFlagService.get(ArgumentMatchers.any[FeatureFlagName]())).thenReturn(
             Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true))
           )
-          stubGetServer(response, proxyCacheSummaryUrl)
-          stubGetServer(response, proxyCacheLiabilitiesUrl)
-          stubGetServer(response, proxyCacheNiRecordUrl)
+
+          stubGetServer(response, proxyCacheUrl)
 
           val request = FakeRequest(GET, checkPensionControllerUrl)
             .withHeaders(defaultHeaders: _*)

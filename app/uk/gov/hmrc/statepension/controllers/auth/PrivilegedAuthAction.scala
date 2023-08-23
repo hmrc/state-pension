@@ -40,7 +40,7 @@ class PrivilegedAuthAction @Inject()(
       Future.successful(None)
     } recover {
       case e: AuthorisationException =>
-        logger.debug("Debug info - " + e.getMessage, e)
+        logger.info("Debug info - " + e.getMessage, e)
         Some(Unauthorized)
       case e: Throwable =>
         logger.error("Unexpected Error", e)

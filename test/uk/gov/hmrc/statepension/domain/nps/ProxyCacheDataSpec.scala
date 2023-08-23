@@ -16,16 +16,19 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-sealed trait APIType
-object APIType {
-  case object Summary extends APIType
-  case object NIRecord extends APIType
-  case object Liabilities extends APIType
-  case object CitizenDetails extends APIType
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+import utils.TestData._
 
-  case object IfSummary extends APIType
-  case object IfNIRecord extends APIType
-  case object IfLiabilities extends APIType
+class ProxyCacheDataSpec
+  extends AnyWordSpecLike
+    with Matchers {
 
-  case object ProxyCache extends APIType
+  "ProxyCacheData" must {
+    "read correctly" in {
+      proxyCacheData.summary shouldBe summary
+      proxyCacheData.niRecord shouldBe niRecord
+      proxyCacheData.liabilities shouldBe liabilities
+    }
+  }
 }

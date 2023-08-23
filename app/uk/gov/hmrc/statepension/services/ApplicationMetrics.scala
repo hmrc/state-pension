@@ -34,6 +34,7 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
     case APIType.IfSummary      => metrics.defaultRegistry.timer("if-summary-response-timer")
     case APIType.IfNIRecord     => metrics.defaultRegistry.timer("if-nirecord-response-timer")
     case APIType.IfLiabilities  => metrics.defaultRegistry.timer("if-liabilities-response-timer")
+    case APIType.ProxyCache     => metrics.defaultRegistry.timer("proxy-cache-response-timer")
   }
 
   val failedCounters: APIType => Counter = {
@@ -44,6 +45,7 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
     case APIType.IfSummary      => metrics.defaultRegistry.counter("if-summary-failed-counter")
     case APIType.IfNIRecord     => metrics.defaultRegistry.counter("if-nirecord-failed-counter")
     case APIType.IfLiabilities  => metrics.defaultRegistry.counter("if-liabilities-failed-counter")
+    case APIType.ProxyCache     => metrics.defaultRegistry.counter("proxy-cache-failed-counter")
   }
 
   def startTimer(api: APIType): Context = timers(api).time()

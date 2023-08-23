@@ -44,13 +44,15 @@ class CitizenDetailsConnector @Inject()(http: HttpClient,
         timerContext.stop()
         Success(personResponse.status)
     } recover {
-      case ex: UpstreamErrorResponse if ex.statusCode == LOCKED => timerContext.stop(); Success(ex.statusCode)
-      case ex: UpstreamErrorResponse if ex.statusCode == NOT_FOUND => {
+      case ex: UpstreamErrorResponse if ex.statusCode == LOCKED =>
+        timerContext.stop(); Success(ex.statusCode)
+      case ex: UpstreamErrorResponse if ex.statusCode == NOT_FOUND =>
         timerContext.stop()
         Failure(new NotFoundException("Nino was not found."))
-      }
-      case ex: Throwable => timerContext.stop(); Failure(ex)
-    } flatMap (handleResult(_))
+      case ex: Throwable =>
+        timerContext.stop()
+        Failure(ex)
+    } flatMap handleResult
   }
 
   private def handleResult[A](tryResult: Try[A]): Future[A] = {

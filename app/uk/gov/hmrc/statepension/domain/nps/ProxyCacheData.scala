@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-sealed trait APIType
-object APIType {
-  case object Summary extends APIType
-  case object NIRecord extends APIType
-  case object Liabilities extends APIType
-  case object CitizenDetails extends APIType
+import play.api.libs.json._
 
-  case object IfSummary extends APIType
-  case object IfNIRecord extends APIType
-  case object IfLiabilities extends APIType
+case class ProxyCacheData(
+  summary: Summary,
+  niRecord: NIRecord,
+  liabilities: Liabilities
+)
 
-  case object ProxyCache extends APIType
+object ProxyCacheData {
+  implicit def reads: Reads[ProxyCacheData] =
+    Json.reads[ProxyCacheData]
 }

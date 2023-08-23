@@ -16,27 +16,33 @@
 
 package uk.gov.hmrc.statepension.services
 
-import java.time.LocalDate
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
-import uk.gov.hmrc.statepension.connectors.NpsConnector
+import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Scenario, StatePension}
+import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import utils.StatePensionBaseSpec
-import scala.concurrent.{ExecutionContext, Future}
+
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec {
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
+  val mockProxyCacheConnector: ProxyCacheConnector = mock[ProxyCacheConnector]
+  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
   lazy val service: StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
@@ -47,8 +53,16 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
     override implicit val executionContext: ExecutionContext = global
 
+    override val proxyCacheConnector: ProxyCacheConnector = mockProxyCacheConnector
+    override val featureFlagService: FeatureFlagService = mockFeatureFlagService
+
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(false)
+
+    override def checkPensionRequest: Boolean = true
+
+    when(mockFeatureFlagService.get(ArgumentMatchers.any()))
+      .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
   }
 
   when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))

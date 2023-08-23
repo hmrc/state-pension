@@ -57,7 +57,19 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-   <logger name="play.shaded.ahc.org.asynchttpclient" level="OFF">
+   <logger name="org.eclipse.jetty" level="OFF">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+   <logger name="akka" level="OFF">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+   <logger name="net.sf.ehcache" level="OFF">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+   <logger name="play.shaded.ahc" level="OFF">
         <appender-ref ref="STDOUT"/>
     </logger>
 

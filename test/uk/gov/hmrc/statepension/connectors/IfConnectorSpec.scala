@@ -18,61 +18,48 @@ package uk.gov.hmrc.statepension.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
-import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.inject.{Injector, bind}
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, UpstreamErrorResponse}
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import utils.{NinoGenerator, StatePensionBaseSpec, WireMockHelper}
 
-import scala.concurrent.Future
+class IfConnectorSpec
+  extends StatePensionBaseSpec
+    with ScalaFutures
+    with IntegrationPatience
+    with NinoGenerator
+    with WireMockHelper {
 
-class IfConnectorSpec extends StatePensionBaseSpec
-  with ScalaFutures
-  with IntegrationPatience
-  with NinoGenerator
-  with WireMockHelper
-  with BeforeAndAfterEach {
-
-  val mockAppContext: AppConfig = mock[AppConfig](Mockito.RETURNS_DEEP_STUBS)
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)
-  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
-  lazy val ifConnector: IfConnector = GuiceApplicationBuilder()
-    .configure("internal-auth.isTestOnlyEndpoint" -> false)
-    .overrides(
-      bind[AppConfig].toInstance(mockAppContext),
-      bind[ApplicationMetrics].toInstance(mockApplicationMetrics),
-      bind[FeatureFlagService].toInstance(mockFeatureFlagService)
-    ).injector().instanceOf[IfConnector]
+
+  server.start()
 
   val originatorIdKey: String = "originatorIdKey"
   val ifOriginatorIdValue: String = "ifOriginatorIdValue"
   val ifEnvironment: String = "ifEnvironment"
   val ifToken: String = "ifToken"
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    when(mockAppContext.ifConnectorConfig.serviceUrl).thenReturn(s"http://localhost:${server.port()}")
-    when(mockAppContext.ifConnectorConfig.serviceOriginatorIdKey).thenReturn(originatorIdKey)
-    when(mockAppContext.ifConnectorConfig.serviceOriginatorIdValue).thenReturn(ifOriginatorIdValue)
-    when(mockAppContext.ifConnectorConfig.environment).thenReturn(ifEnvironment)
-    when(mockAppContext.ifConnectorConfig.authorizationToken).thenReturn(ifToken)
-    when(mockFeatureFlagService.get(any())).thenReturn(
-      Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, None))
+  lazy val injector: Injector = GuiceApplicationBuilder()
+    .configure(
+      "microservice.services.if-hod.port" -> server.port(),
+      "microservice.services.if-hod.token" -> ifToken,
+      "microservice.services.if-hod.originatoridkey" -> originatorIdKey,
+      "microservice.services.if-hod.originatoridvalue" -> ifOriginatorIdValue,
+      "microservice.services.if-hod.environment" -> ifEnvironment,
+      "internal-auth.isTestOnlyEndpoint" -> false
     )
-  }
+    .overrides(
+      bind[ApplicationMetrics].toInstance(mockApplicationMetrics)
+    ).injector()
+
+  val ifConnector: IfConnector = injector.instanceOf[IfConnector]
+  val connectorUtil: ConnectorUtil = injector.instanceOf[ConnectorUtil]
 
   implicit val hc: HeaderCarrier =
     HeaderCarrier(
@@ -112,7 +99,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
       "response json is valid" in {
         stubSummary(body = SummaryFixture.exampleSummaryJson)
 
-        ifConnector.getSummary(nino).futureValue mustBe SummaryFixture.exampleSummary
+        ifConnector.getSummary(nino).futureValue shouldBe SummaryFixture.exampleSummary
       }
     }
 
@@ -122,7 +109,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
         val thrown: Throwable = ifConnector.getSummary(nino).failed.futureValue
 
-        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
+        assert(thrown.isInstanceOf[connectorUtil.JsonValidationException])
       }
     }
 
@@ -160,7 +147,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
       "response json is valid" in {
         stubLiabilities(body = LiabilitiesFixture.exampleLiabilitiesJson(nino.nino))
 
-        ifConnector.getLiabilities(nino).futureValue mustBe LiabilitiesFixture.exampleLiabilities
+        ifConnector.getLiabilities(nino).futureValue shouldBe LiabilitiesFixture.exampleLiabilities
       }
     }
 
@@ -170,7 +157,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
         val thrown: Throwable = ifConnector.getLiabilities(nino).failed.futureValue
 
-        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
+        assert(thrown.isInstanceOf[connectorUtil.JsonValidationException])
       }
     }
 
@@ -206,7 +193,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
       "response json is valid" in {
         stubNiRecord(body = NIRecordFixture.exampleDesNiRecordJson(nino.nino).stripMargin)
 
-        ifConnector.getNIRecord(nino).futureValue mustBe NIRecordFixture.exampleDesNiRecord
+        ifConnector.getNIRecord(nino).futureValue shouldBe NIRecordFixture.exampleDesNiRecord
       }
     }
 
@@ -216,7 +203,7 @@ class IfConnectorSpec extends StatePensionBaseSpec
 
         val thrown: Throwable = ifConnector.getNIRecord(nino).failed.futureValue
 
-        assert(thrown.isInstanceOf[ifConnector.JsonValidationException])
+        assert(thrown.isInstanceOf[connectorUtil.JsonValidationException])
       }
     }
 

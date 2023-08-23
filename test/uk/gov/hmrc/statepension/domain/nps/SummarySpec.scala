@@ -16,64 +16,16 @@
 
 package uk.gov.hmrc.statepension.domain.nps
 
-import java.time.LocalDate
 import play.api.libs.json.Json
+import utils.TestData.summaryJson
 import utils.StatePensionBaseSpec
+
+import java.time.LocalDate
 
 class SummarySpec extends StatePensionBaseSpec {
 
   "Summary" should {
     "deserialise correctly" in {
-      val jsonPayload =
-        """
-          |{
-          |    "nino": "SK196234",
-          |    "accountNotMaintainedFlag": false,
-          |    "addressPostcode": "TF3 4ER",
-          |    "contractedOutFlag": 2,
-          |    "countryCode": 11,
-          |    "dateOfBirth": "2014-08-25",
-          |    "dateOfDeath": "2014-08-25",
-          |    "earningsIncludedUpto": "2014-01-01",
-          |    "finalRelevantYear": 2014,
-          |    "minimumQualifyingPeriod": true,
-          |    "nspQualifyingYears": 1,
-          |    "nspRequisiteYears": 1,
-          |    "pensionShareOrderCoeg": true,
-          |    "pensionShareOrderSerps": true,
-          |    "reducedRateElectionToConsider": true,
-          |    "sensitiveCaseFlag": 1,
-          |    "sex": "M",
-          |    "spaDate": "2014-08-25",
-          |    "pensionForecast": {
-          |        "forecastAmount": 1234,
-          |        "forecastAmount2016": 123,
-          |        "nspMax": 567,
-          |        "qualifyingYearsAtSpa": 12
-          |    },
-          |    "statePensionAmount": {
-          |        "apAmount": 123,
-          |        "amountA2016": {
-          |            "grbCash": 123,
-          |            "ltbCatACashValue": 123,
-          |            "ltbPost02ApCashValue": 123,
-          |            "ltbPost88CodCashValue": 123,
-          |            "ltbPost97ApCashValue": 123,
-          |            "ltbPre88CodCashValue": 123,
-          |            "ltbPre97ApCashValue": 123,
-          |            "ltbPst88GmpCashValue": 122,
-          |            "pre88Gmp": 11
-          |        },
-          |        "amountB2016": {
-          |            "mainComponent": 12,
-          |            "rebateDerivedAmount": 34
-          |        },
-          |        "nspEntitlement": 89,
-          |        "protectedPayment2016": 12,
-          |        "startingAmount": 11
-          |    }
-          |}
-        """.stripMargin
 
       val result = Summary(earningsIncludedUpTo = LocalDate.parse("2014-01-01"),
         statePensionAgeDate = LocalDate.parse("2014-08-25"),
@@ -106,7 +58,7 @@ class SummarySpec extends StatePensionBaseSpec {
         manualCorrespondenceIndicator = None
       )
 
-      Json.parse(jsonPayload).as[Summary] shouldBe result
+      Json.parse(summaryJson).as[Summary] shouldBe result
     }
   }
 
