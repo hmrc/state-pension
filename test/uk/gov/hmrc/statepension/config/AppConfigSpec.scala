@@ -38,7 +38,7 @@ class AppConfigSpec extends StatePensionBaseSpec {
       ("microservice.services.if-hod.token", "testABC123"),
       ("microservice.services.if-hod.originatoridkey", "testOriginatorId"),
       ("microservice.services.if-hod.originatoridvalue", "testOriginatorIdValue"),
-      ("rates.effectiveFromDate", "2023-04-10")
+      ("rates.effectiveFromDate", "2024-04-08")
     ).overrides(
       bind[SystemLocalDate].toInstance(mockSystemLocalDate)
     ).injector()
@@ -64,93 +64,136 @@ class AppConfigSpec extends StatePensionBaseSpec {
     "taxRates" should {
       "return current tax year rates file as TaxRates case class when effectiveDate matches currentLocalDate" in {
 
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2023, 4, 10))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2024, 4, 8))
 
         val spRates: Seq[BigDecimal] = Seq(0,
-          5.82,
-          11.65,
-          17.47,
-          23.30,
-          29.12,
-          34.95,
-          40.77,
-          46.59,
-          52.42,
-          58.24,
-          64.07,
-          69.89,
-          75.72,
-          81.54,
-          87.36,
-          93.19,
-          99.01,
-          104.84,
-          110.66,
-          116.49,
-          122.31,
-          128.13,
-          133.96,
-          139.78,
-          145.61,
-          151.43,
-          157.26,
-          163.08,
-          168.90,
-          174.73,
-          180.55,
-          186.38,
-          192.20,
-          198.03,
-          203.85)
+          6.32,
+          12.64,
+          18.96,
+          25.28,
+          31.60,
+          37.92,
+          44.24,
+          50.56,
+          56.88,
+          63.20,
+          69.52,
+          75.84,
+          82.16,
+          88.48,
+          94.80,
+          101.12,
+          107.44,
+          113.76,
+          120.08,
+          126.40,
+          132.72,
+          139.04,
+          145.36,
+          151.68,
+          158.00,
+          164.32,
+          170.64,
+          176.96,
+          183.28,
+          189.60,
+          195.92,
+          202.24,
+          208.56,
+          214.88,
+          221.20)
 
-        appConfig.taxRates shouldBe TaxRates(1.309668, 1.235924, spRates)
+        appConfig.taxRates shouldBe TaxRates(1.421136, 1.318731, spRates)
       }
 
       "return current tax year rates when currentLocalDate is after effectiveFromDate and is after 1st January in current tax year" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2024, 3, 3))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2025, 1, 1))
 
         val spRates: Seq[BigDecimal] = Seq(0,
-          5.82,
-          11.65,
-          17.47,
-          23.30,
-          29.12,
-          34.95,
-          40.77,
-          46.59,
-          52.42,
-          58.24,
-          64.07,
-          69.89,
-          75.72,
-          81.54,
-          87.36,
-          93.19,
-          99.01,
-          104.84,
-          110.66,
-          116.49,
-          122.31,
-          128.13,
-          133.96,
-          139.78,
-          145.61,
-          151.43,
-          157.26,
-          163.08,
-          168.90,
-          174.73,
-          180.55,
-          186.38,
-          192.20,
-          198.03,
-          203.85)
+          6.32,
+          12.64,
+          18.96,
+          25.28,
+          31.60,
+          37.92,
+          44.24,
+          50.56,
+          56.88,
+          63.20,
+          69.52,
+          75.84,
+          82.16,
+          88.48,
+          94.80,
+          101.12,
+          107.44,
+          113.76,
+          120.08,
+          126.40,
+          132.72,
+          139.04,
+          145.36,
+          151.68,
+          158.00,
+          164.32,
+          170.64,
+          176.96,
+          183.28,
+          189.60,
+          195.92,
+          202.24,
+          208.56,
+          214.88,
+          221.20)
 
-        appConfig.taxRates shouldBe TaxRates(1.309668, 1.235924, spRates)
+        appConfig.taxRates shouldBe TaxRates(1.421136, 1.318731, spRates)
       }
 
       "return current tax year rates when currentLocalDate is after effectiveFromDate and is before 1st January in current tax year" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2023, 4, 11))
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2024, 12, 31))
+
+        val spRates: Seq[BigDecimal] = Seq(0,
+          6.32,
+          12.64,
+          18.96,
+          25.28,
+          31.60,
+          37.92,
+          44.24,
+          50.56,
+          56.88,
+          63.20,
+          69.52,
+          75.84,
+          82.16,
+          88.48,
+          94.80,
+          101.12,
+          107.44,
+          113.76,
+          120.08,
+          126.40,
+          132.72,
+          139.04,
+          145.36,
+          151.68,
+          158.00,
+          164.32,
+          170.64,
+          176.96,
+          183.28,
+          189.60,
+          195.92,
+          202.24,
+          208.56,
+          214.88,
+          221.20)
+
+        appConfig.taxRates shouldBe TaxRates(1.421136, 1.318731, spRates)
+      }
+
+      "return previous tax year rates when currentLocalDate is before effectiveFromDate" in {
+        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2024, 4, 7))
 
         val spRates: Seq[BigDecimal] = Seq(0,
           5.82,
@@ -190,49 +233,6 @@ class AppConfigSpec extends StatePensionBaseSpec {
           203.85)
 
         appConfig.taxRates shouldBe TaxRates(1.309668, 1.235924, spRates)
-      }
-
-      "return previous tax year rates when currentLocalDate is before effectiveFromDate" in {
-        when(mockSystemLocalDate.currentLocalDate).thenReturn(LocalDate.of(2023, 2, 23))
-
-        val spRates: Seq[BigDecimal] = Seq(0,
-          5.29,
-          10.58,
-          15.87,
-          21.16,
-          26.45,
-          31.74,
-          37.03,
-          42.32,
-          47.61,
-          52.90,
-          58.19,
-          63.48,
-          68.77,
-          74.06,
-          79.35,
-          84.64,
-          89.93,
-          95.22,
-          100.51,
-          105.80,
-          111.09,
-          116.38,
-          121.67,
-          126.96,
-          132.25,
-          137.54,
-          142.83,
-          148.12,
-          153.41,
-          158.70,
-          163.99,
-          169.28,
-          174.57,
-          179.86,
-          185.15)
-
-        appConfig.taxRates shouldBe TaxRates(1.189527, 1.122547, spRates)
       }
     }
   }
