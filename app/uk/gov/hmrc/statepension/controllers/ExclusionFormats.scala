@@ -17,14 +17,14 @@
 package uk.gov.hmrc.statepension.controllers
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError, ErrorNotFound}
+import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerError}
 
 object ExclusionFormats {
   implicit val errorGenericBadRequestFormat: OFormat[ErrorGenericBadRequest] = Json.format[ErrorGenericBadRequest]
-  implicit val errorNotFoundFormat: OFormat[ErrorNotFound.type] = Json.format[uk.gov.hmrc.api.controllers.ErrorNotFound.type]
+//  implicit val errorNotFoundFormat: OFormat[ErrorNotFound.type] = Json.format[uk.gov.hmrc.api.controllers.ErrorNotFound.type]
   implicit val errorInternalServerErrorFormat: OFormat[ErrorInternalServerError.type] = Json.format[uk.gov.hmrc.api.controllers.ErrorInternalServerError.type]
-  implicit val errorCopeProcessingFormat: OFormat[ErrorResponses.ExclusionCopeProcessing.type] = Json.format[ErrorResponses.ExclusionCopeProcessing.type]
-  implicit val errorCopeProcessingFailedFormat: OFormat[ErrorResponses.ExclusionCopeProcessingFailed.type] = Json.format[ErrorResponses.ExclusionCopeProcessingFailed.type]
-  implicit val exclusionDeadFormat: OFormat[ErrorResponses.ExclusionDead.type] = Json.format[ErrorResponses.ExclusionDead.type]
-  implicit val exclusionManualCorrespondenceFormat: OFormat[ErrorResponses.ExclusionManualCorrespondence.type] = Json.format[ErrorResponses.ExclusionManualCorrespondence.type]
+//  implicit val errorCopeProcessingFormat: OFormat[ErrorResponses.ExclusionCopeProcessing.type] = Json.format[ErrorResponses.ExclusionCopeProcessing.type]
+//  implicit val errorCopeProcessingFailedFormat: OFormat[ErrorResponses.ExclusionCopeProcessingFailed.type] = Json.format[ErrorResponses.ExclusionCopeProcessingFailed.type]
+//  implicit val exclusionDeadFormat: OFormat[ErrorResponses.ExclusionDead.type] = Json.format[ErrorResponses.ExclusionDead.type]
+//  implicit val exclusionManualCorrespondenceFormat: OFormat[ErrorResponses.ExclusionManualCorrespondence.type] = Json.format[ErrorResponses.ExclusionManualCorrespondence.type]
 }

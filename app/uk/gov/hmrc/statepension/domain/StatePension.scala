@@ -18,7 +18,7 @@ package uk.gov.hmrc.statepension.domain
 
 import java.time.LocalDate
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, JsPath, Json, Writes}
+import play.api.libs.json.{Format, JsPath, Json, OFormat, Reads, Writes}
 import uk.gov.hmrc.statepension.domain.PolicyDecisions.MINIMUM_QUALIFYING_YEARS
 
 import scala.math.BigDecimal.RoundingMode
@@ -31,7 +31,7 @@ case class StatePensionAmount(yearsToWork: Option[Int],
 }
 
 object StatePensionAmount {
-  implicit val reads = Json.reads[StatePensionAmount]
+  implicit val reads: Reads[StatePensionAmount] = Json.reads[StatePensionAmount]
   implicit val writes: Writes[StatePensionAmount] = (
     (JsPath \ "yearsToWork").writeNullable[Int] and
       (JsPath \ "gapsToFill").writeNullable[Int] and
@@ -49,13 +49,13 @@ case class OldRules(basicStatePension:BigDecimal,
                    )
 
 object OldRules {
-  implicit val formats = Json.format[OldRules]
+  implicit val formats: OFormat[OldRules] = Json.format[OldRules]
 }
 
 case class NewRules(grossStatePension:BigDecimal, rebateDerivedAmount:BigDecimal)
 
 object NewRules {
-  implicit val formats = Json.format[NewRules]
+  implicit val formats: OFormat[NewRules] = Json.format[NewRules]
 }
 
 case class StatePensionAmounts(protectedPayment: Boolean,
@@ -68,7 +68,7 @@ case class StatePensionAmounts(protectedPayment: Boolean,
                                newRules: NewRules)
 
 object StatePensionAmounts {
-  implicit val formats = Json.format[StatePensionAmounts]
+  implicit val formats: OFormat[StatePensionAmounts] = Json.format[StatePensionAmounts]
 }
 
 case class StatePension(earningsIncludedUpTo: LocalDate,
@@ -122,5 +122,5 @@ case class StatePension(earningsIncludedUpTo: LocalDate,
 }
 
 object StatePension {
-  implicit val formats = Json.format[StatePension]
+  implicit val formats: OFormat[StatePension] = Json.format[StatePension]
 }

@@ -6,4 +6,3 @@ GET        /cope/:nino           uk.gov.hmrc.statepension.controllers.statepensi
 ->         /                     health.Routes
 ->         /api                  definition.Routes
 ->         /admin                admin.Routes
-GET        /admin/metrics        com.kenshoo.play.metrics.MetricsController.metrics
