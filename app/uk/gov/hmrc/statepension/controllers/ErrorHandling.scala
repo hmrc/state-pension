@@ -17,8 +17,6 @@
 package uk.gov.hmrc.statepension.controllers
 
 import com.google.inject.{ImplementedBy, Inject}
-
-import java.time.LocalDate
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
@@ -28,10 +26,10 @@ import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxR
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[CopeErrorHandling])
@@ -63,7 +61,7 @@ class CopeErrorHandling @Inject()(
         logger.error(s"$app Bad Gateway: ${e.getMessage}", e)
         Future.successful(BadGateway)
       case WithStatusCode(BAD_REQUEST) =>
-        Future.successful(BadRequest(Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
+        Future.successful(BadRequest(Json.toJson[ErrorResponse](ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))))
       case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("NO_OPEN_COPE_WORK_ITEM") =>
         defineCopeResponse(nino)
       case e@WithStatusCode(UNPROCESSABLE_ENTITY) if e.message.contains("CLOSED_COPE_WORK_ITEM") =>
@@ -79,7 +77,7 @@ class CopeErrorHandling @Inject()(
         Future.successful(BadGateway)
       case e: Throwable =>
         logger.error(s"$app Internal server error: ${e.getMessage}", e)
-        Future.successful(InternalServerError(Json.toJson(ErrorInternalServerError)))
+        Future.successful(InternalServerError(Json.toJson[ErrorResponse](ErrorInternalServerError)))
     }
 
   private def defineCopeResponse(nino: Nino)(implicit ec: ExecutionContext): Future[Result] = {
