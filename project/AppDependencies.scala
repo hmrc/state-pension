@@ -28,7 +28,7 @@ object AppDependencies {
     "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.0.0",
     "uk.gov.hmrc"       %%  s"play-hal-$playVersion"                      % "4.0.0",
     "uk.gov.hmrc"       %%  s"mongo-feature-toggles-client-$playVersion"  % "1.3.0",
-    "commons-codec"     %   "commons-codec"                               % "1.15"
+    "commons-codec"     %   "commons-codec"                               % "1.16.0"
   )
 
   val test: Seq[ModuleID] = Seq(
