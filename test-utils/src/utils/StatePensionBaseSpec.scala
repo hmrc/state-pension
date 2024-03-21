@@ -16,9 +16,9 @@
 
 package utils
 
-import akka.Done
-import akka.stream.Materializer
-import akka.util.ByteString
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
 import org.mockito.Mockito
 import org.mockito.stubbing.Answer
 import org.scalatest.matchers.should.Matchers
