@@ -24,8 +24,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.auth.AuthAction
-import uk.gov.hmrc.statepension.controllers.{ErrorHandling, ErrorResponses, HalSupport, HashedNino, Links}
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.events.{StatePension, StatePensionExclusion}
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository

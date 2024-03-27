@@ -26,8 +26,6 @@ import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
-import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
@@ -59,8 +57,8 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       override def endpointUrl(nino: Nino): String = s"/ni/$nino"
 
-      override val executionContext: ExecutionContext = controllerComponents.executionContext
-      override val parser: BodyParser[AnyContent] = controllerComponents.parsers.default
+      override val executionContext: ExecutionContext = this.controllerComponents.executionContext
+      override val parser: BodyParser[AnyContent] = this.controllerComponents.parsers.default
     }
 
   val testStatePension: StatePension = StatePension(

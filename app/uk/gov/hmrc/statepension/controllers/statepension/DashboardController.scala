@@ -21,8 +21,6 @@ import play.api.mvc.{BodyParsers, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.ErrorHandling
-import uk.gov.hmrc.statepension.controllers.auth.PrivilegedAuthAction
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.DashboardService
 

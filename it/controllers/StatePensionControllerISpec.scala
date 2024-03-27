@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers
+package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
 import org.mockito.ArgumentMatchers
