@@ -29,7 +29,6 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.models.CopeRecord
 import java.util.concurrent.TimeUnit
 

@@ -30,7 +30,6 @@ import uk.gov.hmrc.api.controllers.{ErrorGenericBadRequest, ErrorInternalServerE
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import utils.StatePensionBaseSpec

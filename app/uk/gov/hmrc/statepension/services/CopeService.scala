@@ -18,8 +18,6 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
-import uk.gov.hmrc.statepension.controllers.{ErrorResponseCope, ErrorResponseCopeFailed, ErrorResponseCopeProcessing, HashedNino}
 import uk.gov.hmrc.statepension.repositories.{CopeFailedCache, CopeProcessingRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
