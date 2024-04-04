@@ -20,7 +20,6 @@ import org.mockito.Mockito.{times, verify, when}
 import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -56,7 +55,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
     override val proxyCacheConnector: ProxyCacheConnector = mockProxyCacheConnector
     override val featureFlagService: FeatureFlagService = mockFeatureFlagService
 
-    override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+    override def getMCI(summary: Summary, nino: Nino): Future[Boolean] =
       Future.successful(false)
 
     override def checkPensionRequest: Boolean = true

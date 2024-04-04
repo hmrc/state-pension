@@ -20,7 +20,6 @@ import org.mockito.ArgumentMatchers.{eq => mockEq, _}
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -55,7 +54,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
     override implicit val executionContext: ExecutionContext = global
 
-    override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+    override def getMCI(summary: Summary, nino: Nino): Future[Boolean] =
       Future.successful(false)
 
     override def checkPensionRequest: Boolean = true

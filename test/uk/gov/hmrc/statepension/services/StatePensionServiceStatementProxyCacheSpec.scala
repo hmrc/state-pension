@@ -23,7 +23,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -117,7 +116,7 @@ class StatePensionServiceStatementProxyCacheSpec
 
     override def checkPensionRequest: Boolean = true
 
-    override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+    override def getMCI(summary: Summary, nino: Nino): Future[Boolean] =
       Future.successful(false)
 
     when(mockFeatureFlagService.get(any()))

@@ -18,7 +18,6 @@ package uk.gov.hmrc.statepension.services
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.{DesConnector, ProxyCacheConnector}
@@ -37,8 +36,8 @@ class CheckPensionService @Inject()(
   val featureFlagService: FeatureFlagService,
   val citizenDetailsService: CitizenDetailsService
 ) extends StatePensionService {
-  override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
-    citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, executionContext)
+  def getMCI(summary: Summary, nino: Nino): Future[Boolean] =
+    citizenDetailsService.checkManualCorrespondenceIndicator(nino)(executionContext)
 
   override def checkPensionRequest: Boolean = true
 }

@@ -42,7 +42,7 @@ trait StatePensionService {
 
   def now: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
 
-  def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
+  def getMCI(summary: Summary, nino: Nino): Future[Boolean]
 
   def checkPensionRequest: Boolean
 

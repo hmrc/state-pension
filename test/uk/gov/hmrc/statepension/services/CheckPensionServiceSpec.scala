@@ -73,7 +73,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
       "citizen details returns false for MCI check" in {
         when(mockFeatureFlagService.get(any()))
           .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any()))
           .thenReturn(Future.successful(false))
 
         val result = await(sut.getStatement(generateNino()))
@@ -83,7 +83,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
     "return MCI exclusion" when {
       "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any()))
           .thenReturn(Future.successful(true))
 
         val result = await(sut.getStatement(generateNino()))
@@ -104,7 +104,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
     "return StatePension data" when {
       "citizen details returns false for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any()))
           .thenReturn(Future.successful(false))
 
         val result = await(sut.getStatement(generateNino()))
@@ -114,7 +114,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
     "return MCI exclusion" when {
       "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any()))
           .thenReturn(Future.successful(true))
 
         val result = await(sut.getStatement(generateNino()))

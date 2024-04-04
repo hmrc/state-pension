@@ -17,50 +17,33 @@
 package uk.gov.hmrc.statepension.connectors
 
 import com.google.inject.Inject
-import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpClient, HttpReads}
 import uk.gov.hmrc.statepension.config.AppConfig
-import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.Future
 
 class CitizenDetailsConnector @Inject()(http: HttpClient,
                                         metrics: ApplicationMetrics,
-                                        appContext: AppConfig)(implicit ec: ExecutionContext){
+                                        appContext: AppConfig){
 
   implicit val legacyRawReads = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
 
   val serviceUrl: String = appContext.citizenDetailsBaseUrl
 
-  private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
+//  private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
 
-  def connectToGetPersonDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] = {
-    val timerContext = metrics.startTimer(APIType.CitizenDetails)
-    http.GET[HttpResponse](url(nino)) map {
-      personResponse =>
-        timerContext.stop()
-        Success(personResponse.status)
-    } recover {
-      case ex: UpstreamErrorResponse if ex.statusCode == LOCKED =>
-        timerContext.stop(); Success(ex.statusCode)
-      case ex: UpstreamErrorResponse if ex.statusCode == NOT_FOUND =>
-        timerContext.stop()
-        Failure(new NotFoundException("Nino was not found."))
-      case ex: Throwable =>
-        timerContext.stop()
-        Failure(ex)
-    } flatMap handleResult
+  def connectToGetPersonDetails(nino: Nino): Future[Int] = {
+    Future.successful(200)
   }
 
-  private def handleResult[A](tryResult: Try[A]): Future[A] = {
-    tryResult match {
-      case Failure(ex) =>
-        Future.failed(ex)
-      case Success(value) =>
-        Future.successful(value)
-    }
-  }
+//  private def handleResult[A](tryResult: Try[A]): Future[A] = {
+//    tryResult match {
+//      case Failure(ex) =>
+//        Future.failed(ex)
+//      case Success(value) =>
+//        Future.successful(value)
+//    }
+//  }
 }

@@ -37,17 +37,17 @@ class CitizenDetailsServiceSpec extends StatePensionBaseSpec {
 
   "CitizenDetailsService" should {
     "return ManualCorrespondenceIndicator status is false when Response is 200" in {
-      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(
+      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())).thenReturn(
         Future.successful(OK)
       )
-      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, global)
+      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(global)
       resultF.futureValue shouldBe false
     }
     "return ManualCorrespondenceIndicator status is true when Response is 423" in {
-      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any())) thenReturn
+      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())) thenReturn
         Future.successful(LOCKED)
 
-      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, global)
+      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(global)
       resultF.futureValue shouldBe true
     }
   }
