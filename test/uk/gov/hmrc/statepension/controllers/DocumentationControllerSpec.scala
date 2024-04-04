@@ -25,6 +25,7 @@ import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.documentation.DocumentationController
 import uk.gov.hmrc.statepension.util.SystemLocalDate
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 

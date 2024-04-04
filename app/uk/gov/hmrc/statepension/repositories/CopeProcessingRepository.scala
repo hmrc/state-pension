@@ -18,8 +18,6 @@ package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
 import com.mongodb.{DuplicateKeyException, MongoException}
-import java.time.LocalDate
-
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
@@ -29,11 +27,12 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.models.CopeRecord
+
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
-
 import javax.inject.Singleton
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

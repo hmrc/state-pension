@@ -26,6 +26,8 @@ import play.api.test.{FakeRequest, Helpers, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
+import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService

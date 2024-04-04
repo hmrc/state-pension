@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.controllers.HashedNino
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}

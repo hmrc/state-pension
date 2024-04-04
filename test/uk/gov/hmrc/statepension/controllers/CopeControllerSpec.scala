@@ -27,6 +27,9 @@ import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
+import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
+import uk.gov.hmrc.statepension.controllers.statepension.CopeController
 import uk.gov.hmrc.statepension.services.CopeService
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 

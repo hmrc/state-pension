@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.config
 
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.statepension.controllers.ErrorResponses
 
 import scala.util.{Failure, Success, Try}
 

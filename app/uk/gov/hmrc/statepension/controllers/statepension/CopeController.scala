@@ -21,6 +21,8 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
+import uk.gov.hmrc.statepension.controllers.auth.AuthAction
 import uk.gov.hmrc.statepension.services.CopeService
 
 import scala.concurrent.ExecutionContext

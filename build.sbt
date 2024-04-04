@@ -1,10 +1,10 @@
-import play.sbt.routes.RoutesKeys.*
-import sbt.{Test, *}
-import scoverage.ScoverageKeys
-import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings}
+import play.sbt.routes.RoutesKeys._
+import sbt.Test
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.SbtAutoBuildPlugin
+import scoverage.ScoverageKeys
 
-lazy val appName = "state-pension"
+val appName = "state-pension"
 
 scalaVersion := "2.13.12"
 
@@ -20,12 +20,9 @@ lazy val plugins: Seq[Plugins] = Seq(
   play.sbt.PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin
 )
 
-lazy val microservice = (project in file("."))
+lazy val microservice = Project(appName, file("."))
   .enablePlugins(plugins: _*)
-  .settings(inConfig(Test)(testSettings) *)
-  .settings(inConfig(Test)(it.settings) *)
   .settings(
-    name := appName,
     scalaSettings,
     scoverageSettings,
     defaultSettings(),
@@ -39,15 +36,12 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName"
     )
   )
-
-
-
-//  .settings(inConfig(Test)(testSettings): _*)
-//  .configs(IntegrationTest)
-//  .settings(inConfig(IntegrationTest)(itSettings): _*)
-//  .settings(
-//    addTestReportOption(IntegrationTest, "int-test-reports")
-//  )
+  .settings(inConfig(Test)(testSettings): _*)
+  .configs(IntegrationTest)
+  .settings(inConfig(IntegrationTest)(itSettings): _*)
+  .settings(
+    addTestReportOption(IntegrationTest, "int-test-reports")
+  )
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
@@ -55,29 +49,15 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
-//lazy val itSettings = Defaults.itSettings ++ Seq(
-//  fork := true,
-//  parallelExecution := false,
-//  unmanagedSourceDirectories := Seq(
-//    baseDirectory.value / "it",
-//    baseDirectory.value / "test-utils" / "src"
-//  ),
-//  javaOptions += "-Dconfig.file=conf/test.application.conf"
-//)
-
-lazy val it = (project in file("it"))
-  .dependsOn(microservice)
-  .enablePlugins(PlayScala)
-  .settings(
-    Test / unmanagedSourceDirectories ++= baseDirectory(
-      base => Seq(
-        base / "it",
-        base / "test-utils" / "src"
-      )).value,
-    Test / parallelExecution := false,
-    Test / fork := true,
-    Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
-  )
+lazy val itSettings = Defaults.itSettings ++ Seq(
+  fork := true,
+  parallelExecution := false,
+  unmanagedSourceDirectories := Seq(
+    baseDirectory.value / "it",
+    baseDirectory.value / "test-utils" / "src"
+  ),
+  javaOptions += "-Dconfig.file=conf/test.application.conf"
+)
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(
