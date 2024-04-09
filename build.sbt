@@ -3,6 +3,7 @@ import sbt.Test
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import scoverage.ScoverageKeys
+import scala.sys.process.*
 
 lazy val appName = "state-pension"
 
@@ -21,8 +22,8 @@ lazy val plugins: Seq[Plugins] = Seq(
   play.sbt.PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin
 )
 
-lazy val microservice = (project in file("."))
-  .enablePlugins(plugins: _*)
+lazy val microservice = Project(appName, file("."))
+  .enablePlugins(plugins *)
   .settings(
     scalaSettings,
     scoverageSettings,
@@ -36,15 +37,7 @@ lazy val microservice = (project in file("."))
       "uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName"
     )
   )
-  .settings(inConfig(Test)(testSettings): _*)
-
-// Remove unnecessary bits
-
-//  .configs(IntegrationTest)
-//  .settings(inConfig(IntegrationTest)(itSettings): _*)
-//  .settings(
-//    addTestReportOption(IntegrationTest, "int-test-reports")
-//  )
+  .settings(inConfig(Test)(testSettings) *)
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
@@ -57,18 +50,10 @@ lazy val it: Project = (project in file("it"))
   .settings(
     Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
     addTestReportOption(Test, "int-test-reports"),
-    Test / parallelExecution := false
+    Test / parallelExecution := false,
+    Test / javaOptions += "-Dconfig.file=conf/test.application.conf",
+    Test / fork := true
   )
-
-//lazy val itSettings = Defaults.itSettings ++ Seq(
-//  fork := true,
-//  parallelExecution := false,
-//  unmanagedSourceDirectories := Seq(
-//    baseDirectory.value / "it",
-//    baseDirectory.value / "test-utils" / "src"
-//  ),
-//  javaOptions += "-Dconfig.file=conf/test.application.conf"
-//)
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(
