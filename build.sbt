@@ -4,7 +4,7 @@ import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, s
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import scoverage.ScoverageKeys
 
-val appName = "state-pension"
+lazy val appName = "state-pension"
 
 scalaVersion := "2.13.12"
 
@@ -20,7 +20,7 @@ lazy val plugins: Seq[Plugins] = Seq(
   play.sbt.PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin
 )
 
-lazy val microservice = Project(appName, file("."))
+lazy val microservice = (project in file("."))
   .enablePlugins(plugins: _*)
   .settings(
     scalaSettings,
@@ -37,11 +37,14 @@ lazy val microservice = Project(appName, file("."))
     )
   )
   .settings(inConfig(Test)(testSettings): _*)
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(itSettings): _*)
-  .settings(
-    addTestReportOption(IntegrationTest, "int-test-reports")
-  )
+
+// Remove unnecessary bits
+
+//  .configs(IntegrationTest)
+//  .settings(inConfig(IntegrationTest)(itSettings): _*)
+//  .settings(
+//    addTestReportOption(IntegrationTest, "int-test-reports")
+//  )
 
 lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   fork := true,
@@ -49,15 +52,22 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
   Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
-lazy val itSettings = Defaults.itSettings ++ Seq(
-  fork := true,
-  parallelExecution := false,
-  unmanagedSourceDirectories := Seq(
-    baseDirectory.value / "it",
-    baseDirectory.value / "test-utils" / "src"
-  ),
-  javaOptions += "-Dconfig.file=conf/test.application.conf"
-)
+lazy val it: Project = (project in file("it"))
+  .dependsOn(microservice)
+  .settings(
+    Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
+    Test / parallelExecution := false
+  )
+
+//lazy val itSettings = Defaults.itSettings ++ Seq(
+//  fork := true,
+//  parallelExecution := false,
+//  unmanagedSourceDirectories := Seq(
+//    baseDirectory.value / "it",
+//    baseDirectory.value / "test-utils" / "src"
+//  ),
+//  javaOptions += "-Dconfig.file=conf/test.application.conf"
+//)
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {
   Seq(
