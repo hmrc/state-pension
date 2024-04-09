@@ -6,7 +6,8 @@ import scoverage.ScoverageKeys
 
 lazy val appName = "state-pension"
 
-scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / majorVersion := 2
 
 scalacOptions ++= Seq(
   "-Xfatal-warnings",
@@ -26,7 +27,6 @@ lazy val microservice = (project in file("."))
     scalaSettings,
     scoverageSettings,
     defaultSettings(),
-    majorVersion := 2,
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
     ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
@@ -56,6 +56,7 @@ lazy val it: Project = (project in file("it"))
   .dependsOn(microservice)
   .settings(
     Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
+    addTestReportOption(Test, "int-test-reports"),
     Test / parallelExecution := false
   )
 
