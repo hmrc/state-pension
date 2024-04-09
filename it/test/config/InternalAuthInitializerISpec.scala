@@ -1,4 +1,4 @@
-package config
+package test.config
 
 import org.apache.pekko.Done
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, getRequestedFor, post, postRequestedFor, urlMatching}
