@@ -1,8 +1,9 @@
-import play.sbt.routes.RoutesKeys._
+import play.sbt.routes.RoutesKeys.*
 import sbt.Test
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 import scoverage.ScoverageKeys
+
 import scala.sys.process.*
 
 lazy val appName = "state-pension"
@@ -46,9 +47,11 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
 )
 
 lazy val it: Project = (project in file("it"))
+  .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test") //allows the reusing of test code and dependencies
   .settings(
     Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
+    DefaultBuildSettings.itSettings(),
     addTestReportOption(Test, "int-test-reports"),
     Test / parallelExecution := false
   )
