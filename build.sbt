@@ -46,7 +46,7 @@ lazy val testSettings: Seq[Def.Setting[_]] = Seq(
 )
 
 lazy val it: Project = (project in file("it"))
-  .dependsOn(microservice)
+  .dependsOn(microservice % "test->test") //allows the reusing of test code and dependencies
   .settings(
     Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
     addTestReportOption(Test, "int-test-reports"),
