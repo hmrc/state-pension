@@ -50,9 +50,7 @@ lazy val it: Project = (project in file("it"))
   .settings(
     Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
     addTestReportOption(Test, "int-test-reports"),
-    Test / parallelExecution := false,
-    Test / javaOptions += "-Dconfig.file=conf/test.application.conf",
-    Test / fork := true
+    Test / parallelExecution := false
   )
 
 lazy val scoverageSettings: Seq[Def.Setting[_]] = {

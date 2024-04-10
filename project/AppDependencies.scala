@@ -36,7 +36,7 @@ object AppDependencies {
     "org.mockito"             %   "mockito-core"                  % "4.7.0",
     "org.pegdown"             %   "pegdown"                       % "1.6.0",
     "uk.gov.hmrc"             %%  s"play-hal-$playVersion"        % "4.0.0"
-  ).map(_ % "test")
+  ).map(_ % Test)
 
   val all: Seq[ModuleID] = compile ++ test
 
