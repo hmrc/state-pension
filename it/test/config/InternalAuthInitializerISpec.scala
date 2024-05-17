@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+package test.config
+
 package config
 
 import com.github.tomakehurst.wiremock.client.WireMock._

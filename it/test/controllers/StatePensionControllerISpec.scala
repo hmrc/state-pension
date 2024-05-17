@@ -71,6 +71,7 @@ class StatePensionControllerISpec
        |}"""
       .stripMargin
 
+  //
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
