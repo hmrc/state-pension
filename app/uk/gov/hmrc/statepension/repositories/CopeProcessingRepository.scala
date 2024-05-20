@@ -63,9 +63,15 @@ class CopeProcessingRepository @Inject()(mongo: MongoComponent)(implicit ec: Exe
     } yield {
       insertOneResult.wasAcknowledged
     }} recover {
-      case de: DuplicateKeyException => logger.error("Duplicate Key Exception when saving CopeRecord with non-unique NINO", de); false
-      case de: MongoException => logger.error("Mongo exception", de); false
-      case e: Exception => logger.error(s"Exception when saving ErrorResponseCopeProcessing: $e", e); false
+      case _: DuplicateKeyException =>
+        logger.error("Duplicate Key Exception when saving CopeRecord with non-unique NINO")
+        false
+      case _: MongoException =>
+        logger.error("Mongo exception")
+        false
+      case _: Exception =>
+        logger.error("Exception when saving ErrorResponseCopeProcessing")
+        false
     }
 
   def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash())).headOption()

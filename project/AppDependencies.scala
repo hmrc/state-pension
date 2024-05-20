@@ -35,8 +35,8 @@ object AppDependencies {
     "uk.gov.hmrc"             %%  s"bootstrap-test-$playVersion"  % bootstrapVersion,
     "org.mockito"             %   "mockito-core"                  % "4.7.0",
     "org.pegdown"             %   "pegdown"                       % "1.6.0",
-    "de.flapdoodle.embed"     % "de.flapdoodle.embed.mongo"       % "3.5.3",
-    "uk.gov.hmrc"             %%  s"play-hal-$playVersion"        % "4.0.0"
+    "uk.gov.hmrc"             %%  s"play-hal-$playVersion"        % "4.0.0",
+    "uk.gov.hmrc.mongo"       %%  s"hmrc-mongo-test-$playVersion" % "1.9.0"
   ).map(_ % Test)
 
   val all: Seq[ModuleID] = compile ++ test

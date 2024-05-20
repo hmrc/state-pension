@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.statepension.controllers.statepension
 
-import org.mockito.Mockito.when
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc._
 import play.api.test.{FakeRequest, Helpers, Injecting}
@@ -32,7 +30,7 @@ import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services._
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 
 class CheckPensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with CopeRepositoryHelper {
@@ -86,13 +84,14 @@ class CheckPensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
   "CheckPensionController" should {
     "return OK" when {
       "calling endpointUrl with valid Nino" in {
-//        val nino = Nino("AB123456C")
-//        val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withBody(AnyContentAsEmpty)
-//
-//        ???
+        //        val nino = Nino("AB123456C")
+        //        val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withBody(AnyContentAsEmpty)
+        //
+        //        ???
 
       }
     }
 
 
+  }
 }

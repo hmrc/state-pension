@@ -1,10 +1,8 @@
 import play.sbt.routes.RoutesKeys.*
 import sbt.Test
+import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
-import scoverage.ScoverageKeys
-
-import scala.sys.process.*
 
 lazy val appName = "state-pension"
 
@@ -40,7 +38,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(inConfig(Test)(testSettings) *)
 
-lazy val testSettings: Seq[Def.Setting[_]] = Seq(
+lazy val testSettings: Seq[Def.Setting[?]] = Seq(
   fork := true,
   unmanagedSourceDirectories += baseDirectory.value / "test-utils" / "src",
   Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
@@ -56,7 +54,7 @@ lazy val it: Project = (project in file("it"))
     Test / parallelExecution := false
   )
 
-lazy val scoverageSettings: Seq[Def.Setting[_]] = {
+lazy val scoverageSettings: Seq[Def.Setting[?]] = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
     ScoverageKeys.coverageMinimumStmtTotal := 87.91,

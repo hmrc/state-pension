@@ -16,57 +16,49 @@
 
 package uk.gov.hmrc.statepension.repositories
 
-import org.apache.pekko.dispatch.ExecutionContexts.global
-import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
-import play.api.libs.json.Json
-import uk.gov.hmrc.mongo.cache.{CacheItem, DataKey}
-import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
+import play.api.Application
 import uk.gov.hmrc.statepension.config.AppConfig
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.Helpers.running
+import uk.gov.hmrc.mongo.test.MongoSupport
 import uk.gov.hmrc.statepension.controllers.HashedNino
 import utils.StatePensionBaseSpec
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.global
+import scala.concurrent.ExecutionContextExecutor
 
-class CopeFailedCacheSpec extends StatePensionBaseSpec with BeforeAndAfter
-  with BeforeAndAfterAll with ScalaFutures {
+class CopeFailedCacheSpec
+  extends StatePensionBaseSpec
+    with MongoSupport
+    with BeforeAndAfter
+    with BeforeAndAfterAll {
 
-  class FakeCopeFailedCache extends CopeFailedCache(
-    mock[MongoComponent],
-    mock[TimestampSupport]
-  )(global, mock[AppConfig])
+  implicit val ec: ExecutionContextExecutor = global
 
-  implicit val mockAppConfig: AppConfig = mock[AppConfig]
+  def app: Application =
+    new GuiceApplicationBuilder().build()
+
+  private val hashedNino: HashedNino =
+    HashedNino(generateNino())
+
+  private val cache: CopeFailedCache =
+    app.injector.instanceOf[CopeFailedCache]
+
+  implicit val appConfig: AppConfig =
+    app.injector.instanceOf[AppConfig]
 
   "CopeFailedCache" should {
-    "insert a HashedNino and return CacheItem" in {
-      val cache = new FakeCopeFailedCache
-      val mockedNino = mock[HashedNino]
-      val expectedCacheItem = CacheItem("testKey", Json.obj("value" -> "testValue"), java.time.Instant.now(), java.time.Instant.now())
-
-      when(mockedNino.generateHash()).thenReturn("testHash")
-      when(cache.put("testHash")(DataKey("copeUser"), "testHash")).thenReturn(Future.successful(expectedCacheItem))
-
-      val result = cache.insert(mockedNino)
-
-      whenReady(result) { res =>
-        res shouldBe expectedCacheItem
-      }
-    }
-
-    "get a HashedNino" in {
-      val cache = new FakeCopeFailedCache
-      val mockedNino = mock[HashedNino]
-      val expectedValue = Some("testValue")
-
-      when(mockedNino.generateHash()).thenReturn("testHash")
-      when(cache.get[String]("testHash")(DataKey("copeUser"))).thenReturn(Future.successful(expectedValue))
-
-      val result = cache.get(mockedNino)
-
-      whenReady(result) { res =>
-        res shouldBe expectedValue
+    "insert and get" in {
+      running(app) {
+        whenReady(
+          for {
+            _      <- cache.insert(hashedNino)
+            result <- cache.get(hashedNino)
+          } yield result
+        ) {
+          _ shouldBe Some(hashedNino.generateHash())
+        }
       }
     }
   }
