@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import org.apache.pekko.Done
+
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -191,7 +193,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
 
       "UpstreamErrorResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in {
 
-        when(mockCopeRepository.delete(HashedNino(nino))).thenReturn(Future.successful(CopeRecord("Nino", LocalDate.now(), LocalDate.now())))
+        when(mockCopeRepository.delete(HashedNino(nino))).thenReturn(Future.successful(Done))
         
         val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("CLOSED_COPE_WORK_ITEM", 422, 500)), nino)
 

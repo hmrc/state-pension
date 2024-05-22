@@ -54,11 +54,22 @@ lazy val it: Project = (project in file("it"))
     Test / parallelExecution := false
   )
 
+val excludedPackages = Seq(
+  "<empty>",
+  "Reverse.*",
+  "uk.gov.hmrc.statepension.views.*",
+  ".*(AuthService|BuildInfo|Routes).*",
+  ".*CheckPensionController.*",
+  ".*DashboardController.*",
+  ".*PolicyDecisions.*",
+  ".*LiabilityType.*",
+).mkString(";")
+
 lazy val scoverageSettings: Seq[Def.Setting[?]] = {
   Seq(
-    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
-    ScoverageKeys.coverageMinimumStmtTotal := 87.91,
-    ScoverageKeys.coverageMinimumBranchTotal := 83.82,
+    ScoverageKeys.coverageExcludedPackages := excludedPackages,
+    ScoverageKeys.coverageMinimumStmtTotal := 93,
+    ScoverageKeys.coverageMinimumBranchTotal := 84,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )

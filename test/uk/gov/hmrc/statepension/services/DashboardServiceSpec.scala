@@ -65,6 +65,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
 
         val result = await(sut.getStatement(nino))
+        sut.checkPensionRequest shouldBe false
         result shouldBe a[Right[_, _]]
       }
     }
@@ -75,6 +76,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(true))))
 
         val result = await(sut.getStatement(nino))
+        sut.checkPensionRequest shouldBe false
         result.left.value.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
       }
     }
