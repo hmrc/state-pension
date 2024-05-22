@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.statepension.repositories
 
-import org.scalatest.concurrent.IntegrationPatience
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
@@ -36,13 +35,11 @@ import scala.concurrent.ExecutionContextExecutor
 class CopeProcessingRepositorySpec
   extends StatePensionBaseSpec
     with DefaultPlayMongoRepositorySupport[CopeRecord]
-    with GuiceOneAppPerSuite
-    with IntegrationPatience {
+    with GuiceOneAppPerSuite {
 
   implicit val ec: ExecutionContextExecutor = global
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .configure("mongodb.uri" -> mongoUri)
     .overrides(bind[MongoComponent].toInstance(mongoComponent))
     .build()
 
@@ -71,7 +68,7 @@ class CopeProcessingRepositorySpec
         find    <- repository.find(hashedNino)
         update  <- repository.update(hashedNino, today.plusDays(1L), today.plusDays(2L))
         updated <- repository.find(hashedNino)
-        _  <- repository.delete(hashedNino)
+        _       <- repository.delete(hashedNino)
       } yield {
         (find, update, updated)
       }) {

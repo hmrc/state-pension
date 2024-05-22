@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.statepension.repositories
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import uk.gov.hmrc.statepension.config.AppConfig
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.running
+import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.test.MongoSupport
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
 import utils.StatePensionBaseSpec
 
@@ -31,13 +33,13 @@ import scala.concurrent.ExecutionContextExecutor
 class CopeFailedCacheSpec
   extends StatePensionBaseSpec
     with MongoSupport
-    with BeforeAndAfter
-    with BeforeAndAfterAll {
+    with GuiceOneAppPerSuite {
 
   implicit val ec: ExecutionContextExecutor = global
 
-  def app: Application =
-    new GuiceApplicationBuilder().build()
+  override def fakeApplication(): Application = GuiceApplicationBuilder()
+    .overrides(bind[MongoComponent].toInstance(mongoComponent))
+    .build()
 
   private val hashedNino: HashedNino =
     HashedNino(generateNino())
