@@ -24,12 +24,9 @@ lazy val plugins: Seq[Plugins] = Seq(
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(plugins *)
   .settings(
-    scalaSettings,
     scoverageSettings,
-    defaultSettings(),
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
-    ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     retrieveManaged := true,
     routesImport ++= Seq(
       "uk.gov.hmrc.statepension.config.Binders._",
