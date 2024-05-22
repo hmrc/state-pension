@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.controllers
+package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
 import org.mockito.ArgumentMatchers
@@ -71,6 +71,7 @@ class StatePensionControllerISpec
        |}"""
       .stripMargin
 
+  //
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
@@ -85,7 +86,8 @@ class StatePensionControllerISpec
         "microservice.services.ni-and-sp-proxy-cache.port" -> server.port(),
         "play.ws.timeout.request" -> "1000ms",
         "play.ws.timeout.connection" -> "500ms",
-        "auditing.enabled" -> false
+        "auditing.enabled" -> false,
+        "internal-auth.isTestOnlyEndpoint" -> false
       )
       .overrides(
         bind[FeatureFlagService].toInstance(mockFeatureFlagService)

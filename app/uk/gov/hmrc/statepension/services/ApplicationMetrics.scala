@@ -19,67 +19,66 @@ package uk.gov.hmrc.statepension.services
 import com.codahale.metrics.Timer.Context
 import com.codahale.metrics.{Counter, Histogram, Timer}
 import com.google.inject.Inject
-import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, Scenario}
 
-class ApplicationMetrics @Inject()(metrics: Metrics) {
+class ApplicationMetrics @Inject()(metrics: com.codahale.metrics.MetricRegistry) {
 
   val timers: APIType => Timer = {
-    case APIType.Summary        => metrics.defaultRegistry.timer("summary-response-timer")
-    case APIType.NIRecord       => metrics.defaultRegistry.timer("nirecord-response-timer")
-    case APIType.Liabilities    => metrics.defaultRegistry.timer("liabilities-response-timer")
-    case APIType.CitizenDetails => metrics.defaultRegistry.timer("citizen-details-timer")
-    case APIType.IfSummary      => metrics.defaultRegistry.timer("if-summary-response-timer")
-    case APIType.IfNIRecord     => metrics.defaultRegistry.timer("if-nirecord-response-timer")
-    case APIType.IfLiabilities  => metrics.defaultRegistry.timer("if-liabilities-response-timer")
-    case APIType.ProxyCache     => metrics.defaultRegistry.timer("proxy-cache-response-timer")
+    case APIType.Summary        => metrics.timer("summary-response-timer")
+    case APIType.NIRecord       => metrics.timer("nirecord-response-timer")
+    case APIType.Liabilities    => metrics.timer("liabilities-response-timer")
+    case APIType.CitizenDetails => metrics.timer("citizen-details-timer")
+    case APIType.IfSummary      => metrics.timer("if-summary-response-timer")
+    case APIType.IfNIRecord     => metrics.timer("if-nirecord-response-timer")
+    case APIType.IfLiabilities  => metrics.timer("if-liabilities-response-timer")
+    case APIType.ProxyCache     => metrics.timer("proxy-cache-response-timer")
   }
 
   val failedCounters: APIType => Counter = {
-    case APIType.Summary        => metrics.defaultRegistry.counter("summary-failed-counter")
-    case APIType.NIRecord       => metrics.defaultRegistry.counter("nirecord-failed-counter")
-    case APIType.Liabilities    => metrics.defaultRegistry.counter("liabilities-failed-counter")
-    case APIType.CitizenDetails => metrics.defaultRegistry.counter("citizen-details-failed-counter")
-    case APIType.IfSummary      => metrics.defaultRegistry.counter("if-summary-failed-counter")
-    case APIType.IfNIRecord     => metrics.defaultRegistry.counter("if-nirecord-failed-counter")
-    case APIType.IfLiabilities  => metrics.defaultRegistry.counter("if-liabilities-failed-counter")
-    case APIType.ProxyCache     => metrics.defaultRegistry.counter("proxy-cache-failed-counter")
+    case APIType.Summary        => metrics.counter("summary-failed-counter")
+    case APIType.NIRecord       => metrics.counter("nirecord-failed-counter")
+    case APIType.Liabilities    => metrics.counter("liabilities-failed-counter")
+    case APIType.CitizenDetails => metrics.counter("citizen-details-failed-counter")
+    case APIType.IfSummary      => metrics.counter("if-summary-failed-counter")
+    case APIType.IfNIRecord     => metrics.counter("if-nirecord-failed-counter")
+    case APIType.IfLiabilities  => metrics.counter("if-liabilities-failed-counter")
+    case APIType.ProxyCache     => metrics.counter("proxy-cache-failed-counter")
   }
 
   def startTimer(api: APIType): Context = timers(api).time()
   def incrementFailedCounter(api: APIType): Unit = failedCounters(api).inc()
 
   val forecastScenarioMeters: Map[Scenario, Counter] = Map(
-    Scenario.Reached -> metrics.defaultRegistry.counter("forecastscenario-reached"),
-    Scenario.ContinueWorkingMax -> metrics.defaultRegistry.counter("forecastscenario-continueworkingmax"),
-    Scenario.ContinueWorkingNonMax -> metrics.defaultRegistry.counter("forecastscenario-continueworkingnonmax"),
-    Scenario.FillGaps -> metrics.defaultRegistry.counter("forecastscenario-fillgaps"),
-    Scenario.ForecastOnly -> metrics.defaultRegistry.counter("forecastscenario-forecastonly"),
-    Scenario.CantGetPension -> metrics.defaultRegistry.counter("forecastscenario-cantgetpension")
+    Scenario.Reached -> metrics.counter("forecastscenario-reached"),
+    Scenario.ContinueWorkingMax -> metrics.counter("forecastscenario-continueworkingmax"),
+    Scenario.ContinueWorkingNonMax -> metrics.counter("forecastscenario-continueworkingnonmax"),
+    Scenario.FillGaps -> metrics.counter("forecastscenario-fillgaps"),
+    Scenario.ForecastOnly -> metrics.counter("forecastscenario-forecastonly"),
+    Scenario.CantGetPension -> metrics.counter("forecastscenario-cantgetpension")
   )
 
   val mqpScenarioMeters: Map[MQPScenario, Counter] = Map(
-    MQPScenario.CantGet -> metrics.defaultRegistry.counter("mqpscenario-cantget"),
-    MQPScenario.ContinueWorking -> metrics.defaultRegistry.counter("mqpscenario-continueworking"),
-    MQPScenario.CanGetWithGaps -> metrics.defaultRegistry.counter("mqpscenario-cangetwithgaps")
+    MQPScenario.CantGet -> metrics.counter("mqpscenario-cantget"),
+    MQPScenario.ContinueWorking -> metrics.counter("mqpscenario-continueworking"),
+    MQPScenario.CanGetWithGaps -> metrics.counter("mqpscenario-cangetwithgaps")
   )
 
-  val currentAmountMeter: Histogram = metrics.defaultRegistry.histogram("current-amount")
-  val forecastAmountMeter: Histogram = metrics.defaultRegistry.histogram("forecast-amount")
-  val personalMaxAmountMeter: Histogram = metrics.defaultRegistry.histogram("personal-maximum-amount")
-  val yearsNeededToContribute: Histogram = metrics.defaultRegistry.histogram("years-needed-to-contribute")
-  val contractedOutMeter: Counter = metrics.defaultRegistry.counter("contracted-out")
-  val notContractedOutMeter: Counter = metrics.defaultRegistry.counter("not-contracted-out")
-  val startingAmount: Histogram=metrics.defaultRegistry.histogram("starting-amount")
-  val oldRulesBasicStatePension: Histogram=metrics.defaultRegistry.histogram("oldrules-basic-state-pension")
-  val oldRulesAdditionalStatePension: Histogram=metrics.defaultRegistry.histogram("oldrules-additional-state-pension")
-  val oldRulesGraduatedRetirementBenefit: Histogram=metrics.defaultRegistry.histogram("oldrules-graduated-retirement-benefit")
-  val newRulesGrossStatePension: Histogram=metrics.defaultRegistry.histogram("newrules-gross-state-pension")
-  val newRulesRebateDerivedAmount: Histogram=metrics.defaultRegistry.histogram("oldrules-rebate-derived-amount")
-  val rreCurrentWeeklyAmount:Histogram=metrics.defaultRegistry.histogram("reduced-rate-election-current-weekly-amount")
-  val statePensionAgeUnderConsiderationMeter: Counter = metrics.defaultRegistry.counter("state-pension-age-under-consideration")
+  val currentAmountMeter: Histogram = metrics.histogram("current-amount")
+  val forecastAmountMeter: Histogram = metrics.histogram("forecast-amount")
+  val personalMaxAmountMeter: Histogram = metrics.histogram("personal-maximum-amount")
+  val yearsNeededToContribute: Histogram = metrics.histogram("years-needed-to-contribute")
+  val contractedOutMeter: Counter = metrics.counter("contracted-out")
+  val notContractedOutMeter: Counter = metrics.counter("not-contracted-out")
+  val startingAmount: Histogram=metrics.histogram("starting-amount")
+  val oldRulesBasicStatePension: Histogram=metrics.histogram("oldrules-basic-state-pension")
+  val oldRulesAdditionalStatePension: Histogram=metrics.histogram("oldrules-additional-state-pension")
+  val oldRulesGraduatedRetirementBenefit: Histogram=metrics.histogram("oldrules-graduated-retirement-benefit")
+  val newRulesGrossStatePension: Histogram=metrics.histogram("newrules-gross-state-pension")
+  val newRulesRebateDerivedAmount: Histogram=metrics.histogram("oldrules-rebate-derived-amount")
+  val rreCurrentWeeklyAmount:Histogram=metrics.histogram("reduced-rate-election-current-weekly-amount")
+  val statePensionAgeUnderConsiderationMeter: Counter = metrics.counter("state-pension-age-under-consideration")
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
@@ -95,7 +94,7 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
     newRulesGrossStatePension.update(grossStatePension.toInt)
     newRulesRebateDerivedAmount.update(rebateDerivedAmount.toInt)
     if(reducedRateElection) {
-      metrics.defaultRegistry.counter("exclusion-mwrre").inc()
+      metrics.counter("exclusion-mwrre").inc()
       rreCurrentWeeklyAmount.update(reducedRateElectionCurrentWeeklyAmount.getOrElse[BigDecimal](0).toInt)
     }
     forecastAmountMeter.update(forecast.toInt)
@@ -109,11 +108,11 @@ class ApplicationMetrics @Inject()(metrics: Metrics) {
   }
 
   val exclusionMeters: Map[Exclusion, Counter] = Map(
-    Dead -> metrics.defaultRegistry.counter("exclusion-dead"),
-    IsleOfMan -> metrics.defaultRegistry.counter("exclusion-isle-of-man"),
-    AmountDissonance -> metrics.defaultRegistry.counter("amount-dissonance"),
-    PostStatePensionAge -> metrics.defaultRegistry.counter("exclusion-post-spa"),
-    ManualCorrespondenceIndicator -> metrics.defaultRegistry.counter("exclusion-manual-correspondence")
+    Dead -> metrics.counter("exclusion-dead"),
+    IsleOfMan -> metrics.counter("exclusion-isle-of-man"),
+    AmountDissonance -> metrics.counter("amount-dissonance"),
+    PostStatePensionAge -> metrics.counter("exclusion-post-spa"),
+    ManualCorrespondenceIndicator -> metrics.counter("exclusion-manual-correspondence")
   )
 
   def exclusion(exclusion: Exclusion): Unit = exclusionMeters(exclusion).inc()

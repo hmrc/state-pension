@@ -1,12 +1,13 @@
-import play.sbt.routes.RoutesKeys._
+import play.sbt.routes.RoutesKeys.*
 import sbt.Test
-import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import uk.gov.hmrc.SbtAutoBuildPlugin
 import scoverage.ScoverageKeys
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
+import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
-val appName = "state-pension"
+lazy val appName = "state-pension"
 
-scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / majorVersion := 2
 
 scalacOptions ++= Seq(
   "-Xfatal-warnings",
@@ -21,49 +22,51 @@ lazy val plugins: Seq[Plugins] = Seq(
 )
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(plugins: _*)
+  .enablePlugins(plugins *)
   .settings(
-    scalaSettings,
     scoverageSettings,
-    defaultSettings(),
-    majorVersion := 2,
     PlayKeys.playDefaultPort := 9311,
     libraryDependencies ++= AppDependencies.all,
-    ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     retrieveManaged := true,
     routesImport ++= Seq(
       "uk.gov.hmrc.statepension.config.Binders._",
       "uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName"
     )
   )
-  .settings(inConfig(Test)(testSettings): _*)
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(itSettings): _*)
-  .settings(
-    addTestReportOption(IntegrationTest, "int-test-reports")
-  )
+  .settings(inConfig(Test)(testSettings) *)
 
-lazy val testSettings: Seq[Def.Setting[_]] = Seq(
+lazy val testSettings: Seq[Def.Setting[?]] = Seq(
   fork := true,
   unmanagedSourceDirectories += baseDirectory.value / "test-utils" / "src",
   Test / javaOptions += "-Dconfig.file=conf/test.application.conf"
 )
 
-lazy val itSettings = Defaults.itSettings ++ Seq(
-  fork := true,
-  parallelExecution := false,
-  unmanagedSourceDirectories := Seq(
-    baseDirectory.value / "it",
-    baseDirectory.value / "test-utils" / "src"
-  ),
-  javaOptions += "-Dconfig.file=conf/test.application.conf"
-)
+lazy val it: Project = (project in file("it"))
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test") //allows the reusing of test code and dependencies
+  .settings(
+    Test / unmanagedSourceDirectories ++= baseDirectory(base => Seq(base / "it")).value,
+    DefaultBuildSettings.itSettings(),
+    addTestReportOption(Test, "int-test-reports"),
+    Test / parallelExecution := false
+  )
 
-lazy val scoverageSettings: Seq[Def.Setting[_]] = {
+val excludedPackages = Seq(
+  "<empty>",
+  "Reverse.*",
+  "uk.gov.hmrc.statepension.views.*",
+  ".*(AuthService|BuildInfo|Routes).*",
+  ".*CheckPensionController.*",
+  ".*DashboardController.*",
+  ".*PolicyDecisions.*",
+  ".*LiabilityType.*",
+).mkString(";")
+
+lazy val scoverageSettings: Seq[Def.Setting[?]] = {
   Seq(
-    ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.statepension.views.*;.*(AuthService|BuildInfo|Routes).*;",
-    ScoverageKeys.coverageMinimumStmtTotal := 87.91,
-    ScoverageKeys.coverageMinimumBranchTotal := 83.82,
+    ScoverageKeys.coverageExcludedPackages := excludedPackages,
+    ScoverageKeys.coverageMinimumStmtTotal := 93,
+    ScoverageKeys.coverageMinimumBranchTotal := 84,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )

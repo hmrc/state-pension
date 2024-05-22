@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.controllers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, BodyParser, ControllerComponents}
 import play.api.test.Helpers._
@@ -28,7 +29,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
-import uk.gov.hmrc.statepension.domain.Exclusion.ManualCorrespondenceIndicator
+import uk.gov.hmrc.statepension.domain.Exclusion.{IsleOfMan, ManualCorrespondenceIndicator}
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.services.StatePensionService
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
@@ -59,8 +60,8 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
       override def endpointUrl(nino: Nino): String = s"/ni/$nino"
 
-      override val executionContext: ExecutionContext = controllerComponents.executionContext
-      override val parser: BodyParser[AnyContent] = controllerComponents.parsers.default
+      override val executionContext: ExecutionContext = this.controllerComponents.executionContext
+      override val parser: BodyParser[AnyContent] = this.controllerComponents.parsers.default
     }
 
   val testStatePension: StatePension = StatePension(
@@ -222,6 +223,32 @@ class StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       (json \ "currentFullWeeklyPensionAmount").as[BigDecimal] shouldBe 155.65
       (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe true
       (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
+    }
+
+    "return 200 with an exclusion" in {
+      val mockStatePensionService = mock[StatePensionService]
+
+      when(mockStatePensionService.getStatement(any())(any())).thenReturn(Future.successful(
+        Left(
+          StatePensionExclusion(
+            exclusionReasons = List(IsleOfMan),
+            pensionAge = 0,
+            pensionDate = LocalDate.of(2050, 1, 1),
+            statePensionAgeUnderConsideration = false
+          )
+        ))
+      )
+
+      val response = testStatePensionController(mockStatePensionService).get(nino)(emptyRequestWithHeader)
+
+      status(response) shouldBe 200
+
+      val json = contentAsJson(response)
+      (json \ "_links" \ "self" \ "href").as[String] shouldBe s"/test/ni/$nino"
+      (json \ "exclusionReasons").as[List[Exclusion]] shouldBe List(IsleOfMan)
+      (json \ "pensionAge").as[Int] shouldBe 0
+      (json \ "pensionDate").as[String] shouldBe "2050-01-01"
+      (json \ "statePensionAgeUnderConsideration").as[Boolean] shouldBe false
     }
 
     "return 403 with an error message for an MCI exclusion" in {

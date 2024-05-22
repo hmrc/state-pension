@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.statepension.controllers
 
+import org.apache.pekko.Done
+
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -31,7 +33,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.ExclusionCopeProcessing
-import uk.gov.hmrc.statepension.controllers.ExclusionFormats._
 import uk.gov.hmrc.statepension.models.CopeRecord
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import utils.StatePensionBaseSpec
@@ -95,7 +96,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
       val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("BAD_REQUEST", BAD_REQUEST)), nino)
 
       status(result) shouldBe 400
-      contentAsJson(result) shouldBe Json.toJson(ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))
+      contentAsJson(result) shouldBe Json.toJson[ErrorResponse](ErrorGenericBadRequest("Upstream Bad Request. Is this customer below State Pension Age?"))
     }
 
     "return Forbidden" when {
@@ -192,7 +193,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
 
       "UpstreamErrorResponse is returned with 422 status and CLOSED_COPE_WORK_ITEM message from DES" in {
 
-        when(mockCopeRepository.delete(HashedNino(nino))).thenReturn(Future.successful(CopeRecord("Nino", LocalDate.now(), LocalDate.now())))
+        when(mockCopeRepository.delete(HashedNino(nino))).thenReturn(Future.successful(Done))
         
         val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("CLOSED_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -205,7 +206,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
       val result = copeErrorHandling.errorWrapper(Future.failed(new UnauthorizedException("Unauthorized")), nino)
 
       status(result) shouldBe 500
-      contentAsJson(result) shouldBe Json.toJson(ErrorInternalServerError)
+      contentAsJson(result) shouldBe Json.toJson[ErrorResponse](ErrorInternalServerError)
     }
   }
 

@@ -16,6 +16,7 @@
 
 package utils
 
+import org.apache.pekko.Done
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -31,7 +32,7 @@ trait CopeRepositoryHelper extends StatePensionBaseSpec { self: GuiceOneAppPerSu
   val mockCopeRepository: CopeProcessingRepository = mock[CopeProcessingRepository]
 
   when(mockCopeRepository.find(any())).thenReturn(Future.successful(None))
-  when(mockCopeRepository.insert(any())).thenReturn(Future.successful(true))
+  when(mockCopeRepository.insert(any())).thenReturn(Future.successful(Done))
   when(mockCopeRepository.update(any(), any(), any())).thenReturn(Future.successful(None))
 
   val fakeAppWithOverrides: GuiceApplicationBuilder =

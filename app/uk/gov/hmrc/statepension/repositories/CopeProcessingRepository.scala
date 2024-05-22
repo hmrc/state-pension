@@ -17,9 +17,7 @@
 package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
-import com.mongodb.{DuplicateKeyException, MongoException}
-import java.time.LocalDate
-
+import org.apache.pekko.Done
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
@@ -31,10 +29,10 @@ import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.HashedNino
 import uk.gov.hmrc.statepension.models.CopeRecord
+
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
-
 import javax.inject.Singleton
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -59,28 +57,34 @@ class CopeProcessingRepository @Inject()(mongo: MongoComponent)(implicit ec: Exe
     )
   ) with Logging {
 
-  def insert(copeRecord: CopeRecord): Future[Boolean] =
-    {for {
-      insertOneResult <- collection.insertOne(copeRecord).toFuture()
-    } yield {
-      insertOneResult.wasAcknowledged
-    }} recover {
-      case de: DuplicateKeyException => logger.error("Duplicate Key Exception when saving CopeRecord with non-unique NINO", de); false
-      case de: MongoException => logger.error("Mongo exception", de); false
-      case e: Exception => logger.error(s"Exception when saving ErrorResponseCopeProcessing: $e", e); false
-    }
+  def insert(copeRecord: CopeRecord): Future[Done] =
+    collection
+      .insertOne(copeRecord)
+      .toFuture()
+      .map(_ => Done)
 
-  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] = collection.find(equal("nino", hashedNino.generateHash())).headOption()
+  def find(hashedNino: HashedNino): Future[Option[CopeRecord]] =
+    collection
+      .find(equal("nino", hashedNino.generateHash()))
+      .headOption()
 
   def update(hashedNino: HashedNino, newCopeAvailableDate: LocalDate, previousCopeAvailableDate: LocalDate): Future[Option[CopeRecord]] =
-    collection.findOneAndUpdate(
-      equal("nino", hashedNino.generateHash()),
-      Seq(
-        set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJavatimeFormats.localDateWrites)),
-        set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJavatimeFormats.localDateWrites))
+    collection
+      .findOneAndUpdate(
+        equal("nino", hashedNino.generateHash()),
+        Seq(
+          set("copeAvailableDate", Codecs.toBson(newCopeAvailableDate)(MongoJavatimeFormats.localDateWrites)),
+          set("previousCopeAvailableDate", Codecs.toBson(previousCopeAvailableDate)(MongoJavatimeFormats.localDateWrites))
+        )
       )
-    ).toFutureOption()
+      .toFutureOption()
 
-  def delete(hashedNino: HashedNino): Future[CopeRecord] = collection.findOneAndDelete(equal("nino", hashedNino.generateHash())).toFuture()
+  def delete(hashedNino: HashedNino): Future[Done] =
+    collection
+      .findOneAndDelete(
+        equal("nino", hashedNino.generateHash())
+      )
+      .toFuture()
+      .map(_ => Done)
 
 }

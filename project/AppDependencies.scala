@@ -18,24 +18,26 @@ import play.sbt.PlayImport._
 import sbt._
 
 object AppDependencies {
-  val bootstrapVersion = "7.23.0"
+  val bootstrapVersion = "8.5.0"
+  val playVersion = "play-30"
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"       %%  "bootstrap-backend-play-28"     % bootstrapVersion,
-    "uk.gov.hmrc"       %%  "domain"                        % "8.3.0-play-28",
-    "uk.gov.hmrc"       %%  "play-hmrc-api"                 % "7.2.0-play-28",
-    "uk.gov.hmrc"       %%  "play-hal"                      % "3.4.0-play-28",
-    "uk.gov.hmrc"       %%  "mongo-feature-toggles-client"  % "0.4.0",
-    "commons-codec"     %   "commons-codec"                 % "1.15"
+    "uk.gov.hmrc"       %%  s"bootstrap-backend-$playVersion"             % bootstrapVersion,
+    "uk.gov.hmrc"       %%  s"domain-$playVersion"                        % "9.0.0",
+    "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.0.0",
+    "uk.gov.hmrc"       %%  s"play-hal-$playVersion"                      % "4.0.0",
+    "uk.gov.hmrc"       %%  s"mongo-feature-toggles-client-$playVersion"  % "1.3.0",
+    "commons-codec"     %   "commons-codec"                               % "1.16.0"
   )
 
   val test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"             %%  "bootstrap-test-play-28"  % bootstrapVersion,
-    "org.mockito"             %   "mockito-core"            % "4.7.0",
-    "org.pegdown"             %   "pegdown"                 % "1.6.0",
-    "uk.gov.hmrc"             %%  "play-hal"                % "3.4.0-play-28"
-  ).map(_ % "test,it")
+    "uk.gov.hmrc"             %%  s"bootstrap-test-$playVersion"  % bootstrapVersion,
+    "org.mockito"             %   "mockito-core"                  % "4.7.0",
+    "org.pegdown"             %   "pegdown"                       % "1.6.0",
+    "uk.gov.hmrc"             %%  s"play-hal-$playVersion"        % "4.0.0",
+    "uk.gov.hmrc.mongo"       %%  s"hmrc-mongo-test-$playVersion" % "1.9.0"
+  ).map(_ % Test)
 
   val all: Seq[ModuleID] = compile ++ test
 
