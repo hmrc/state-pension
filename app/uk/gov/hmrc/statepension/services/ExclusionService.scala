@@ -34,14 +34,12 @@ case class ExclusionService(dateOfDeath: Option[LocalDate],
                             manualCorrespondenceOnly: Boolean,
                             appConfig: AppConfig) extends Logging {
 
-  private val pensionDateMinusOffset = {
-    val offset = appConfig.statePensionExclusionOffset
+  private val pensionDateMinusOffset =
     pensionDate
-      .minusYears(offset.years)
-      .minusMonths(offset.months)
-      .minusWeeks(offset.weeks)
-      .minusDays(offset.days)
-  }
+      .minusYears(appConfig.statePensionExclusionOffset.years)
+      .minusMonths(appConfig.statePensionExclusionOffset.months)
+      .minusWeeks(appConfig.statePensionExclusionOffset.weeks)
+      .minusDays(appConfig.statePensionExclusionOffset.days)
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
