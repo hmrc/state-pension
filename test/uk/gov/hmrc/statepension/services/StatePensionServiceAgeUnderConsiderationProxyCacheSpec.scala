@@ -25,6 +25,7 @@ import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
+import uk.gov.hmrc.statepension.config.{AppConfig, StatePensionExclusionOffset}
 import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
@@ -43,6 +44,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
   val mockProxyCacheConnector: ProxyCacheConnector = mock[ProxyCacheConnector]
   val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
+  val mockAppConfig: AppConfig = mock[AppConfig]
 
   val service: StatePensionService = new StatePensionService {
     val nps: NpsConnector = mockNpsConnector
@@ -53,6 +55,7 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override val appConfig: AppConfig = mockAppConfig
     override implicit val executionContext: ExecutionContext = global
 
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
@@ -62,6 +65,9 @@ class StatePensionServiceAgeUnderConsiderationProxyCacheSpec extends StatePensio
 
     when(mockFeatureFlagService.get(any()))
       .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true, description = None)))
+
+    when(mockAppConfig.statePensionExclusionOffset)
+      .thenReturn(StatePensionExclusionOffset(years = 0, months = 0, weeks = 0, days = 1))
   }
 
   def regularStatementWithDateOfBirth(
