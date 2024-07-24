@@ -25,6 +25,7 @@ import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
+import uk.gov.hmrc.statepension.config.{AppConfig, StatePensionExclusionOffset}
 import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain.nps._
@@ -43,6 +44,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
   val defaultForecasting = new ForecastingService(rateService = RateServiceBuilder.default)
   val mockProxyCacheConnector: ProxyCacheConnector = mock[ProxyCacheConnector]
   val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
+  val mockAppConfig: AppConfig = mock[AppConfig]
 
   lazy val service: StatePensionService = new StatePensionService {
     override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
@@ -51,6 +53,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
     override val rateService: RateService = RateServiceBuilder.default
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override val appConfig: AppConfig = mockAppConfig
     override implicit val executionContext: ExecutionContext = global
 
     override val proxyCacheConnector: ProxyCacheConnector = mockProxyCacheConnector
@@ -63,6 +66,9 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
     when(mockFeatureFlagService.get(ArgumentMatchers.any()))
       .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
+
+    when(mockAppConfig.statePensionExclusionOffset)
+      .thenReturn(StatePensionExclusionOffset(years = 0, months = 0, weeks = 0, days = 1))
   }
 
   when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))

@@ -64,6 +64,14 @@ class AppConfig @Inject()(
   val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")
   val ttlInWeeks: Int = configuration.get[Int]("cope.ttlInWeeks")
 
+  def statePensionExclusionOffset: StatePensionExclusionOffset =
+    StatePensionExclusionOffset(
+      years = getConfInt("statePensionExclusion.offset.years", 0),
+      months = getConfInt("statePensionExclusion.offset.months", 0),
+      weeks = getConfInt("statePensionExclusion.offset.weeks", 0),
+      days = getConfInt("statePensionExclusion.offset.days", 0),
+    )
+
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     new ConnectorConfig(
       serviceUrl = baseUrl(serviceName),

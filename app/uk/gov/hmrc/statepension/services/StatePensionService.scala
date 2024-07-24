@@ -20,6 +20,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain._
@@ -38,6 +39,7 @@ trait StatePensionService {
   val rateService: RateService
   val metrics: ApplicationMetrics
   val customAuditConnector: AuditConnector
+  val appConfig: AppConfig
   implicit val executionContext: ExecutionContext
 
   def now: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))
@@ -86,6 +88,7 @@ trait StatePensionService {
         amountA2016 = summary.amounts.amountA2016.total,
         amountB2016 = summary.amounts.amountB2016.mainComponent
       ),
+      appConfig = appConfig
     ).getExclusions
 
     val purgedRecord = niRecord.purge(summary.finalRelevantStartYear)

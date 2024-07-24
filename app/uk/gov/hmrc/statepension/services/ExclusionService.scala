@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.services
 
 import java.time.LocalDate
 import play.api.Logging
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.Exclusion._
 import uk.gov.hmrc.statepension.domain.nps.{Liability, LiabilityType}
@@ -30,7 +31,15 @@ case class ExclusionService(dateOfDeath: Option[LocalDate],
                             startingAmount: BigDecimal,
                             calculatedStartingAmount: BigDecimal,
                             liabilities: List[Liability],
-                            manualCorrespondenceOnly: Boolean) extends Logging {
+                            manualCorrespondenceOnly: Boolean,
+                            appConfig: AppConfig) extends Logging {
+
+  private val pensionDateMinusOffset =
+    pensionDate
+      .minusYears(appConfig.statePensionExclusionOffset.years)
+      .minusMonths(appConfig.statePensionExclusionOffset.months)
+      .minusWeeks(appConfig.statePensionExclusionOffset.weeks)
+      .minusDays(appConfig.statePensionExclusionOffset.days)
 
   lazy val getExclusions: List[Exclusion] = exclusions(List())
 
@@ -42,7 +51,7 @@ case class ExclusionService(dateOfDeath: Option[LocalDate],
     else exclusionList
 
   private val checkPostStatePensionAge = (exclusionList: List[Exclusion]) =>
-    if (!now.isBefore(pensionDate.minusDays(1))) {
+    if (!now.isBefore(pensionDateMinusOffset)) {
       PostStatePensionAge :: exclusionList
     } else {
       exclusionList

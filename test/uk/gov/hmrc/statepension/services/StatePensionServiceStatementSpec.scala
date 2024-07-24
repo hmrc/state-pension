@@ -27,6 +27,7 @@ import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
+import uk.gov.hmrc.statepension.config.{AppConfig, StatePensionExclusionOffset}
 import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.nps._
 import uk.gov.hmrc.statepension.domain.{Exclusion, Scenario, StatePension}
@@ -48,6 +49,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
   val defaultForecasting: ForecastingService = new ForecastingService(fakeRateService)
   val mockProxyCacheConnector: ProxyCacheConnector = mock[ProxyCacheConnector]
   val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
+  val mockAppConfig: AppConfig = mock[AppConfig]
 
   lazy val service: StatePensionService = new StatePensionService {
     val nps: NpsConnector = mockNpsConnector
@@ -58,6 +60,7 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
     override val rateService: RateService = fakeRateService
     override val metrics: ApplicationMetrics = mockMetrics
     override val customAuditConnector: AuditConnector = mock[AuditConnector]
+    override val appConfig: AppConfig = mockAppConfig
     override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
 
     override def checkPensionRequest: Boolean = true
@@ -67,6 +70,9 @@ class StatePensionServiceStatementSpec extends StatePensionBaseSpec
 
     when(mockFeatureFlagService.get(ArgumentMatchers.any()))
       .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
+
+    when(mockAppConfig.statePensionExclusionOffset)
+      .thenReturn(StatePensionExclusionOffset(years = 0, months = 0, weeks = 0, days = 1))
   }
 
   override def beforeEach(): Unit = {

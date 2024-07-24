@@ -21,6 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.connectors.{DesConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.nps.Summary
 
@@ -33,6 +34,7 @@ class CheckPensionService @Inject()(
   override val rateService: RateService,
   override val metrics: ApplicationMetrics,
   override val customAuditConnector: AuditConnector,
+  override val appConfig: AppConfig,
   implicit val executionContext: ExecutionContext,
   val featureFlagService: FeatureFlagService,
   val citizenDetailsService: CitizenDetailsService

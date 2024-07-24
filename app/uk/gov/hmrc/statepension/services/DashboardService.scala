@@ -20,6 +20,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.connectors.{IfConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.nps.Summary
 
@@ -33,7 +34,8 @@ class DashboardService @Inject()(
   override val rateService: RateService,
   override val metrics: ApplicationMetrics,
   override val customAuditConnector: AuditConnector,
-  implicit val executionContext: ExecutionContext
+  override val appConfig: AppConfig,
+  implicit val executionContext: ExecutionContext,
 ) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     Future.successful(summary.manualCorrespondenceIndicator.getOrElse(false))
