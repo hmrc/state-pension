@@ -90,10 +90,10 @@ class CopeErrorHandling @Inject()(
       case Some(entry) =>
         val availableDateFromConfig: LocalDate = entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)
 
-        if(availableDateFromConfig.isAfter(LocalDate.now())) {
+        if(availableDateFromConfig.isAfter(today)) {
           Forbidden(Json.toJson(ErrorResponseCopeProcessing(ErrorResponses.CODE_COPE_PROCESSING, entry.copeAvailableDate, entry.previousCopeAvailableDate)))
         } else {
-          val newCopeDate: LocalDate = LocalDate.now().plusWeeks(appConfig.returnToServiceWeeks)
+          val newCopeDate: LocalDate = today.plusWeeks(appConfig.returnToServiceWeeks)
           copeRepository.update(
             HashedNino(nino), newCopeDate, entry.previousCopeAvailableDate.getOrElse(entry.copeAvailableDate))
           Forbidden(Json.toJson(
