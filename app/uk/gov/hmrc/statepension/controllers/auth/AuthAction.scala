@@ -54,7 +54,7 @@ class AuthActionImpl @Inject()(val authConnector: AuthConnector, val parser: Bod
         ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
       ).retrieve(nino and trustedHelper and clientId) {
         case _ ~ _ ~ Some(_) => successful(None)
-        case _ ~ Some(trusted) ~ _ => check(trusted.principalNino)
+        case _ ~ Some(trusted) ~ _ => check(trusted.principalNino.getOrElse(""))
         case Some(nino) ~ None ~ _ => check(nino)
         case _ => successful(Some(Unauthorized))
       } recover {

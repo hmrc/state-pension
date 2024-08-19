@@ -25,7 +25,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
@@ -46,7 +46,7 @@ class AuthActionSpec
     with BeforeAndAfter
     with CopeRepositoryHelper {
 
-  val controllerComponents = Helpers.stubControllerComponents()
+  val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
 
   class AuthActionTestHarness(authAction: AuthAction) extends BackendController(controllerComponents) {
     def onPageLoad(): Action[AnyContent] = authAction { request =>
@@ -86,7 +86,9 @@ class AuthActionSpec
         "the user is a trusted helper and requests with the nino of the helpee" in {
           val helperNino = ninoGenerator.nextNino.nino
           val (result, mockAuthConnector) =
-            testAuthActionWith(Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", testNino)) ~ Some(Credentials("", "GovernmentGateway"))))
+            testAuthActionWith(
+              Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", Some(testNino))) ~ Some(Credentials("", "GovernmentGateway")))
+            )
 
           status(result) mustBe OK
 
@@ -131,7 +133,7 @@ class AuthActionSpec
         "the trusted helpee nino does not match the uri Nino" in {
           val notTestNino = testNino.take(testNino.length-1) + "X"
           val helperNino = ninoGenerator.nextNino.nino
-          val (result, _) = testAuthActionWith(Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", notTestNino)) ~ None))
+          val (result, _) = testAuthActionWith(Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", Some(notTestNino))) ~ None))
           status(result) mustBe UNAUTHORIZED
         }
       }
