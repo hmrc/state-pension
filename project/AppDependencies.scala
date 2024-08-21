@@ -18,25 +18,25 @@ import play.sbt.PlayImport._
 import sbt._
 
 object AppDependencies {
-  val bootstrapVersion = "8.5.0"
+  val bootstrapVersion = "9.3.0"
   val playVersion = "play-30"
 
   val compile: Seq[ModuleID] = Seq(
     ws,
     "uk.gov.hmrc"       %%  s"bootstrap-backend-$playVersion"             % bootstrapVersion,
-    "uk.gov.hmrc"       %%  s"domain-$playVersion"                        % "9.0.0",
+    "uk.gov.hmrc"       %%  s"domain-$playVersion"                        % "10.0.0",
     "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.0.0",
     "uk.gov.hmrc"       %%  s"play-hal-$playVersion"                      % "4.0.0",
-    "uk.gov.hmrc"       %%  s"mongo-feature-toggles-client-$playVersion"  % "1.3.0",
-    "commons-codec"     %   "commons-codec"                               % "1.16.0"
+    "uk.gov.hmrc"       %%  s"mongo-feature-toggles-client-$playVersion"  % "1.6.0",
+    "commons-codec"     %   "commons-codec"                               % "1.17.0"
   )
 
   val test: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"             %%  s"bootstrap-test-$playVersion"  % bootstrapVersion,
-    "org.mockito"             %   "mockito-core"                  % "4.7.0",
+    "org.mockito"             %   "mockito-core"                  % "5.11.0",
     "org.pegdown"             %   "pegdown"                       % "1.6.0",
     "uk.gov.hmrc"             %%  s"play-hal-$playVersion"        % "4.0.0",
-    "uk.gov.hmrc.mongo"       %%  s"hmrc-mongo-test-$playVersion" % "1.9.0"
+    "uk.gov.hmrc.mongo"       %%  s"hmrc-mongo-test-$playVersion" % "2.2.0"
   ).map(_ % Test)
 
   val all: Seq[ModuleID] = compile ++ test

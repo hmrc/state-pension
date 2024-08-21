@@ -19,7 +19,8 @@ package uk.gov.hmrc.statepension.connectors
 import com.google.inject.Inject
 import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, NotFoundException, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.domain.nps.APIType
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
@@ -27,7 +28,7 @@ import uk.gov.hmrc.statepension.services.ApplicationMetrics
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CitizenDetailsConnector @Inject()(http: HttpClient,
+class CitizenDetailsConnector @Inject()(http: HttpClientV2,
                                         metrics: ApplicationMetrics,
                                         appContext: AppConfig)(implicit ec: ExecutionContext){
 
@@ -35,11 +36,13 @@ class CitizenDetailsConnector @Inject()(http: HttpClient,
 
   val serviceUrl: String = appContext.citizenDetailsBaseUrl
 
-  private def url(nino: Nino) = s"$serviceUrl/citizen-details/$nino/designatory-details/"
+  private def url(nino: Nino) = url"$serviceUrl/citizen-details/$nino/designatory-details/"
 
   def connectToGetPersonDetails(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] = {
     val timerContext = metrics.startTimer(APIType.CitizenDetails)
-    http.GET[HttpResponse](url(nino)) map {
+    http
+      .get(url(nino))
+      .execute[HttpResponse] map {
       personResponse =>
         timerContext.stop()
         Success(personResponse.status)
