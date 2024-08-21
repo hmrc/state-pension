@@ -110,6 +110,28 @@ class StatePensionControllerISpec
     serviceUnavailable() -> BAD_GATEWAY -> "BAD_GATEWAY from 5xx",
     httpClientTimeout(25000) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR",
   )
+  
+  "get when ProxyCacheToggle is enabled" must {
+
+    requests.foreach {
+      case ((response, statusCode), errorDescription) =>
+
+        s"return $statusCode $errorDescription" in {
+          when(mockFeatureFlagService.get(ArgumentMatchers.any[FeatureFlagName]())).thenReturn(
+            Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true))
+          )
+
+          stubGetServer(response, proxyCacheUrl)
+
+          val request = FakeRequest(GET, checkPensionControllerUrl)
+            .withHeaders(defaultHeaders: _*)
+
+          val result = route(app, request)
+
+          result.map(statusResult) shouldBe Some(statusCode)
+        }
+    }
+  }
 
   "get" must {
 
@@ -132,28 +154,6 @@ class StatePensionControllerISpec
 
         result.map(statusResult) shouldBe Some(statusCode)
       }
-    }
-  }
-
-  "get when ProxyCacheToggle is enabled" must {
-
-    requests.foreach {
-      case ((response, statusCode), errorDescription) =>
-
-        s"return $statusCode $errorDescription" in {
-          when(mockFeatureFlagService.get(ArgumentMatchers.any[FeatureFlagName]())).thenReturn(
-            Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true))
-          )
-
-          stubGetServer(response, proxyCacheUrl)
-
-          val request = FakeRequest(GET, checkPensionControllerUrl)
-            .withHeaders(defaultHeaders: _*)
-
-          val result = route(app, request)
-
-          result.map(statusResult) shouldBe Some(statusCode)
-        }
     }
   }
 }
