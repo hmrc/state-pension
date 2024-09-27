@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.services
 import org.mockito.Mockito.when
 import uk.gov.hmrc.statepension.config.{AppConfig, StatePensionExclusionOffset}
 
-import java.time.LocalDate
+import java.time.{LocalDate, Duration}
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.Liability
 import utils.StatePensionBaseSpec
@@ -33,7 +33,17 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
                            weeks: Int = 0,
                            months: Int = 0,
                            years: Int = 0
-                         )
+                         ) {
+    def dateDelta(start: LocalDate): Long =
+        Duration.between(start.atStartOfDay(),
+          start
+            .plusYears(years)
+            .plusMonths(months)
+            .plusDays(days)
+            .atStartOfDay()
+        ).toDays
+
+  }
 
   "getExclusions" when {
     "there is no exclusions" should {
@@ -74,11 +84,11 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
         }
 
         "return an empty list" when {
-          s"the state pension age is ${offset.days + 1} days after the current date" in new Setup(offset) {
+          s"the state pension age is ${offset.dateDelta(now) + 1} days after the current date" in new Setup(offset) {
             exclusionServiceBuilder(
-              pensionDate = now
-                .plusMonths(offset.months)
-                .plusDays(offset.days + 1), now = now)
+              pensionDate = now.plusDays(offset.dateDelta(now) + 1),
+              now = now
+            )
               .getExclusions shouldBe List()
           }
         }

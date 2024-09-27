@@ -3,13 +3,6 @@
 
 @(access: APIAccess, status: String)
 {
-  "scopes": [
-    {
-      "key": "read:state-pension",
-      "name": "access State Pension",
-      "description": "Access State Pension information"
-    }
-  ],
   "api": {
     "name": "State Pension",
     "description": "Get a State Pension statement including forecast of the amount",
