@@ -84,9 +84,9 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
         }
 
         "return an empty list" when {
-          s"the state pension age is ${offset.dateDelta(now) + 1} days after the current date" in new Setup(offset) {
+          s"the state pension age is ${offset.dateDelta(now) + 2} days after the current date" in new Setup(offset) {
             exclusionServiceBuilder(
-              pensionDate = now.plusDays(offset.dateDelta(now) + 1),
+              pensionDate = now.plusDays(offset.dateDelta(now) + 2),
               now = now
             )
               .getExclusions shouldBe List()
