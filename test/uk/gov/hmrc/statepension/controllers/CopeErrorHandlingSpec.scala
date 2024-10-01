@@ -126,8 +126,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
             contentAsJson(result) shouldBe Json.toJson(
               ErrorResponseCopeProcessing(
                 ErrorResponses.CODE_COPE_PROCESSING,
-                LocalDate.now().plusWeeks(appConfig.returnToServiceWeeks),
-                Some(LocalDate.now().plusWeeks(3))
+                LocalDate.now().plusWeeks(3)
               )
             )
           }
@@ -147,16 +146,8 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
                 Json.toJson(
                   ErrorResponseCopeProcessing(
                     ErrorResponses.CODE_COPE_PROCESSING,
-                    initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks),
-                    Some(initialLoginDate.plusWeeks(123))
+                    initialLoginDate.plusWeeks(123)
                   )
-                )
-
-              verify(mockCopeRepository, times(1))
-                .update(
-                  ArgumentMatchers.eq(HashedNino(nino)),
-                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks)),
-                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(123))
                 )
             }
 
@@ -164,7 +155,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
               val initialLoginDate = LocalDate.now()
 
               when(mockCopeRepository.find(HashedNino(nino)))
-                .thenReturn(Future.successful(Some(CopeRecord(nino.value, initialLoginDate, initialLoginDate.plusWeeks(1)))))
+                .thenReturn(Future.successful(Some(CopeRecord(nino.value, initialLoginDate.minusWeeks(5), initialLoginDate.minusWeeks(1)))))
 
               val result = copeErrorHandling.errorWrapper(Future.failed(UpstreamErrorResponse("NO_OPEN_COPE_WORK_ITEM", 422, 500)), nino)
 
@@ -174,7 +165,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
                   ErrorResponseCopeProcessing(
                     ErrorResponses.CODE_COPE_PROCESSING,
                     initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks),
-                    Some(initialLoginDate.plusWeeks(1))
+                    Some(initialLoginDate.minusWeeks(1))
                   )
                 )
 
@@ -182,7 +173,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
                 .update(
                   ArgumentMatchers.eq(HashedNino(nino)),
                   ArgumentMatchers.eq(initialLoginDate.plusWeeks(appConfig.returnToServiceWeeks)),
-                  ArgumentMatchers.eq(initialLoginDate.plusWeeks(1))
+                  ArgumentMatchers.eq(initialLoginDate.minusWeeks(1))
                 )
             }
 
