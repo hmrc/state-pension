@@ -3,6 +3,9 @@ GET        /ni/:nino             uk.gov.hmrc.statepension.controllers.statepensi
 GET        /pd/ni/:nino          uk.gov.hmrc.statepension.controllers.statepension.DashboardController.get(nino: uk.gov.hmrc.domain.Nino)
 GET        /cope/:nino           uk.gov.hmrc.statepension.controllers.statepension.CopeController.get(nino:uk.gov.hmrc.domain.Nino)
 
+GET        /ni/mdtp/:nino        uk.gov.hmrc.statepension.controllers.statepension.CheckPensionController.get(nino: uk.gov.hmrc.domain.Nino)
+GET        /cope/mdtp/:nino      uk.gov.hmrc.statepension.controllers.statepension.CopeController.get(nino:uk.gov.hmrc.domain.Nino)
+
 ->         /                     health.Routes
 ->         /api                  definition.Routes
 ->         /admin                admin.Routes

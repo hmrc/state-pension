@@ -22,14 +22,14 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
-import uk.gov.hmrc.statepension.controllers.auth.AuthAction
+import uk.gov.hmrc.statepension.controllers.auth.ApiAuthAction
 import uk.gov.hmrc.statepension.services.CopeService
 
 import scala.concurrent.ExecutionContext
 
 class CopeController @Inject()(
                                 copeService: CopeService,
-                                authAction: AuthAction,
+                                authAction: ApiAuthAction,
                                 cc: ControllerComponents)(implicit val executionContext: ExecutionContext)
   extends BackendController(cc) {
 

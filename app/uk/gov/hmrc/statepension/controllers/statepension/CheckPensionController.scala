@@ -22,14 +22,14 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorHandling
-import uk.gov.hmrc.statepension.controllers.auth.AuthAction
+import uk.gov.hmrc.statepension.controllers.auth.ApiAuthAction
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.CheckPensionService
 
 import scala.concurrent.ExecutionContext
 
 class CheckPensionController @Inject()(
-                                        override val authAction: AuthAction,
+                                        override val authAction: ApiAuthAction,
                                         override val appConfig: AppConfig,
                                         override val statePensionService: CheckPensionService,
                                         override val customAuditConnector: AuditConnector,

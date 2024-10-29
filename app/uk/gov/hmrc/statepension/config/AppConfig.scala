@@ -56,7 +56,7 @@ class AppConfig @Inject()(
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
-  val internalAuthBaseUrl: String =servicesConfig.baseUrl("internal-auth")
+  val internalAuthBaseUrl: String = baseUrl("internal-auth")
 
   def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
 
@@ -71,6 +71,8 @@ class AppConfig @Inject()(
       weeks = getConfInt("statePensionExclusion.offset.weeks", 0),
       days = getConfInt("statePensionExclusion.offset.days", 0),
     )
+
+  def pertaxBaseUrl: String = baseUrl("pertax")
 
   private def connectorConfig(serviceName: String): ConnectorConfig = {
     new ConnectorConfig(
