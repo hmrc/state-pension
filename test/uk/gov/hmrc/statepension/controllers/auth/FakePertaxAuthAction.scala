@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,9 @@ package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.Inject
 import play.api.mvc.{BodyParsers, Request, Result}
+
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeAuthAction @Inject()(val parser: BodyParsers.Default, val executionContext: ExecutionContext) extends AuthAction {
-
-  override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
-    Future.successful(None)
-  }
+class FakePertaxAuthAction @Inject()(val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext) extends PertaxAuthAction {
+  override protected def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful(None)
 }
-

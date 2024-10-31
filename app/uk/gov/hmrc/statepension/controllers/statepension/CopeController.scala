@@ -18,20 +18,20 @@ package uk.gov.hmrc.statepension.controllers.statepension
 
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, ActionBuilder, AnyContent, ControllerComponents, Request}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
-import uk.gov.hmrc.statepension.controllers.auth.ApiAuthAction
 import uk.gov.hmrc.statepension.services.CopeService
 
 import scala.concurrent.ExecutionContext
 
-class CopeController @Inject()(
+abstract class CopeController @Inject()(
                                 copeService: CopeService,
-                                authAction: ApiAuthAction,
                                 cc: ControllerComponents)(implicit val executionContext: ExecutionContext)
   extends BackendController(cc) {
+
+  val authAction: ActionBuilder[Request, AnyContent]
 
   def get(nino: Nino): Action[AnyContent] = authAction.async {
     copeService.getCopeCase(nino) map {

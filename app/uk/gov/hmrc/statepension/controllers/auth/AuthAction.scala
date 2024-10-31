@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.mvc.Results._
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{clientId, nino, trustedHelper}
@@ -41,7 +40,6 @@ abstract class AuthActionImpl @Inject()(val authConnector: AuthConnector, val pa
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-    val matchNinoInUriPattern = "[ni|cope]/([^/]+)/?.*".r
     val matches = matchNinoInUriPattern.findAllIn(request.uri)
 
     def check(nino: String): Future[Option[Status]] = {
@@ -57,7 +55,7 @@ abstract class AuthActionImpl @Inject()(val authConnector: AuthConnector, val pa
       successful(Some(BadRequest))
     } else {
       authorised(
-        ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
+        predicate
       ).retrieve(nino and trustedHelper and clientId) {
         case _ ~ _ ~ Some(_) => successful(None)
         case _ ~ Some(trusted) ~ _ => check(trusted.principalNino.getOrElse(""))

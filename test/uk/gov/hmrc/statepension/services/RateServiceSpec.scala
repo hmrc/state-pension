@@ -25,7 +25,7 @@ class RateServiceSpec extends StatePensionBaseSpec {
 
   "ratesTable" should {
     "parse the config correctly" in {
-      testRateService.ratesTable shouldBe Map(
+      testRateService.ratesTable shouldBe Map[Int, BigDecimal](
         0 -> 0,
         1 -> 4.45,
         2 -> 8.89,

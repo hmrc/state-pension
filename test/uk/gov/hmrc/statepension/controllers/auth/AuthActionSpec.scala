@@ -48,12 +48,6 @@ class AuthActionSpec
 
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
 
-  class AuthActionTestHarness(authAction: AuthAction) extends BackendController(controllerComponents) {
-    def onPageLoad(): Action[AnyContent] = authAction { request =>
-      Ok
-    }
-  }
-
   private val ninoGenerator: Generator = new Generator()
   private val testNino: String = ninoGenerator.nextNino.nino
   private val goodUriWithNino: String = s"/ni/$testNino/"
@@ -83,6 +77,7 @@ class AuthActionSpec
               ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
             ), any())(any(), any())
         }
+
         "the user is a trusted helper and requests with the nino of the helpee" in {
           val helperNino = ninoGenerator.nextNino.nino
           val (result, mockAuthConnector) =
@@ -169,6 +164,12 @@ class AuthActionSpec
     connector
   }
 
+  class AuthActionTestHarness(authAction: ApiAuthAction) extends BackendController(controllerComponents) {
+    def onPageLoad(): Action[AnyContent] = authAction { request =>
+      Ok
+    }
+  }
+
   private def testAuthActionWith[T](authResult: Future[T],
                                     uri: String = goodUriWithNino): (Future[Result], AuthConnector) = {
     val mockAuthConnector = newMockConnectorWithAuthResult(authResult)
@@ -177,7 +178,7 @@ class AuthActionSpec
       .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
       .injector()
 
-    val authAction = injector.instanceOf[AuthAction]
+    val authAction = injector.instanceOf[ApiAuthAction]
 
     val testHarness = new AuthActionTestHarness(authAction)
 
