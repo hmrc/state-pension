@@ -33,7 +33,7 @@ import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelp
 
 import scala.concurrent.Future
 
-class StatePensionControllerISpec
+trait StatePensionControllerISpec
   extends StatePensionBaseSpec
     with GuiceOneAppPerSuite
     with WireMockHelper
@@ -45,7 +45,7 @@ class StatePensionControllerISpec
   private val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
   private val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
   private val proxyCacheUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}"
-  private val checkPensionControllerUrl: String = s"/ni/$nino"
+  def checkPensionControllerUrl(nino: Nino): String
 
   private val defaultHeaders: Seq[(String, String)] = Seq(
     "Accept" -> "application/vnd.hmrc.1.0+json",
@@ -71,11 +71,20 @@ class StatePensionControllerISpec
        |}"""
       .stripMargin
 
-  //
+  private def pertaxAuthResponse: String =
+    s"""
+       |{
+       | "code": "ACCESS_GRANTED",
+       | "message": ""
+       |}
+       |""".stripMargin
+
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port" -> server.port(),
+        "microservice.services.pertax.host" -> "127.0.0.1",
+        "microservice.services.pertax.port" -> server.port(),
         "microservice.services.nps-hod.host" -> "127.0.0.1",
         "microservice.services.nps-hod.port" -> server.port(),
         "microservice.services.des-hod.host" -> "127.0.0.1",
@@ -97,6 +106,7 @@ class StatePensionControllerISpec
   override def beforeEach(): Unit = {
     super.beforeEach()
     stubPostServer(ok(generateAuthHeaderResponse), "/auth/authorise")
+    stubPostServer(ok(pertaxAuthResponse), "/pertax/authorise")
   }
 
   private val requests = List(
@@ -123,7 +133,7 @@ class StatePensionControllerISpec
 
           stubGetServer(response, proxyCacheUrl)
 
-          val request = FakeRequest(GET, checkPensionControllerUrl)
+          val request = FakeRequest(GET, checkPensionControllerUrl(nino))
             .withHeaders(defaultHeaders: _*)
 
           val result = route(app, request)
@@ -147,7 +157,7 @@ class StatePensionControllerISpec
         stubGetServer(response, npsLiabilitiesUrl)
         stubGetServer(response, npsNiRecordUrl)
 
-        val request = FakeRequest(GET, checkPensionControllerUrl)
+        val request = FakeRequest(GET, checkPensionControllerUrl(nino))
           .withHeaders(defaultHeaders:_*)
 
         val result = route(app, request)

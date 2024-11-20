@@ -17,19 +17,19 @@
 package uk.gov.hmrc.statepension.controllers.statepension
 
 import com.google.inject.Inject
-import play.api.mvc.{BodyParsers, ControllerComponents}
+import play.api.mvc.{ActionBuilder, AnyContent, BodyParsers, ControllerComponents, Request}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.ErrorHandling
-import uk.gov.hmrc.statepension.controllers.auth.AuthAction
+import uk.gov.hmrc.statepension.controllers.auth.MdtpAuthorizeAction
 import uk.gov.hmrc.statepension.repositories.CopeProcessingRepository
 import uk.gov.hmrc.statepension.services.CheckPensionService
 
 import scala.concurrent.ExecutionContext
 
-class CheckPensionController @Inject()(
-                                        override val authAction: AuthAction,
+class MdtpCheckPensionController @Inject()(
+                                        mdtpAuthAction: MdtpAuthorizeAction,
                                         override val appConfig: AppConfig,
                                         override val statePensionService: CheckPensionService,
                                         override val customAuditConnector: AuditConnector,
@@ -40,7 +40,8 @@ class CheckPensionController @Inject()(
                                         copeProcessingRepository: CopeProcessingRepository
                                       )(override implicit val ec: ExecutionContext)
   extends StatePensionController(controllerComponents, errorHandling, copeProcessingRepository) {
+  override val authAction: ActionBuilder[Request, AnyContent] = mdtpAuthAction.mdtpAuthenticate
   override def endpointUrl(nino: Nino): String = {
-    uk.gov.hmrc.statepension.controllers.statepension.routes.CheckPensionController.get(nino).url
+    uk.gov.hmrc.statepension.controllers.statepension.routes.MdtpCheckPensionController.get(nino).url
   }
 }

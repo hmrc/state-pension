@@ -6,7 +6,7 @@ import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
 lazy val appName = "state-pension"
 
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.15"
 ThisBuild / majorVersion := 2
 
 scalacOptions ++= Seq(

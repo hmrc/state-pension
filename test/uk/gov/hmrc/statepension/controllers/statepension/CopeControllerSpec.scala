@@ -19,16 +19,12 @@ package uk.gov.hmrc.statepension.controllers.statepension
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
 import play.api.http.Status.FORBIDDEN
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
-import uk.gov.hmrc.statepension.controllers.auth.{AuthAction, FakeAuthAction}
 import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
 import uk.gov.hmrc.statepension.services.CopeService
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
@@ -37,18 +33,12 @@ import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.Random
 
-class CopeControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with CopeRepositoryHelper {
+trait CopeControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with CopeRepositoryHelper {
 
   val nino: Nino = new Generator(new Random()).nextNino
   val mockCopeService: CopeService = mock[CopeService]
 
-  override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .overrides(
-      bind[CopeService].toInstance(mockCopeService),
-      bind[AuthAction].to[FakeAuthAction]
-    ).build()
-
-  val controller = inject[CopeController]
+  val controller: CopeController
 
   "get" should {
     "return Forbidden and Json payload" when {

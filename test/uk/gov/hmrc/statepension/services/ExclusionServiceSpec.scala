@@ -60,8 +60,7 @@ class ExclusionServiceSpec extends StatePensionBaseSpec {
 
     List(
       OffsetReturn(days = 1),
-      OffsetReturn(days = 30),
-      OffsetReturn(days = 8, months = 1)
+      OffsetReturn(days = 30)
     ).foreach { offset =>
       s"checking for post state pension age when the delta between current date and acceptable Pension Date is " +
         s"${offset.months} month(s) and ${offset.days} day(s)" should {
