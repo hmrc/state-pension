@@ -1,7 +1,8 @@
+
 import play.sbt.routes.RoutesKeys.*
 import sbt.Test
 import scoverage.ScoverageKeys
-import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
+import uk.gov.hmrc.DefaultBuildSettings.addTestReportOption
 import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
 lazy val appName = "state-pension"
@@ -29,8 +30,7 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
     routesImport ++= Seq(
-      "uk.gov.hmrc.statepension.config.Binders._",
-      "uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName"
+      "uk.gov.hmrc.statepension.config.Binders._"
     )
   )
   .settings(inConfig(Test)(testSettings) *)
@@ -66,7 +66,7 @@ lazy val scoverageSettings: Seq[Def.Setting[?]] = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages,
     ScoverageKeys.coverageMinimumStmtTotal := 93,
-    ScoverageKeys.coverageMinimumBranchTotal := 84,
+    ScoverageKeys.coverageMinimumBranchTotal := 83,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )

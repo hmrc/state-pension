@@ -16,18 +16,14 @@
 
 package uk.gov.hmrc.statepension.services
 
+import org.mockito.ArgumentMatchers.{eq => mockEq, _}
+import org.mockito.Mockito
 import org.mockito.Mockito.{never, times, verify, when}
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.cache.AsyncCacheApi
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.config.{AppConfig, StatePensionExclusionOffset}
@@ -35,7 +31,6 @@ import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
 import uk.gov.hmrc.statepension.domain._
 import uk.gov.hmrc.statepension.domain.nps._
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import java.time.LocalDate
@@ -48,24 +43,16 @@ class StatePensionServiceCustomerSpec
     with Injecting
     with CopeRepositoryHelper {
 
-  override lazy val app = GuiceApplicationBuilder()
-    .overrides(
-      bind[AsyncCacheApi].toInstance(mockCacheApi)
-    )
-    .build()
-
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
   val mockRateService: RateService = inject[RateService]
   val defaultForecasting = new ForecastingService(RateServiceBuilder.default)
   val mockProxyCacheConnector: ProxyCacheConnector = mock[ProxyCacheConnector]
-  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   val mockAppConfig: AppConfig = mock[AppConfig]
 
   def service(mci: Boolean = false): StatePensionService = new StatePensionService {
     val nps: NpsConnector = mockNpsConnector
     val proxyCacheConnector: ProxyCacheConnector = mockProxyCacheConnector
-    val featureFlagService: FeatureFlagService = mockFeatureFlagService
     override lazy val now: LocalDate = LocalDate.of(2017, 2, 16)
     override val forecastingService: ForecastingService = defaultForecasting
     override val rateService: RateService = RateServiceBuilder.default
@@ -74,42 +61,49 @@ class StatePensionServiceCustomerSpec
     override val appConfig: AppConfig = mockAppConfig
     override implicit val executionContext: ExecutionContext = inject[ExecutionContext]
 
-    override def checkPensionRequest: Boolean = true
-
     override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
       Future.successful(mci)
 
-    when(mockFeatureFlagService.get(ArgumentMatchers.any()))
-      .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
+    override def checkPensionRequest: Boolean = true
 
     when(mockAppConfig.statePensionExclusionOffset)
       .thenReturn(StatePensionExclusionOffset(years = 0, months = 0, weeks = 0, days = 1))
   }
 
-  val summary = Summary(
-    earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
-    statePensionAgeDate = LocalDate.of(2018, 1, 1),
-    finalRelevantStartYear = 2049,
-    pensionSharingOrderSERPS = false,
-    dateOfBirth = LocalDate.of(1956, 7, 7)
-  )
+  private val summary: Summary =
+    Summary(
+      earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
+      statePensionAgeDate = LocalDate.of(2018, 1, 1),
+      finalRelevantStartYear = 2049,
+      pensionSharingOrderSERPS = false,
+      dateOfBirth = LocalDate.of(1956, 7, 7)
+    )
+
+  private val niRecord: NIRecord =
+    NIRecord(
+      qualifyingYears = 35,
+      taxYears = List(
+        NITaxYear(
+          startTaxYear = Some(2000),
+          qualifying = Some(false),
+          underInvestigation = Some(false),
+          payableFlag = Some(true)
+        ),
+        NITaxYear(
+          startTaxYear = Some(2001),
+          qualifying = Some(false),
+          underInvestigation = Some(false),
+          payableFlag = Some(true)
+        )
+      )
+    )
+
+  private val liabilities: Liabilities =
+    Liabilities(List())
 
   override def beforeEach(): Unit = {
-    Mockito.reset(mockNpsConnector)
+    Mockito.reset(mockProxyCacheConnector)
     Mockito.reset(mockMetrics)
-
-    when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any()))
-      .thenReturn(Future.successful(NIRecord(
-        qualifyingYears = 35,
-        List(
-          NITaxYear(Some(2000), Some(false), Some(false), Some(true)),
-          NITaxYear(Some(2001), Some(false), Some(false), Some(true))
-        )
-      )))
-
-    when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any()))
-      .thenReturn(Future.successful(List()))
-
   }
 
   "StatePensionService with a HOD Connection" when {
@@ -129,53 +123,59 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
+      when(mockProxyCacheConnector.get(any())(any()))
+        .thenReturn(Future.successful(ProxyCacheData(
+          summary = summary,
+          niRecord = niRecord,
+          liabilities = liabilities
+        )))
+
+      val exclusion: StatePensionExclusion =
+        await(service().getStatement(generateNino()).left.toOption.get)
 
       "return dead exclusion" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.exclusionReasons shouldBe List(Exclusion.Dead)
       }
 
       "have a pension age of 67" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 67
       }
 
       "have a pension date of 2050-7-7" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2050, 7, 7)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        lazy val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
         service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.Dead)
+          mockEq(Exclusion.Dead)
         )
       }
 
       "not log a summary metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
-        verify(mockMetrics, never).summary(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(mockMetrics, never).summary(any(), any(), any(),
+          any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(),
+          any(), any(), any())
       }
 
     }
@@ -195,56 +195,56 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      "return post state pension age exclusion" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
-          summary
-        ))
+      when(mockProxyCacheConnector.get(any())(any()))
+        .thenReturn(Future.successful(ProxyCacheData(
+          summary = summary,
+          niRecord = niRecord,
+          liabilities = liabilities
+        )))
 
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
+      val exclusion: StatePensionExclusion = await(service().getStatement(generateNino())).left.toOption.get
+
+      "return post state pension age exclusion" in {
         exclusion.exclusionReasons shouldBe List(Exclusion.PostStatePensionAge)
       }
 
       "have a pension age of 61" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2016-1-1" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2016, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
         service().getStatement(generateNino()).futureValue.left.toOption.get
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.PostStatePensionAge)
+          mockEq(Exclusion.PostStatePensionAge)
         )
       }
 
       "not log a summary metric" in {
-        verify(mockMetrics, never).summary(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(mockMetrics, never).summary(any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any())
       }
     }
 
     "the customer has married women's reduced rate election" should {
 
-      val summary1 = Summary(
+      val summary = Summary(
         earningsIncludedUpTo = LocalDate.of(2016, 4, 5),
         statePensionAgeDate = LocalDate.of(2018, 1, 1),
         finalRelevantStartYear = 2049,
@@ -267,54 +267,66 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      "summary have RRE flag as true" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary1))
+      when(mockProxyCacheConnector.get(any())(any()))
+        .thenReturn(Future.successful(ProxyCacheData(
+          summary = summary,
+          niRecord = niRecord,
+          liabilities = liabilities
+        )))
 
-        val summary: Summary = mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any()).futureValue
-        summary.reducedRateElection shouldBe true
-      }
+      val statePension: StatePension = await(service().getStatement(generateNino()).toOption.get)
 
       "statePension have RRE flag as true" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary1))
-
-        val statePension: StatePension = service().getStatement(generateNino()).futureValue.toOption.get
         statePension.reducedRateElection shouldBe true
       }
 
       "statePension" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
-          summary1
-        ))
-        val statePension: StatePension = service().getStatement(generateNino()).futureValue.toOption.get
         statePension.reducedRateElectionCurrentWeeklyAmount shouldBe Some(32.61)
       }
 
       "log a summary metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary1))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = NIRecord(
+              qualifyingYears = 9,
+              taxYears = List(
+                NITaxYear(
+                  startTaxYear = Some(2000),
+                  qualifying = Some(false),
+                  underInvestigation = Some(false),
+                  payableFlag = Some(true)
+                ),
+                NITaxYear(
+                  startTaxYear = Some(2001),
+                  qualifying = Some(false),
+                  underInvestigation = Some(false),
+                  payableFlag = Some(true)
+                )
+              )
+            ),
+            liabilities = liabilities
+          )))
 
-        when(mockNpsConnector.getNIRecord(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(
-          NIRecord(qualifyingYears = 9, List(NITaxYear(Some(2000), Some(false), Some(false), Some(true)), NITaxYear(Some(2001), Some(false), Some(false), Some(true))))
-        ))
-
-        service().getStatement(generateNino()).futureValue.toOption.get
+        await(service().getStatement(generateNino()).toOption.get)
 
         verify(mockMetrics, times(1)).summary(
-          ArgumentMatchers.eq[BigDecimal](155.65),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq(false),
-          ArgumentMatchers.eq(Scenario.ContinueWorkingMax),
-          ArgumentMatchers.eq[BigDecimal](155.65),
-          ArgumentMatchers.eq(28),
-          ArgumentMatchers.eq(Some(ContinueWorking)),
-          ArgumentMatchers.eq[BigDecimal](35.58),
-          ArgumentMatchers.eq[BigDecimal](31.81),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq[BigDecimal](35.58),
-          ArgumentMatchers.eq[BigDecimal](0),
-          ArgumentMatchers.eq(true),
-          ArgumentMatchers.eq(Some(32.61)),
-          ArgumentMatchers.eq(false)
+          mockEq[BigDecimal](155.65),
+          mockEq[BigDecimal](0),
+          mockEq(false),
+          mockEq(Scenario.ContinueWorkingMax),
+          mockEq[BigDecimal](155.65),
+          mockEq(28),
+          mockEq(Some(ContinueWorking)),
+          mockEq[BigDecimal](35.58),
+          mockEq[BigDecimal](31.81),
+          mockEq[BigDecimal](0),
+          mockEq[BigDecimal](0),
+          mockEq[BigDecimal](35.58),
+          mockEq[BigDecimal](0),
+          mockEq(true),
+          mockEq(Some(32.61)),
+          mockEq(false)
         )
       }
     }
@@ -337,154 +349,176 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      "return amount dissonance" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+      when(mockProxyCacheConnector.get(any())(any()))
+        .thenReturn(Future.successful(ProxyCacheData(
+          summary = summary,
+          niRecord = niRecord,
+          liabilities = liabilities
+        )))
 
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
+      val exclusion: StatePensionExclusion = await(service().getStatement(generateNino()).left.toOption.get)
+
+      "return amount dissonance" in {
         exclusion.exclusionReasons shouldBe List(Exclusion.AmountDissonance)
       }
 
       "have a pension age of 61" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2018-1-1" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
-        service().getStatement(generateNino()).futureValue.left.toOption.get
+        await(service().getStatement(generateNino()).futureValue.left.toOption.get)
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.AmountDissonance)
+          mockEq(Exclusion.AmountDissonance)
         )
       }
 
       "not log a summary metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
-        verify(mockMetrics, never).summary(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(mockMetrics, never).summary(any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any())
       }
     }
 
     "the customer has contributed national insurance in the isle of man" should {
 
-      "return isle of man exclusion" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+      when(mockProxyCacheConnector.get(any())(any()))
+        .thenReturn(Future.successful(ProxyCacheData(
+          summary = summary,
+          niRecord = niRecord,
+          liabilities = Liabilities(List(Liability(Some(5))))
+        )))
 
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
+      val exclusion: StatePensionExclusion = await(service().getStatement(generateNino()).left.toOption.get)
+
+
+      "return isle of man exclusion" in {
         exclusion.exclusionReasons shouldBe List(Exclusion.IsleOfMan)
       }
 
       "have a pension age of 61" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2018-1-1" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service().getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = Liabilities(List(Liability(Some(5))))
+          )))
 
-        service().getStatement(generateNino()).futureValue.left.toOption.get
+        await(service().getStatement(generateNino()).left.toOption.get)
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.IsleOfMan)
+          mockEq(Exclusion.IsleOfMan)
         )
       }
 
       "not log a summary metric" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List(Liability(Some(5)))))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = Liabilities(List(Liability(Some(5))))
+          )))
 
-        verify(mockMetrics, never).summary(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(mockMetrics, never).summary(any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any())
       }
     }
 
     "the customer has a manual correspondence indicator" should {
-      "return mci exclusion" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+      when(mockProxyCacheConnector.get(any())(any()))
+        .thenReturn(Future.successful(ProxyCacheData(
+          summary = summary,
+          niRecord = niRecord,
+          liabilities = liabilities
+        )))
 
-        val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
+      val exclusion: StatePensionExclusion = await(service(true).getStatement(generateNino()).left.toOption.get)
+
+      "return mci exclusion" in {
         exclusion.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
       }
 
       "have a pension age of 61" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionAge shouldBe 61
       }
 
       "have a pension date of 2018-1-1" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
-
-        val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.pensionDate shouldBe LocalDate.of(2018, 1, 1)
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockNpsConnector.getLiabilities(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(List()))
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
-        val exclusion: StatePensionExclusion = service(true).getStatement(generateNino()).futureValue.left.toOption.get
         exclusion.statePensionAgeUnderConsideration shouldBe false
       }
 
       "log an exclusion metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
-        service(true).getStatement(generateNino()).futureValue.left.toOption.get
+        await(service(true).getStatement(generateNino()).left.toOption.get)
 
         verify(mockMetrics, times(1)).exclusion(
-          ArgumentMatchers.eq(Exclusion.ManualCorrespondenceIndicator)
+          mockEq(Exclusion.ManualCorrespondenceIndicator)
         )
       }
 
       "not log a summary metric" in {
-        when(mockNpsConnector.getSummary(ArgumentMatchers.any())(ArgumentMatchers.any())).thenReturn(Future.successful(summary))
+        when(mockProxyCacheConnector.get(any())(any()))
+          .thenReturn(Future.successful(ProxyCacheData(
+            summary = summary,
+            niRecord = niRecord,
+            liabilities = liabilities
+          )))
 
-        verify(mockMetrics, never).summary(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-          ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(mockMetrics, never).summary(any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any(),
+          any(), any(), any(), any(), any(), any())
       }
     }
   }

@@ -25,7 +25,7 @@ import uk.gov.hmrc.statepension.domain.{Exclusion, MQPScenario, Scenario}
 
 class ApplicationMetrics @Inject()(metrics: com.codahale.metrics.MetricRegistry) {
 
-  val timers: APIType => Timer = {
+  private val timers: APIType => Timer = {
     case APIType.Summary        => metrics.timer("summary-response-timer")
     case APIType.NIRecord       => metrics.timer("nirecord-response-timer")
     case APIType.Liabilities    => metrics.timer("liabilities-response-timer")
@@ -36,7 +36,7 @@ class ApplicationMetrics @Inject()(metrics: com.codahale.metrics.MetricRegistry)
     case APIType.ProxyCache     => metrics.timer("proxy-cache-response-timer")
   }
 
-  val failedCounters: APIType => Counter = {
+  private val failedCounters: APIType => Counter = {
     case APIType.Summary        => metrics.counter("summary-failed-counter")
     case APIType.NIRecord       => metrics.counter("nirecord-failed-counter")
     case APIType.Liabilities    => metrics.counter("liabilities-failed-counter")
@@ -50,7 +50,7 @@ class ApplicationMetrics @Inject()(metrics: com.codahale.metrics.MetricRegistry)
   def startTimer(api: APIType): Context = timers(api).time()
   def incrementFailedCounter(api: APIType): Unit = failedCounters(api).inc()
 
-  val forecastScenarioMeters: Map[Scenario, Counter] = Map(
+  private val forecastScenarioMeters: Map[Scenario, Counter] = Map(
     Scenario.Reached -> metrics.counter("forecastscenario-reached"),
     Scenario.ContinueWorkingMax -> metrics.counter("forecastscenario-continueworkingmax"),
     Scenario.ContinueWorkingNonMax -> metrics.counter("forecastscenario-continueworkingnonmax"),
@@ -59,26 +59,26 @@ class ApplicationMetrics @Inject()(metrics: com.codahale.metrics.MetricRegistry)
     Scenario.CantGetPension -> metrics.counter("forecastscenario-cantgetpension")
   )
 
-  val mqpScenarioMeters: Map[MQPScenario, Counter] = Map(
+  private val mqpScenarioMeters: Map[MQPScenario, Counter] = Map(
     MQPScenario.CantGet -> metrics.counter("mqpscenario-cantget"),
     MQPScenario.ContinueWorking -> metrics.counter("mqpscenario-continueworking"),
     MQPScenario.CanGetWithGaps -> metrics.counter("mqpscenario-cangetwithgaps")
   )
 
-  val currentAmountMeter: Histogram = metrics.histogram("current-amount")
-  val forecastAmountMeter: Histogram = metrics.histogram("forecast-amount")
-  val personalMaxAmountMeter: Histogram = metrics.histogram("personal-maximum-amount")
-  val yearsNeededToContribute: Histogram = metrics.histogram("years-needed-to-contribute")
-  val contractedOutMeter: Counter = metrics.counter("contracted-out")
-  val notContractedOutMeter: Counter = metrics.counter("not-contracted-out")
+  private val currentAmountMeter: Histogram = metrics.histogram("current-amount")
+  private val forecastAmountMeter: Histogram = metrics.histogram("forecast-amount")
+  private val personalMaxAmountMeter: Histogram = metrics.histogram("personal-maximum-amount")
+  private val yearsNeededToContribute: Histogram = metrics.histogram("years-needed-to-contribute")
+  private val contractedOutMeter: Counter = metrics.counter("contracted-out")
+  private val notContractedOutMeter: Counter = metrics.counter("not-contracted-out")
   val startingAmount: Histogram=metrics.histogram("starting-amount")
-  val oldRulesBasicStatePension: Histogram=metrics.histogram("oldrules-basic-state-pension")
-  val oldRulesAdditionalStatePension: Histogram=metrics.histogram("oldrules-additional-state-pension")
-  val oldRulesGraduatedRetirementBenefit: Histogram=metrics.histogram("oldrules-graduated-retirement-benefit")
-  val newRulesGrossStatePension: Histogram=metrics.histogram("newrules-gross-state-pension")
-  val newRulesRebateDerivedAmount: Histogram=metrics.histogram("oldrules-rebate-derived-amount")
-  val rreCurrentWeeklyAmount:Histogram=metrics.histogram("reduced-rate-election-current-weekly-amount")
-  val statePensionAgeUnderConsiderationMeter: Counter = metrics.counter("state-pension-age-under-consideration")
+  private val oldRulesBasicStatePension: Histogram=metrics.histogram("oldrules-basic-state-pension")
+  private val oldRulesAdditionalStatePension: Histogram=metrics.histogram("oldrules-additional-state-pension")
+  private val oldRulesGraduatedRetirementBenefit: Histogram=metrics.histogram("oldrules-graduated-retirement-benefit")
+  private val newRulesGrossStatePension: Histogram=metrics.histogram("newrules-gross-state-pension")
+  private val newRulesRebateDerivedAmount: Histogram=metrics.histogram("oldrules-rebate-derived-amount")
+  private val rreCurrentWeeklyAmount:Histogram=metrics.histogram("reduced-rate-election-current-weekly-amount")
+  private val statePensionAgeUnderConsiderationMeter: Counter = metrics.counter("state-pension-age-under-consideration")
 
   def summary(forecast: BigDecimal, current: BigDecimal, contractedOut: Boolean,
                        forecastScenario: Scenario, personalMaximum: BigDecimal, yearsToContribute: Int,
@@ -107,7 +107,7 @@ class ApplicationMetrics @Inject()(metrics: com.codahale.metrics.MetricRegistry)
     if(statePensionAgeUnderConsideration) statePensionAgeUnderConsiderationMeter.inc()
   }
 
-  val exclusionMeters: Map[Exclusion, Counter] = Map(
+  private val exclusionMeters: Map[Exclusion, Counter] = Map(
     Dead -> metrics.counter("exclusion-dead"),
     IsleOfMan -> metrics.counter("exclusion-isle-of-man"),
     AmountDissonance -> metrics.counter("amount-dissonance"),

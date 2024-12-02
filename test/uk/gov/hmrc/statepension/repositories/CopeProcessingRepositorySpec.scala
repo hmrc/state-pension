@@ -21,6 +21,7 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import uk.gov.hmrc.statepension.config.AppConfig
@@ -35,11 +36,17 @@ import scala.concurrent.ExecutionContextExecutor
 class CopeProcessingRepositorySpec
   extends StatePensionBaseSpec
     with DefaultPlayMongoRepositorySupport[CopeRecord]
-    with GuiceOneAppPerSuite {
+    with GuiceOneAppPerSuite
+    with WireMockSupport {
 
   implicit val ec: ExecutionContextExecutor = global
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
+    .configure(
+      "internal-auth.isTestOnlyEndpoint"         -> false,
+      "microservice.services.internal-auth.port" -> wireMockPort,
+      "microservice.services.internal-auth.host" -> wireMockHost
+    )
     .overrides(bind[MongoComponent].toInstance(mongoComponent))
     .build()
 
@@ -73,8 +80,7 @@ class CopeProcessingRepositorySpec
         (find, update, updated)
       }) {
         res: (Option[CopeRecord], Option[CopeRecord], Option[CopeRecord]) =>
-          val (find, updateReturnValue, updatedRecord) =
-            (res._1, res._2, res._3)
+          val (find, updateReturnValue, updatedRecord) = (res._1, res._2, res._3)
 
           find.map {
             copeRecord =>

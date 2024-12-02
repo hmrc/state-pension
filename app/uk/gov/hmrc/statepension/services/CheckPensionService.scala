@@ -19,7 +19,6 @@ package uk.gov.hmrc.statepension.services
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.connectors.{DesConnector, ProxyCacheConnector}
@@ -36,7 +35,6 @@ class CheckPensionService @Inject()(
   override val customAuditConnector: AuditConnector,
   override val appConfig: AppConfig,
   implicit val executionContext: ExecutionContext,
-  val featureFlagService: FeatureFlagService,
   val citizenDetailsService: CitizenDetailsService
 ) extends StatePensionService {
   override def getMCI(summary: Summary, nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
