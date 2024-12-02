@@ -17,21 +17,13 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => statusResult, _}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
-
-import scala.concurrent.Future
 
 trait StatePensionControllerISpec
   extends StatePensionBaseSpec
@@ -40,10 +32,9 @@ trait StatePensionControllerISpec
     with ResponseHelpers
     with NinoGenerator {
 
+  val FIXED_DELAY = 25000
+
   private val nino: Nino = generateNino()
-  private val npsSummaryUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/summary"
-  private val npsLiabilitiesUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/liabilities"
-  private val npsNiRecordUrl: String = s"/individuals/${nino.withoutSuffix}/pensions/ni"
   private val proxyCacheUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}"
   def checkPensionControllerUrl(nino: Nino): String
 
@@ -51,9 +42,6 @@ trait StatePensionControllerISpec
     "Accept" -> "application/vnd.hmrc.1.0+json",
     "Authorization" -> "Bearer 123"
   )
-
-  private val mockFeatureFlagService: FeatureFlagService =
-    mock[FeatureFlagService]
 
   private def generateAuthHeaderResponse: String =
     s"""
@@ -97,11 +85,7 @@ trait StatePensionControllerISpec
         "play.ws.timeout.connection" -> "500ms",
         "auditing.enabled" -> false,
         "internal-auth.isTestOnlyEndpoint" -> false
-      )
-      .overrides(
-        bind[FeatureFlagService].toInstance(mockFeatureFlagService)
-      )
-      .build()
+      ).build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -118,18 +102,15 @@ trait StatePensionControllerISpec
     closedCopeWorkItem() -> FORBIDDEN -> "CLOSED_COPE_WORK_ITEM",
     unauthorized() -> BAD_GATEWAY -> "BAD_GATEWAY from 4xx",
     serviceUnavailable() -> BAD_GATEWAY -> "BAD_GATEWAY from 5xx",
-    httpClientTimeout(25000) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR",
+    httpClientTimeout(FIXED_DELAY) -> INTERNAL_SERVER_ERROR -> "INTERNAL_SERVER_ERROR",
   )
   
-  "get when ProxyCacheToggle is enabled" must {
+  "get" must {
 
     requests.foreach {
       case ((response, statusCode), errorDescription) =>
 
         s"return $statusCode $errorDescription" in {
-          when(mockFeatureFlagService.get(ArgumentMatchers.any[FeatureFlagName]())).thenReturn(
-            Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true))
-          )
 
           stubGetServer(response, proxyCacheUrl)
 
@@ -143,27 +124,4 @@ trait StatePensionControllerISpec
     }
   }
 
-  "get" must {
-
-    requests.foreach {
-      case ((response, statusCode), errorDescription) =>
-
-      s"return $statusCode $errorDescription" in {
-        when(mockFeatureFlagService.get(ArgumentMatchers.any[FeatureFlagName]())).thenReturn(
-          Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false))
-        )
-
-        stubGetServer(response, npsSummaryUrl)
-        stubGetServer(response, npsLiabilitiesUrl)
-        stubGetServer(response, npsNiRecordUrl)
-
-        val request = FakeRequest(GET, checkPensionControllerUrl(nino))
-          .withHeaders(defaultHeaders:_*)
-
-        val result = route(app, request)
-
-        result.map(statusResult) shouldBe Some(statusCode)
-      }
-    }
-  }
 }

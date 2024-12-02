@@ -17,10 +17,8 @@
 package uk.gov.hmrc.statepension.module
 
 import com.google.inject.Singleton
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagNamesLibrary
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 
 @Singleton
 class ApplicationStartUp {
-  FeatureFlagNamesLibrary.addFlags(List(ProxyCacheToggle))
+
 }
