@@ -21,22 +21,19 @@ import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.connectors.{DesConnector, ProxyCacheConnector}
 import uk.gov.hmrc.statepension.domain.Exclusion
 import uk.gov.hmrc.statepension.domain.nps.{Liabilities, NIRecord, ProxyCacheData, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
-import uk.gov.hmrc.statepension.models.ProxyCacheToggle
 import utils.StatePensionBaseSpec
 
 import scala.concurrent.Future
 
 class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
+  val NUMBER_OF_QUALIFYING_YEARS = 36
   val mockCitizenDetailsService: CitizenDetailsService = mock[CitizenDetailsService]
-  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   val mockDesConnector: DesConnector = mock[DesConnector]
   val mockProxyCacheConnector: ProxyCacheConnector = mock[ProxyCacheConnector]
   val mockMetrics: ApplicationMetrics = mock[ApplicationMetrics]
@@ -44,7 +41,6 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
   val sut: CheckPensionService = GuiceApplicationBuilder()
     .overrides(
       bind[CitizenDetailsService].toInstance(mockCitizenDetailsService),
-      bind[FeatureFlagService].toInstance(mockFeatureFlagService),
       bind[DesConnector].toInstance(mockDesConnector),
       bind[ProxyCacheConnector].toInstance(mockProxyCacheConnector),
       bind[ApplicationMetrics].toInstance(mockMetrics),
@@ -61,44 +57,11 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
   }
 
-  "getStatement when Proxy Cache Toggle disabled" should {
-    when(mockDesConnector.getSummary(any())(any()))
-      .thenReturn(Future.successful(summary))
-    when(mockDesConnector.getLiabilities(any())(any()))
-      .thenReturn(Future.successful(List()))
-    when(mockDesConnector.getNIRecord(any())(any()))
-      .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
-
-    "return StatePension data" when {
-      "citizen details returns false for MCI check" in {
-        when(mockFeatureFlagService.get(any()))
-          .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = false, description = None)))
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
-          .thenReturn(Future.successful(false))
-
-        val result = await(sut.getStatement(generateNino()))
-        result shouldBe a[Right[_, _]]
-      }
-    }
-
-    "return MCI exclusion" when {
-      "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
-          .thenReturn(Future.successful(true))
-
-        val result = await(sut.getStatement(generateNino()))
-        result.left.value.exclusionReasons shouldBe List(Exclusion.ManualCorrespondenceIndicator)
-      }
-    }
-  }
-
-  "getStatement when Proxy Cache Toggle enabled" should {
-    when(mockFeatureFlagService.get(any()))
-      .thenReturn(Future.successful(FeatureFlag(ProxyCacheToggle, isEnabled = true, description = None)))
+  "getStatement" should {
     when(mockProxyCacheConnector.get(any())(any()))
       .thenReturn(Future.successful(ProxyCacheData(
         summary = summary,
-        niRecord = NIRecord(qualifyingYears = 36, List()),
+        niRecord = NIRecord(qualifyingYears = NUMBER_OF_QUALIFYING_YEARS, List()),
         liabilities = Liabilities(List())
       )))
 

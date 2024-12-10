@@ -11,4 +11,3 @@ GET        /cope/mdtp/:nino      uk.gov.hmrc.statepension.controllers.statepensi
 
 ->         /                     health.Routes
 ->         /api                  definition.Routes
-->         /admin                admin.Routes
