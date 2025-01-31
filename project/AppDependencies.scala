@@ -20,14 +20,14 @@ import sbt.*
 object AppDependencies {
   val bootstrapVersion = "9.5.0"
   val playVersion = "play-30"
-  val hmrcMongoVersion = "2.3.0"
+  val hmrcMongoVersion = "2.4.0"
 
   val compile: Seq[ModuleID] = Seq(
     caffeine,
     "uk.gov.hmrc"       %%  s"bootstrap-backend-$playVersion"             % bootstrapVersion,
     "uk.gov.hmrc"       %%  s"domain-$playVersion"                        % "10.0.0",
-    "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.0.0",
-    "uk.gov.hmrc"       %%  s"play-hal-$playVersion"                      % "4.0.0",
+    "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.1.0",
+    "uk.gov.hmrc"       %%  s"play-hal-$playVersion"                      % "4.1.0",
     "commons-codec"     %   "commons-codec"                               % "1.17.0",
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion"                     % hmrcMongoVersion,
     "org.typelevel"     %%  "cats-core"                                   % "2.12.0",

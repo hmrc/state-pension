@@ -49,5 +49,5 @@ object NIRecord {
   implicit val reads: Reads[NIRecord] = (
       readNullableInt(__ \ "numberOfQualifyingYears") and
       readNullableList(__ \ "taxYears")
-    ) (NIRecord.apply _)
+    ) (NIRecord.apply)
 }

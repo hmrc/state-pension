@@ -18,6 +18,8 @@ package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
 import org.apache.pekko.Done
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
+import org.mongodb.scala.gridfs.{ObservableFuture, SingleObservableFuture}
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
@@ -34,6 +36,7 @@ import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
+
 
 @Singleton
 class CopeProcessingRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext, appConfig: AppConfig)

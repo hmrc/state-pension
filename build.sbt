@@ -7,15 +7,17 @@ import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
 lazy val appName = "state-pension"
 
-ThisBuild / scalaVersion := "2.13.15"
+ThisBuild / scalaVersion := "3.6.3"
 ThisBuild / majorVersion := 2
 
 scalacOptions ++= Seq(
   "-Xfatal-warnings",
-  "-Xmaxerrs", "1000", // Maximum errors to print
-  "-Xmaxwarns", "1000", // Maximum warnings to print
+//  "-Xmaxerrs", "1000", // Maximum errors to print
+//  "-Xmaxwarns", "1000", // Maximum warnings to print
   // Suggested here https://github.com/playframework/twirl/issues/105#issuecomment-782985171
-  "-Wconf:src=routes/.*:is,src=twirl/.*:is"
+  "-Wconf:msg=Flag -deprecation set repeatedly:s",
+  "-Wconf:msg=Flag -unchecked set repeatedly:s",
+  "-Wconf:msg=Flag -encoding set repeatedly:s"
 )
 
 lazy val plugins: Seq[Plugins] = Seq(

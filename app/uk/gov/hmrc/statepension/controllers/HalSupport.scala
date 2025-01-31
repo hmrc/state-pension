@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.controllers
 import play.api.hal.{Hal, HalLink, HalResource}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 
 trait HalSupport {
 
