@@ -58,12 +58,12 @@ class DocumentationControllerSpec
 
   "/definition access" should {
 
-    "return PRIVATE and no allowlist IDs if there is no application config" in {
+    "return PRIVATE and no Whitelist IDs if there is no application config" in {
 
       val result: Future[Result] = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "allowlistedApplicationIds" shouldBe JsDefined(JsArray())
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
     }
 
     "return PRIVATE if the application config says PRIVATE" in {
@@ -80,27 +80,27 @@ class DocumentationControllerSpec
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PUBLIC"))
     }
 
-    "return No allowlist IDs if the application config has an entry for allowlistIds but no Ids" in {
+    "return No Whitelist IDs if the application config has an entry for whiteListIds but no Ids" in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "allowlist.applicationIds" -> Seq()))))
+      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq()))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "allowlistedApplicationIds" shouldBe JsDefined(JsArray())
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
 
     }
 
-    "return allowlist IDs 'A', 'B', 'C' if the application config has an entry with 'A', 'B', 'C' " in {
+    "return Whitelist IDs 'A', 'B', 'C' if the application config has an entry with 'A', 'B', 'C' " in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "allowlist.applicationIds" -> Seq("A", "B", "C")))))
+      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq("A", "B", "C")))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "allowlistedApplicationIds" shouldBe JsDefined(JsArray(Seq(JsString("A"), JsString("B"), JsString("C"))))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray(Seq(JsString("A"), JsString("B"), JsString("C"))))
 
     }
 
-    "return no allowlistApplicationIds entry if it is not PRIVATE" in {
+    "return no whitelistApplicationIds entry if it is not PRIVATE" in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC", "allowlist.applicationIds" -> Seq()))))
+      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC", "whitelist.applicationIds" -> Seq()))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "allowlistedApplicationIds" shouldBe a [JsUndefined]
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe a [JsUndefined]
 
     }
   }
