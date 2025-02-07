@@ -19,7 +19,7 @@ package uk.gov.hmrc.statepension.controllers
 import controllers.Assets
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.api.libs.json.{JsArray, JsDefined, JsString, JsUndefined}
+import play.api.libs.json.{JsDefined, JsString}
 import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
@@ -58,12 +58,11 @@ class DocumentationControllerSpec
 
   "/definition access" should {
 
-    "return PRIVATE and no Whitelist IDs if there is no application config" in {
+    "return PRIVATE if there is no application config" in {
 
       val result: Future[Result] = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
     }
 
     "return PRIVATE if the application config says PRIVATE" in {
@@ -78,30 +77,6 @@ class DocumentationControllerSpec
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC"))))
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PUBLIC"))
-    }
-
-    "return No Whitelist IDs if the application config has an entry for whiteListIds but no Ids" in {
-
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq()))))
-      status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray())
-
-    }
-
-    "return Whitelist IDs 'A', 'B', 'C' if the application config has an entry with 'A', 'B', 'C' " in {
-
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE", "whitelist.applicationIds" -> Seq("A", "B", "C")))))
-      status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe JsDefined(JsArray(Seq(JsString("A"), JsString("B"), JsString("C"))))
-
-    }
-
-    "return no whitelistApplicationIds entry if it is not PRIVATE" in {
-
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC", "whitelist.applicationIds" -> Seq()))))
-      status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "whitelistedApplicationIds" shouldBe a [JsUndefined]
-
     }
   }
 
