@@ -49,7 +49,7 @@ abstract class StatePensionController @Inject()(
   val authAction: ActionBuilder[Request, AnyContent]
   implicit val ec: ExecutionContext = controllerComponents.executionContext
 
-  override lazy val context: String = appConfig.apiGatewayContext
+  override val context: String = appConfig.apiGatewayContext
 
   def get(nino: Nino): Action[AnyContent] = (authAction andThen validateAccept(acceptHeaderValidationRules)).async {
     implicit request =>

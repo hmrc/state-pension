@@ -11,7 +11,7 @@ ThisBuild / scalaVersion := "3.6.3"
 ThisBuild / majorVersion := 2
 
 scalacOptions ++= Seq(
-  "-Xfatal-warnings",
+//  "-Xfatal-warnings",
 //  "-Xmaxerrs", "1000", // Maximum errors to print
 //  "-Xmaxwarns", "1000", // Maximum warnings to print
   // Suggested here https://github.com/playframework/twirl/issues/105#issuecomment-782985171

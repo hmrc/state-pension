@@ -32,7 +32,7 @@ class CitizenDetailsConnector @Inject()(http: HttpClientV2,
                                         metrics: ApplicationMetrics,
                                         appContext: AppConfig)(implicit ec: ExecutionContext){
 
-  implicit val legacyRawReads: HttpReads[HttpResponse] = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf(HttpReads.Implicits.readRaw))
+  implicit val legacyRawReads: HttpReads[HttpResponse] = HttpReads.Implicits.throwOnFailure(HttpReads.Implicits.readEitherOf( using HttpReads.Implicits.readRaw))
 
   val serviceUrl: String = appContext.citizenDetailsBaseUrl
 
