@@ -71,39 +71,33 @@ class CopeProcessingRepositorySpec
   "CopeProcessingRepository" should {
     "insert, find, update and delete" in {
       whenReady(for {
-        _       <- repository.insert(copeRecord)
-        find    <- repository.find(hashedNino)
-        update  <- repository.update(hashedNino, today.plusDays(1L), today.plusDays(2L))
+        _ <- repository.insert(copeRecord)
+        find <- repository.find(hashedNino)
+        update <- repository.update(hashedNino, today.plusDays(1L), today.plusDays(2L))
         updated <- repository.find(hashedNino)
-        _       <- repository.delete(hashedNino)
-      } yield {
-        (find, update, updated)
-      }) {
-        res: (Option[CopeRecord], Option[CopeRecord], Option[CopeRecord]) =>
-          val (find, updateReturnValue, updatedRecord) = (res._1, res._2, res._3)
+        _ <- repository.delete(hashedNino)
+      } yield (find, update, updated)) {
+        case (find, updateReturnValue, updatedRecord) =>
 
-          find.map {
-            copeRecord =>
-              copeRecord.nino shouldBe hashedNino.generateHash()
-              copeRecord.firstLoginDate shouldBe today
-              copeRecord.copeAvailableDate shouldBe today
-              copeRecord.previousCopeAvailableDate shouldBe None
+          find.foreach { copeRecord =>
+            copeRecord.nino shouldBe hashedNino.generateHash()
+            copeRecord.firstLoginDate shouldBe today
+            copeRecord.copeAvailableDate shouldBe today
+            copeRecord.previousCopeAvailableDate shouldBe None
           }
 
-          updateReturnValue.map {
-            copeRecord =>
-              copeRecord.nino shouldBe hashedNino.generateHash()
-              copeRecord.firstLoginDate shouldBe today
-              copeRecord.copeAvailableDate shouldBe today
-              copeRecord.previousCopeAvailableDate shouldBe None
+          updateReturnValue.foreach { copeRecord =>
+            copeRecord.nino shouldBe hashedNino.generateHash()
+            copeRecord.firstLoginDate shouldBe today
+            copeRecord.copeAvailableDate shouldBe today
+            copeRecord.previousCopeAvailableDate shouldBe None
           }
 
-          updatedRecord.map {
-            copeRecord =>
-              copeRecord.nino shouldBe hashedNino.generateHash()
-              copeRecord.firstLoginDate shouldBe today
-              copeRecord.copeAvailableDate shouldBe today.plusDays(1L)
-              copeRecord.previousCopeAvailableDate shouldBe Some(today.plusDays(2L))
+          updatedRecord.foreach { copeRecord =>
+            copeRecord.nino shouldBe hashedNino.generateHash()
+            copeRecord.firstLoginDate shouldBe today
+            copeRecord.copeAvailableDate shouldBe today.plusDays(1L)
+            copeRecord.previousCopeAvailableDate shouldBe Some(today.plusDays(2L))
           }
 
           repository.collection.estimatedDocumentCount().map(_ shouldBe 0L)

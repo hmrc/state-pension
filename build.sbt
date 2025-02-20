@@ -11,13 +11,12 @@ ThisBuild / scalaVersion := "3.6.3"
 ThisBuild / majorVersion := 2
 
 scalacOptions ++= Seq(
+  "-Wconf:src=routes/.*:s",
+  "-Wconf:msg=Flag.*repeatedly:s",
+  "-Wconf:msg=unused.import&src=html/.*:s",
 //  "-Xfatal-warnings",
-//  "-Xmaxerrs", "1000", // Maximum errors to print
-//  "-Xmaxwarns", "1000", // Maximum warnings to print
-  // Suggested here https://github.com/playframework/twirl/issues/105#issuecomment-782985171
-  "-Wconf:msg=Flag -deprecation set repeatedly:s",
-  "-Wconf:msg=Flag -unchecked set repeatedly:s",
-  "-Wconf:msg=Flag -encoding set repeatedly:s"
+  "-feature",
+  "-deprecation"
 )
 
 lazy val plugins: Seq[Plugins] = Seq(

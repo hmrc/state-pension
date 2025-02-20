@@ -71,7 +71,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
           .thenReturn(Future.successful(false))
 
         val result = await(sut.getStatement(generateNino()))
-        result shouldBe a[Right[_, _]]
+        result shouldBe a[Right[?, ?]]
       }
     }
 
