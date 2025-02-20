@@ -278,7 +278,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
           mockEq[BigDecimal](35.58),
           mockEq[BigDecimal](0),
           mockEq(true),
-          mockEq(Some(32.61)),
+          mockEq(Some(BigDecimal(32.61))),
           mockEq(true)
         )
       }

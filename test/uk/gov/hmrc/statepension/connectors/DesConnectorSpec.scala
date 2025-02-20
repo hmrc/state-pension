@@ -76,7 +76,7 @@ class DesConnectorSpec
   }
 
   lazy val desConnector: DesConnector = injector.instanceOf[DesConnector]
-  lazy val connectorUtil: ConnectorUtil = injector.instanceOf[ConnectorUtil]
+  final lazy val connectorUtil: ConnectorUtil = injector.instanceOf[ConnectorUtil]
 
   "getSummary" should {
 
