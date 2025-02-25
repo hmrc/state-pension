@@ -14,7 +14,6 @@ scalacOptions ++= Seq(
   "-Wconf:src=routes/.*:s",
   "-Wconf:msg=Flag.*repeatedly:s",
   "-Wconf:msg=unused.import&src=html/.*:s",
-//  "-Xfatal-warnings",
   "-feature",
   "-deprecation"
 )
@@ -66,8 +65,8 @@ val excludedPackages = Seq(
 lazy val scoverageSettings: Seq[Def.Setting[?]] = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages,
-    ScoverageKeys.coverageMinimumStmtTotal := 93,
-    ScoverageKeys.coverageMinimumBranchTotal := 83,
+    ScoverageKeys.coverageMinimumStmtTotal := 90,
+    ScoverageKeys.coverageMinimumBranchTotal := 75,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )

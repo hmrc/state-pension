@@ -16,12 +16,41 @@
 
 package uk.gov.hmrc.statepension.domain
 
+import play.api.libs.json.{JsSuccess, Json}
 import utils.StatePensionBaseSpec
+
 import java.time.LocalDate
 
 class StatePensionSpec extends StatePensionBaseSpec {
 
   "StatePensionAmount" should {
+    "serialize and deserialize correctly" in {
+      val statePension = StatePension(
+        earningsIncludedUpTo = LocalDate.of(2024, 4, 5),
+        amounts = StatePensionAmounts(
+          protectedPayment = true,
+          current = StatePensionAmount(Some(10), Some(5), BigDecimal(150.50)),
+          forecast = StatePensionAmount(Some(12), Some(4), BigDecimal(160.75)),
+          maximum = StatePensionAmount(Some(15), Some(3), BigDecimal(170.25)),
+          cope = StatePensionAmount(Some(8), Some(2), BigDecimal(140.00)),
+          starting = StatePensionAmount(Some(9), Some(1), BigDecimal(145.00)),
+          oldRules = OldRules(BigDecimal(100.0), BigDecimal(50.0), BigDecimal(25.0)),
+          newRules = NewRules(BigDecimal(200.0), BigDecimal(30.0))
+        ),
+        pensionAge = 67,
+        pensionDate = LocalDate.of(2050, 6, 1),
+        finalRelevantYear = "2049-50",
+        numberOfQualifyingYears = 35,
+        pensionSharingOrder = false,
+        currentFullWeeklyPensionAmount = BigDecimal(175.20),
+        reducedRateElection = false,
+        reducedRateElectionCurrentWeeklyAmount = Some(BigDecimal(50.00)),
+        statePensionAgeUnderConsideration = false
+      )
+      val json = Json.toJson(statePension)
+      val parsed = json.validate[StatePension]
+      parsed shouldBe JsSuccess(statePension)
+    }
     "Weekly / Monthly / Annual Calculation" should {
       "return 151.25, 657.67, 7892.01" in {
         StatePensionAmount(None, None, 151.25).monthlyAmount shouldBe 657.67
@@ -105,11 +134,16 @@ class StatePensionSpec extends StatePensionBaseSpec {
       val sp=createStatePension()
       sp.amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=30.00,graduatedRetirementBenefit =10.88)
     }
-
     "return OldRules where basicStatePension is 119.30, additionalStatePension is 20.00 and graduatedRetirementBenefit is 10.00" in {
       val sp = createStatePension(oldRules = OldRules(basicStatePension = 119.30,additionalStatePension=20.00, graduatedRetirementBenefit=10.00))
       sp.amounts.oldRules shouldBe OldRules(basicStatePension = 119.30,additionalStatePension=20.00,graduatedRetirementBenefit=10.00)
 
+    }
+    "serialize and deserialize correctly" in {
+      val oldRules = OldRules(BigDecimal(100.0), BigDecimal(50.0), BigDecimal(25.0))
+      val json = Json.toJson(oldRules)
+      val parsed = json.validate[OldRules]
+      parsed shouldBe JsSuccess(oldRules)
     }
   }
 
@@ -121,6 +155,12 @@ class StatePensionSpec extends StatePensionBaseSpec {
     "return NewRules where grossStatePension is 119.30 and rebateDerivedAmount is 20.00" in {
       val sp=createStatePension(newRules = NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00))
       sp.amounts.newRules shouldBe NewRules(grossStatePension = 119.30, rebateDerivedAmount=20.00)
+    }
+    "serialize and deserialize correctly" in {
+      val newRules = NewRules(BigDecimal(200.0), BigDecimal(30.0))
+      val json = Json.toJson(newRules)
+      val parsed = json.validate[NewRules]
+      parsed shouldBe JsSuccess(newRules)
     }
   }
 
@@ -217,4 +257,5 @@ class StatePensionSpec extends StatePensionBaseSpec {
       createStatePension(maximumAmount = 0).forecastScenario shouldBe Scenario.CantGetPension
     }
   }
+
 }
