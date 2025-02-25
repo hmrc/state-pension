@@ -16,29 +16,31 @@
 
 package uk.gov.hmrc.statepension.domain
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.matchers.should.Matchers.shouldBe
 import play.api.libs.json.{JsSuccess, Json}
-import org.scalatest.matchers.must.Matchers.mustBe
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalactic.Prettifier.default
 
-class APIAccessSpec extends AnyWordSpec {
+class APIAccessSpec extends AnyWordSpec with Matchers {
 
   "APIAccess" must {
     "serialize and deserialize correctly with whitelistedApplicationIds" in {
-      val apiAccess = APIAccess("PUBLIC", Some(Seq("app1", "app2")))
+      val apiAccess = APIAccess("PUBLIC", whitelistedApplicationIds = Some(Seq("app1", "app2")))
 
       val json = Json.toJson(apiAccess)
       val parsed = json.validate[APIAccess]
 
-      parsed mustBe JsSuccess(apiAccess)
+      parsed shouldBe JsSuccess(apiAccess)
     }
 
     "serialize and deserialize correctly without whitelistedApplicationIds" in {
-      val apiAccess = APIAccess("PRIVATE", None)
+      val apiAccess = APIAccess("PRIVATE", whitelistedApplicationIds = None)
 
       val json = Json.toJson(apiAccess)
       val parsed = json.validate[APIAccess]
 
-      parsed mustBe JsSuccess(apiAccess)
+      parsed shouldBe JsSuccess(apiAccess)
     }
   }
 }
