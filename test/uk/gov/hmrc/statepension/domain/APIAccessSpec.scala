@@ -26,7 +26,7 @@ class APIAccessSpec extends AnyWordSpec with Matchers {
 
   "APIAccess" must {
     "serialize and deserialize correctly with whitelistedApplicationIds" in {
-      val apiAccess = APIAccess(`type` = "PUBLIC", whitelistedApplicationIds = Some(Seq("app1", "app2")))
+      val apiAccess = APIAccess("PUBLIC",  Some(Seq("app1", "app2")))
 
       val json = Json.toJson(apiAccess)
       val parsed = json.validate[APIAccess]
@@ -35,7 +35,7 @@ class APIAccessSpec extends AnyWordSpec with Matchers {
     }
 
     "serialize and deserialize correctly without whitelistedApplicationIds" in {
-      val apiAccess = APIAccess(`type` = "PRIVATE", whitelistedApplicationIds = None)
+      val apiAccess = APIAccess("PRIVATE",  None)
 
       val json = Json.toJson(apiAccess)
       val parsed = json.validate[APIAccess]
