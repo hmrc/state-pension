@@ -58,7 +58,7 @@ object Summary {
       readNullableInt(JsPath \ "countryCode") and
       (JsPath \ "statePensionAmount").read[PensionAmounts] and
       (JsPath \ "manualCorrespondenceIndicator").readNullable[Boolean]
-    )(Summary.apply _)
+    )(Summary.apply)
 
 }
 
@@ -83,7 +83,7 @@ object PensionAmounts {
       readBigDecimal(JsPath \ "protectedPayment2016") and
       (JsPath \ "amountA2016").read[AmountA2016] and
       (JsPath \ "amountB2016").read[AmountB2016]
-    )(PensionAmounts.apply _)
+    )(PensionAmounts.apply)
 }
 
 case class AmountA2016(
@@ -119,7 +119,7 @@ object AmountA2016 {
       readBigDecimal(JsPath \ "ltbPre88CodCashValue") and
       readBigDecimal(JsPath \ "ltbPost88CodCashValue") and
       readBigDecimal(JsPath \ "grbCash")
-    )(AmountA2016.apply _)
+    )(AmountA2016.apply)
 
 }
 
@@ -132,5 +132,5 @@ object AmountB2016 {
   implicit val reads: Reads[AmountB2016] = (
     readBigDecimal(JsPath \ "mainComponent") and
       readBigDecimal(JsPath \ "rebateDerivedAmount")
-    )(AmountB2016.apply _)
+    )(AmountB2016.apply)
 }

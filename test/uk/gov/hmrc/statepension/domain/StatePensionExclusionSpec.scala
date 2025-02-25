@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.statepension.domain
 
-import play.api.libs.json.{JsError, JsString, JsSuccess}
+import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 import utils.StatePensionBaseSpec
+
+import java.time.LocalDate
 
 class StatePensionExclusionSpec extends StatePensionBaseSpec {
 
@@ -29,26 +31,39 @@ class StatePensionExclusionSpec extends StatePensionBaseSpec {
     (JsString("AmountDissonance"), Exclusion.AmountDissonance)
   )
 
-  "Exclusion reads" should {
-    "write to JSON successfully" in {
-      jsonExclusionList foreach {
-        case (json, exclusion) =>
-          Exclusion.ExclusionFormat.reads(json) shouldBe JsSuccess(exclusion)
+  "StatePensionExclusion" should {
+    "serialize and deserialize correctly" in {
+      val exclusionInstance = StatePensionExclusion(
+        exclusionReasons = List(Exclusion.Dead, Exclusion.IsleOfMan),
+        pensionAge = 67,
+        pensionDate = LocalDate.of(2040, 5, 15),
+        statePensionAgeUnderConsideration = false
+      )
+
+      val json = Json.toJson(exclusionInstance)
+      val parsed = json.validate[StatePensionExclusion]
+      parsed shouldBe JsSuccess(exclusionInstance)
+    }
+    "Exclusion reads" should {
+      "write to JSON successfully" in {
+        jsonExclusionList foreach {
+          case (json, exclusion) =>
+            Exclusion.ExclusionFormat.reads(json) shouldBe JsSuccess(exclusion)
+        }
+      }
+
+      "return JsError when given invalid Json" in {
+        Exclusion.ExclusionFormat.reads(JsString("{‘")) shouldBe JsError("Exclusion not valid!")
       }
     }
 
-    "return JsError when given invalid Json" in {
-      Exclusion.ExclusionFormat.reads(JsString("{‘")) shouldBe JsError("Exclusion not valid!")
-    }
-  }
-
-  "Exclusion writes" should {
-    "convert an Exclusion" in {
-      jsonExclusionList foreach {
-        case (json, exclusion) =>
-          Exclusion.ExclusionFormat.writes(exclusion) shouldBe json
+    "Exclusion writes" should {
+      "convert an Exclusion" in {
+        jsonExclusionList foreach {
+          case (json, exclusion) =>
+            Exclusion.ExclusionFormat.writes(exclusion) shouldBe json
+        }
       }
     }
   }
-
 }

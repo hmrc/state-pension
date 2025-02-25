@@ -21,7 +21,7 @@ import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.FORBIDDEN
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}

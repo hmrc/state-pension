@@ -76,7 +76,7 @@ class DesConnectorSpec
   }
 
   lazy val desConnector: DesConnector = injector.instanceOf[DesConnector]
-  lazy val connectorUtil: ConnectorUtil = injector.instanceOf[ConnectorUtil]
+  final lazy val connectorUtil: ConnectorUtil = injector.instanceOf[ConnectorUtil]
 
   "getSummary" should {
 
@@ -221,19 +221,19 @@ class DesConnectorSpec
           |}
         """.stripMargin)
 
-      server.stubFor(
+        server.stubFor(
         get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(invalidJson.toString()))
-      )
+        )
 
-      val thrown: Throwable = desConnector.getSummary(nino).failed.futureValue
+        val thrown: Throwable = desConnector.getSummary(nino).failed.futureValue
 
-      assert(thrown.isInstanceOf[connectorUtil.JsonValidationException])
-      assert(thrown.getMessage.contains("statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"))
-      assert(thrown.getMessage.contains("earningsIncludedUpto - error.path.missing"))
+        assert(thrown.isInstanceOf[connectorUtil.JsonValidationException])
+        assert(thrown.getMessage.contains("statePensionAmount/amountA2016/ltbPost88CodCashValue - error.expected.jsnumberorjsstring"))
+        assert(thrown.getMessage.contains("earningsIncludedUpto - error.path.missing"))
 
-      withClue("timer did not stop") {
-        Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
-      }
+        withClue("timer did not stop") {
+          Mockito.verify(mockMetrics.startTimer(ArgumentMatchers.eq(APIType.Summary))).stop()
+        }
     }
   }
 
@@ -505,7 +505,7 @@ class DesConnectorSpec
 
     }
 
-   "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
+    "parse the json and return a Future[DesNIRecord] when tax years are not present" in {
      val jsonWithNoTaxYears: String = NIRecordFixture.exampleDesNiRecordJson(nino.nino)
      val optJson: JsValue = Json.parse(jsonWithNoTaxYears)
 

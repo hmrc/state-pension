@@ -20,7 +20,7 @@ import org.apache.pekko.util.Timeout
 import org.mockito.ArgumentMatchers.{any, eq => MockitoEq}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.BeforeAndAfter
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
+import org.scalatest.matchers.must.Matchers.mustBe
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.inject.bind

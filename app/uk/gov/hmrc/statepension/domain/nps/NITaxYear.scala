@@ -36,5 +36,5 @@ object NITaxYear {
       (__ \ "qualifying").readNullable[Boolean] and
       (__ \ "underInvestigationFlag").readNullable[Boolean] and
       (__ \ "payable").readNullable[Boolean]
-    ) (NITaxYear.apply _)
+    ) (NITaxYear.apply)
 }

@@ -66,7 +66,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
 
         val result = await(sut.getStatement(nino))
         sut.checkPensionRequest shouldBe false
-        result shouldBe a[Right[_, _]]
+        result shouldBe a[Right[?, ?]]
       }
     }
 

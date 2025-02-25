@@ -18,6 +18,7 @@ package uk.gov.hmrc.statepension.services
 
 import utils.StatePensionBaseSpec
 import java.time.{LocalDate, LocalDateTime}
+import org.scalatest.matchers.should.Matchers.shouldBe
 
 class TaxYearResolverSpec extends StatePensionBaseSpec {
 
@@ -77,8 +78,8 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
     }
 
     "Return 2013 when the current UK time is 11:06:23.323 on 2014/2/1" in {
-           val currentTime = LocalDateTime.of(2014, 2, 1, 11, 6, 23, 323)
-      Resolver(currentTime).currentTaxYear shouldBe 2013
+       val currentTime = LocalDateTime.of(2014, 2, 1, 11, 6, 23, 323)
+       Resolver(currentTime).currentTaxYear shouldBe 2013
 
     }
 
