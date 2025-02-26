@@ -115,7 +115,7 @@ trait StatePensionControllerISpec
           stubGetServer(response, proxyCacheUrl)
 
           val request = FakeRequest(GET, checkPensionControllerUrl(nino))
-            .withHeaders(defaultHeaders: _*)
+            .withHeaders(defaultHeaders *)
 
           val result = route(app, request)
 

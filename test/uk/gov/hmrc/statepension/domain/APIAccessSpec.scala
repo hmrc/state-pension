@@ -23,17 +23,8 @@ import org.scalatest.wordspec.AnyWordSpec
 class APIAccessSpec extends AnyWordSpec {
 
   "APIAccess" must {
-    "serialize and deserialize correctly with whitelistedApplicationIds" in {
-      val apiAccess = APIAccess("PUBLIC", Some(Seq("app1", "app2")))
-
-      val json = Json.toJson(apiAccess)
-      val parsed = json.validate[APIAccess]
-
-      parsed mustBe JsSuccess(apiAccess)
-    }
-
-    "serialize and deserialize correctly without whitelistedApplicationIds" in {
-      val apiAccess = APIAccess("PRIVATE", None)
+    "serialize and deserialize correctly" in {
+      val apiAccess = APIAccess("PUBLIC")
 
       val json = Json.toJson(apiAccess)
       val parsed = json.validate[APIAccess]
