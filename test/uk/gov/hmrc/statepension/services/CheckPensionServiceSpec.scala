@@ -28,6 +28,7 @@ import uk.gov.hmrc.statepension.domain.nps.{Liabilities, NIRecord, ProxyCacheDat
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
 import utils.StatePensionBaseSpec
 
+
 import scala.concurrent.Future
 
 class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
