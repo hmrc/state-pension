@@ -29,6 +29,7 @@ import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
 import utils.StatePensionBaseSpec
 
+
 import scala.concurrent.Future
 
 class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {

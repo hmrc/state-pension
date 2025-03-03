@@ -10,10 +10,11 @@ lazy val appName = "state-pension"
 ThisBuild / scalaVersion := "3.6.3"
 ThisBuild / majorVersion := 2
 
-scalacOptions ++= Seq(
+ThisBuild / scalacOptions ++= Seq(
   "-Wconf:src=routes/.*:s",
   "-Wconf:msg=Flag.*repeatedly:s",
   "-Wconf:msg=unused.import&src=html/.*:s",
+  "-Wconf:msg=unused.import&src=txt/.*:s",
   "-feature",
   "-deprecation"
 )
