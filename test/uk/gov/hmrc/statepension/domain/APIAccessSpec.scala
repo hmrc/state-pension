@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.util
+package uk.gov.hmrc.statepension.domain
 
-object FunctionHelper {
-  def composeAll[A](functionList: Seq[A => A]): A => A = functionList.foldLeft(identity[A])(_ compose _)
+import play.api.libs.json.{JsSuccess, Json}
+import org.scalatest.matchers.must.Matchers.mustBe
+import org.scalatest.wordspec.AnyWordSpec
+
+class APIAccessSpec extends AnyWordSpec {
+
+  "APIAccess" must {
+    "serialize and deserialize correctly" in {
+      val apiAccess = APIAccess("PUBLIC")
+
+      val json = Json.toJson(apiAccess)
+      val parsed = json.validate[APIAccess]
+
+      parsed mustBe JsSuccess(apiAccess)
+    }
+  }
 }

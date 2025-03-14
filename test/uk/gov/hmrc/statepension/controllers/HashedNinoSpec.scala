@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.statepension.util
+package uk.gov.hmrc.statepension.controllers
 
-object FunctionHelper {
-  def composeAll[A](functionList: Seq[A => A]): A => A = functionList.foldLeft(identity[A])(_ compose _)
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsSuccess, Json}
+import uk.gov.hmrc.domain.Nino
+import org.scalatest.matchers.must.Matchers.mustBe
+
+class HashedNinoSpec extends AnyWordSpec {
+
+  "HashedNino" must {
+    "serialize and deserialize correctly" in {
+      val hashedNino = HashedNino(Nino("AA123456A"))
+
+      val json = Json.toJson(hashedNino)
+      val parsed = json.validate[HashedNino]
+
+      parsed mustBe JsSuccess(hashedNino)
+    }
+  }
 }

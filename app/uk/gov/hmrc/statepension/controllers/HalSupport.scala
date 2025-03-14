@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.statepension.controllers
 
-import play.api.hal.{Hal, HalLink, HalResource}
-import play.api.libs.json.{JsValue, Json}
+import play.api.hal._
+import play.api.libs.json._
 import play.api.mvc.Result
 
 trait HalSupport {
@@ -35,7 +35,8 @@ trait HalSupport {
   }
 
   // scalastyle:off method.name
-  def Ok(hal: HalResource): Result =
+  def Ok(hal: HalResource): Result = {
     play.api.mvc.Results.Ok(Json.toJson(hal)).withHeaders("Content-Type" -> "application/hal+json")
+  }
 
 }

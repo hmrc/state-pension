@@ -19,6 +19,7 @@ package uk.gov.hmrc.statepension.util
 import uk.gov.hmrc.statepension.models.TaxRates
 import uk.gov.hmrc.statepension.services.TaxYearResolver
 import utils.StatePensionBaseSpec
+import org.scalatest.matchers.should.Matchers._
 
 class FileReaderSpec extends StatePensionBaseSpec {
 

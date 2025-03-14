@@ -29,6 +29,7 @@ import uk.gov.hmrc.statepension.domain.nps.{NIRecord, Summary}
 import uk.gov.hmrc.statepension.fixtures.SummaryFixture
 import utils.StatePensionBaseSpec
 
+
 import scala.concurrent.Future
 
 class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
@@ -66,7 +67,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
 
         val result = await(sut.getStatement(nino))
         sut.checkPensionRequest shouldBe false
-        result shouldBe a[Right[_, _]]
+        result shouldBe a[Right[?, ?]]
       }
     }
 
