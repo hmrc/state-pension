@@ -74,7 +74,7 @@ class AuthActionSpec
 
           verify(mockAuthConnector)
             .authorise[Unit](MockitoEq(
-              AuthProviders(PrivilegedApplication)
+              ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
             ), any())(any(), any())
         }
 
@@ -89,7 +89,7 @@ class AuthActionSpec
 
           verify(mockAuthConnector)
             .authorise[Unit](MockitoEq(
-              AuthProviders(PrivilegedApplication)
+              ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
             ), any())(any(), any())
         }
 
@@ -101,12 +101,18 @@ class AuthActionSpec
 
           verify(mockAuthConnector)
             .authorise[Unit](MockitoEq(
-              AuthProviders(PrivilegedApplication)
+              ConfidenceLevel.L200 or AuthProviders(PrivilegedApplication)
             ), any())(any(), any())
         }
       }
 
       "return UNAUTHORIZED" when {
+        "the Confidence Level is less than 200" in {
+          val (result, _) =
+            testAuthActionWith(Future.failed(new InsufficientConfidenceLevel))
+          status(result) mustBe UNAUTHORIZED
+        }
+
         "the Nino is rejected by auth" in {
           val (result, _) =
             testAuthActionWith(Future.failed(InternalError("IncorrectNino")))
