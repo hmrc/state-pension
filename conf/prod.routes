@@ -1,6 +1,6 @@
 # Add all the application routes to the app.routes file
 
-# Non pertax authenticated routes cxalled from API
+# Non pertax authenticated routes called from API
 GET        /ni/:nino             uk.gov.hmrc.statepension.controllers.statepension.ApiCheckPensionController.get(nino: uk.gov.hmrc.domain.Nino)
 GET        /pd/ni/:nino          uk.gov.hmrc.statepension.controllers.statepension.DashboardController.get(nino: uk.gov.hmrc.domain.Nino)
 GET        /cope/:nino           uk.gov.hmrc.statepension.controllers.statepension.ApiCopeController.get(nino: uk.gov.hmrc.domain.Nino)
