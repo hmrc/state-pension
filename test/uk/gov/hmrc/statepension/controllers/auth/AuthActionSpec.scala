@@ -68,7 +68,7 @@ class AuthActionSpec
         "the user is authorised and Nino matches the Nino in the uri" in {
 
           val (result, mockAuthConnector) =
-            testAuthActionWith(Future.successful(Some(testNino) ~ None  ~ Some(Credentials("", "GovernmentGateway"))))
+            testAuthActionWith(Future.successful(Some(testNino) ~ Some(Credentials("", "GovernmentGateway"))))
 
           status(result) mustBe OK
 
@@ -80,7 +80,7 @@ class AuthActionSpec
           val helperNino = ninoGenerator.nextNino.nino
           val (result, mockAuthConnector) =
             testAuthActionWith(
-              Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", Some(testNino))) ~ Some(Credentials("", "GovernmentGateway")))
+              Future.successful(Some(helperNino) ~ Some(Credentials("", "GovernmentGateway")))
             )
 
           status(result) mustBe OK
@@ -91,7 +91,7 @@ class AuthActionSpec
 
         "the request comes from a privileged application" in {
           val (result, mockAuthConnector) =
-            testAuthActionWith(Future.successful(None ~ None ~ Some(Credentials("", "PrivilegedApplication"))))
+            testAuthActionWith(Future.successful(None ~ Some(Credentials("", "PrivilegedApplication"))))
 
           status(result) mustBe OK
 
@@ -114,9 +114,8 @@ class AuthActionSpec
         }
 
         "the trusted helpee nino does not match the uri Nino" in {
-          val notTestNino = testNino.take(testNino.length-1) + "X"
           val helperNino = ninoGenerator.nextNino.nino
-          val (result, _) = testAuthActionWith(Future.successful(Some(helperNino) ~ Some(TrustedHelper("", "", "", Some(notTestNino))) ~ None))
+          val (result, _) = testAuthActionWith(Future.successful(Some(helperNino) ~ None))
           status(result) mustBe UNAUTHORIZED
         }
       }
@@ -131,7 +130,7 @@ class AuthActionSpec
       }
       "return INTERNAL_SERVER_ERROR" when {
         "auth returns with no nino" in {
-          val (result, _) = testAuthActionWith(Future.successful(None ~ None))
+          val (result, _) = testAuthActionWith(Future.successful(None))
           status(result) mustBe INTERNAL_SERVER_ERROR
         }
 

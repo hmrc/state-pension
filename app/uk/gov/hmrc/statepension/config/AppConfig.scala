@@ -55,6 +55,8 @@ class AppConfig @Inject()(
   val proxyCacheUrl: String = baseUrl("ni-and-sp-proxy-cache")
   val ifConnectorConfig: ConnectorConfig = connectorConfig("if-hod")
 
+  lazy val fandfHost: String = servicesConfig.baseUrl("fandf")
+
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
   val internalAuthBaseUrl: String = baseUrl("internal-auth")
 

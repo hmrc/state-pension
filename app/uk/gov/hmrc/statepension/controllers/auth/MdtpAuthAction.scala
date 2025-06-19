@@ -20,6 +20,7 @@ import play.api.mvc.BodyParsers
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
 import uk.gov.hmrc.auth.core.AuthConnector
 import com.google.inject.{ImplementedBy, Inject}
+import uk.gov.hmrc.statepension.connectors.FandFConnector
 
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
@@ -27,9 +28,10 @@ import scala.util.matching.Regex
 class MdtpAuthActionImpl @Inject() (
                       val authConn: AuthConnector,
                       val parse: BodyParsers.Default,
-                      val ec: ExecutionContext
+                      val ec: ExecutionContext,
+                      val fandFConnector: FandFConnector             
                     )
-  extends AuthActionImpl(authConn, parse)(ec) with MdtpAuthAction {
+  extends AuthActionImpl(authConn, parse, fandFConnector)(ec) with MdtpAuthAction {
 
   override val predicate: Predicate = EmptyPredicate
   override val matchNinoInUriPattern: Regex = "[ni|cope]/mdtp/([^/]+)/?.*".r

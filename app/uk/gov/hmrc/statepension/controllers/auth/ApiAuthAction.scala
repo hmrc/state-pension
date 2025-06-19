@@ -21,6 +21,7 @@ import play.api.mvc.BodyParsers
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
+import uk.gov.hmrc.statepension.connectors.FandFConnector
 
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
@@ -28,9 +29,9 @@ import scala.util.matching.Regex
 class ApiAuthActionImpl  @Inject()(
                                 val authConn: AuthConnector,
                                 val parse: BodyParsers.Default,
-                                val ec: ExecutionContext
-                              )
-  extends AuthActionImpl(authConn, parse)(ec) with ApiAuthAction {
+                                val ec: ExecutionContext,
+                                val fandFConnector: FandFConnector)
+  extends AuthActionImpl(authConn, parse, fandFConnector)(ec) with ApiAuthAction {
 
   override val predicate: Predicate = AuthProviders(PrivilegedApplication)
   override val matchNinoInUriPattern: Regex = "[ni|cope]/([^/]+)/?.*".r
