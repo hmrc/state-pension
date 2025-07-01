@@ -18,8 +18,8 @@ package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
-import play.api.mvc.Results.{BadRequest, InternalServerError, Unauthorized}
 import play.api.mvc.*
+import play.api.mvc.Results.{BadRequest, InternalServerError, Unauthorized}
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{nino, trustedHelper}
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -40,7 +40,7 @@ class MdtpAuthActionImpl @Inject()(
 
   val predicate: Predicate = EmptyPredicate
   //ask about val below.
-  val matchNinoInUriPattern: Regex = "[ni|cope]/([^/]+)/?.*".r
+  private val matchNinoInUriPattern: Regex = "[ni|cope]/([^/]+)/?.*".r
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
@@ -60,7 +60,6 @@ class MdtpAuthActionImpl @Inject()(
     }
 
     if (matches.isEmpty) {
-      println(request.uri + "\n\n\n")
       Future.successful(Some(BadRequest))
     } else {
       authorised(predicate).retrieve(nino and trustedHelper) {
@@ -72,9 +71,7 @@ class MdtpAuthActionImpl @Inject()(
           logger.info("Debug info - " + e.getMessage, e)
           Some(Unauthorized)
         case e: Throwable =>
-          println("\n\n\nline 74\n\n\n\n\n")
-          println(matches.isEmpty)
-          logger.error("Unexpected Error", e)
+          logger.error(s"Unexpected Error $e", e)
           Some(InternalServerError)
       }
     }

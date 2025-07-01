@@ -17,8 +17,12 @@
 package uk.gov.hmrc.statepension.services
 
 import utils.StatePensionBaseSpec
+
 import java.time.{LocalDate, LocalDateTime}
 import org.scalatest.matchers.should.Matchers.shouldBe
+import uk.gov.hmrc.statepension.services.TaxYearResolver.taxYearFor
+
+import java.time.LocalDate.now
 
 class TaxYearResolverSpec extends StatePensionBaseSpec {
 
@@ -138,10 +142,10 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
   "local date falling in this tax year" should {
 
     object TaxYearResolverForTest extends TaxYearResolver {
-      override lazy val now: () => LocalDateTime = () => LocalDateTime.of(2015, 3, 31, 0, 0, 0, 0)
+      override lazy val now: () => LocalDateTime = () => LocalDateTime.of(LocalDate.now().getYear, 3, 31, 0, 0, 0, 0)
     }
 
-    val currentYear = 2015
+    val currentYear = LocalDate.now().getYear
 
     "return true when issue date is 31st Dec of the previous year" in {
       TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.of(currentYear-1, 12, 31)) shouldBe true
@@ -161,6 +165,10 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
 
     "return true when PXX8 issue date is 1st Jan of the next year" in {
       TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.of(currentYear+1, 1, 1)) shouldBe true
+    }
+
+    "return true when issue date is today" in {
+      TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.of(2024, 4, 6)) shouldBe true
     }
   }
 

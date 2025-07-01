@@ -19,18 +19,18 @@ package uk.gov.hmrc.statepension.controllers.auth
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfter
+import org.scalatest.matchers.must.Matchers.mustBe
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.auth.core.{AuthConnector, UnsupportedCredentialRole}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.StatePensionBaseSpec
-import org.scalatest.matchers.must.Matchers.mustBe
 
 import scala.concurrent.Future
 
@@ -77,7 +77,7 @@ class ApiAuthActionSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite wi
       val (result, _) = testApiAuthActionWith(Future.successful(Some("")))
       status(result) mustBe OK
     }
-    
+
     "not allow the user through when they have an invalid client id" in {
       val (result, _) = testApiAuthActionWith(Future.successful(None))
       status(result) mustBe UNAUTHORIZED
@@ -89,6 +89,12 @@ class ApiAuthActionSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite wi
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
+
+    "auth returns an unexpected authorisation error" in {
+      val (result, _) = testApiAuthActionWith(Future.failed(UnsupportedCredentialRole()))
+      status(result) mustBe UNAUTHORIZED
+    }
+
   }
 
 
