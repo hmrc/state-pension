@@ -31,7 +31,7 @@ object AppDependencies {
     "commons-codec"     %   "commons-codec"                               % "1.18.0",
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion"                     % hmrcMongoVersion,
     "org.typelevel"     %%  "cats-core"                                   % "2.13.0",
-    "uk.gov.hmrc"       %% s"internal-auth-client-$playVersion"           % "3.0.0",
+    "uk.gov.hmrc"       %% s"internal-auth-client-$playVersion"           % "3.1.0",
   )
 
   val test: Seq[ModuleID] = Seq(
