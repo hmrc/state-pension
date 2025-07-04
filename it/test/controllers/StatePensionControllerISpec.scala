@@ -124,8 +124,6 @@ trait StatePensionControllerISpec
 
         s"return $statusCode $errorDescription" in {
 
-          println(s"this is test NINO $nino")
-
           stubGetServer(response, proxyCacheUrl)
 
           val request = FakeRequest(GET, checkPensionControllerUrl(nino))
