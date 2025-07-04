@@ -40,17 +40,20 @@ class MdtpAuthActionImpl @Inject()(
 
   val predicate: Predicate = EmptyPredicate
   //ask about val below.
-  private val matchNinoInUriPattern: Regex = "[ni|cope]/([^/]+)/?.*".r
+  private val matchNinoInUriPattern: Regex = "[ni|cope]/mdtp/([^/]+)/?.*".r
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
   override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
+    println(s"this is request.uri ${request.uri}")
+
     val matches = matchNinoInUriPattern.findAllIn(request.uri)
 
     def check(nino: String): Future[Option[Result]] = {
       val uriNino = matches.group(1)
+      println(s"this is URININO $uriNino and this is nino $nino")
       if (uriNino == nino) {
         Future.successful(None)
       } else {
@@ -65,7 +68,10 @@ class MdtpAuthActionImpl @Inject()(
       authorised(predicate).retrieve(nino and trustedHelper) {
         case Some(nino) ~ _ => check(nino)
         case _ ~ Some(trusted) => check(trusted.principalNino.getOrElse(""))
-        case _ => Future.successful(Some(Unauthorized))
+        case _ => {
+          println("mdtpAuthAction line 69")
+          Future.successful(Some(Unauthorized))
+        }
       } recover {
         case e: AuthorisationException =>
           logger.info("Debug info - " + e.getMessage, e)

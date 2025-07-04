@@ -16,14 +16,23 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, _}
+import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, *}
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
+import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{route, status => statusResult, _}
+import play.api.test.Helpers.{route, status as statusResult, *}
+import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
+import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait StatePensionControllerISpec
   extends StatePensionBaseSpec
@@ -34,7 +43,7 @@ trait StatePensionControllerISpec
 
   val FIXED_DELAY = 25000
 
-  private val nino: Nino = generateNino()
+  private val nino: Nino = Nino("HS191148D")
   private val proxyCacheUrl: String = s"/ni-and-sp-proxy-cache/${nino.nino}"
   def checkPensionControllerUrl(nino: Nino): String
 
@@ -55,7 +64,8 @@ trait StatePensionControllerISpec
        |  },
        |  "authProviderId": {
        |    "ggCredId": "xyz"
-       |  }
+       |  },
+       |  "clientId": "$nino"
        |}"""
       .stripMargin
 
@@ -93,6 +103,8 @@ trait StatePensionControllerISpec
     stubPostServer(ok(pertaxAuthResponse), "/pertax/authorise")
   }
 
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+
   private val requests = List(
     notFound() -> NOT_FOUND -> "NOT_FOUND",
     gatewayTimeout() -> GATEWAY_TIMEOUT -> "GATEWAY_TIMEOUT",
@@ -111,6 +123,8 @@ trait StatePensionControllerISpec
       case ((response, statusCode), errorDescription) =>
 
         s"return $statusCode $errorDescription" in {
+
+          println(s"this is test NINO $nino")
 
           stubGetServer(response, proxyCacheUrl)
 
