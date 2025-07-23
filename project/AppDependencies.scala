@@ -18,25 +18,24 @@ import play.sbt.PlayImport.*
 import sbt.*
 
 object AppDependencies {
-  val bootstrapVersion = "9.9.0"
+  val bootstrapVersion = "9.16.0"
   val playVersion = "play-30"
-  val hmrcMongoVersion = "2.5.0"
+  val hmrcMongoVersion = "2.6.0"
 
   val compile: Seq[ModuleID] = Seq(
     caffeine,
     "uk.gov.hmrc"       %%  s"bootstrap-backend-$playVersion"             % bootstrapVersion,
     "uk.gov.hmrc"       %%  s"domain-$playVersion"                        % "10.0.0",
-    "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.1.0",
+    "uk.gov.hmrc"       %%  s"play-hmrc-api-$playVersion"                 % "8.2.0",
     "uk.gov.hmrc"       %%  s"play-hal-$playVersion"                      % "4.1.0",
-    "commons-codec"     %   "commons-codec"                               % "1.17.0",
+    "commons-codec"     %   "commons-codec"                               % "1.18.0",
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion"                     % hmrcMongoVersion,
-    "org.typelevel"     %%  "cats-core"                                   % "2.12.0",
-    "uk.gov.hmrc"       %% s"internal-auth-client-$playVersion"           % "3.0.0",
+    "org.typelevel"     %%  "cats-core"                                   % "2.13.0",
+    "uk.gov.hmrc"       %% s"internal-auth-client-$playVersion"           % "3.1.0",
   )
 
   val test: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"             %%  s"bootstrap-test-$playVersion"  % bootstrapVersion,
-    "org.pegdown"             %   "pegdown"                       % "1.6.0",
     "uk.gov.hmrc"             %%  s"play-hal-$playVersion"        % "4.0.0",
     "uk.gov.hmrc.mongo"       %%  s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion
   ).map(_ % Test)

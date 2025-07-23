@@ -17,24 +17,50 @@
 package uk.gov.hmrc.statepension.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.mvc.BodyParsers
+import play.api.Logging
+import play.api.mvc.Results.{InternalServerError, Unauthorized}
+import play.api.mvc.{ActionBuilder, ActionFilter, AnyContent, BodyParser, BodyParsers, ControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.clientId
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders, AuthorisationException, AuthorisedFunctions}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
-import scala.concurrent.ExecutionContext
-import scala.util.matching.Regex
+import scala.concurrent.{ExecutionContext, Future}
 
-class ApiAuthActionImpl  @Inject()(
-                                val authConn: AuthConnector,
-                                val parse: BodyParsers.Default,
-                                val ec: ExecutionContext
-                              )
-  extends AuthActionImpl(authConn, parse)(ec) with ApiAuthAction {
+class ApiAuthActionImpl @Inject()(
+                                   cc: ControllerComponents,
+                                   val authConnector: AuthConnector,
+                                   val parse: BodyParsers.Default,
+                                   val ec: ExecutionContext
+                                 )
+  extends ApiAuthAction with AuthorisedFunctions with Logging {
 
-  override val predicate: Predicate = AuthProviders(PrivilegedApplication)
-  override val matchNinoInUriPattern: Regex = "[ni|cope]/([^/]+)/?.*".r
+  val predicate: Predicate = AuthProviders(PrivilegedApplication)
+  
+  override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
+
+  override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+
+    authorised(predicate).retrieve(clientId) {
+      case Some(_) =>
+        Future.successful(None)
+      case _ =>
+        Future.successful(Some(Unauthorized))
+    } recover {
+      case e: AuthorisationException =>
+        logger.info("Debug info - " + e.getMessage, e)
+        Some(Unauthorized)
+      case e: Throwable =>
+        logger.error("Unexpected Error", e)
+        Some(InternalServerError)
+    }
+  }
+
+  override implicit protected def executionContext: ExecutionContext = cc.executionContext
 }
 
 @ImplementedBy(classOf[ApiAuthActionImpl])
-trait ApiAuthAction extends AuthAction
+trait ApiAuthAction extends ActionBuilder[Request, AnyContent] with ActionFilter[Request]

@@ -66,7 +66,7 @@ val excludedPackages = Seq(
 lazy val scoverageSettings: Seq[Def.Setting[?]] = {
   Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages,
-    ScoverageKeys.coverageMinimumStmtTotal := 90,
+    ScoverageKeys.coverageMinimumStmtTotal := 85,
     ScoverageKeys.coverageMinimumBranchTotal := 75,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true

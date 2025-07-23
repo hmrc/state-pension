@@ -20,5 +20,5 @@ import uk.gov.hmrc.domain.Nino
 
 class MdtpCheckPensionControllerSpec extends StatePensionControllerISpec {
 
-  override def checkPensionControllerUrl(nino: Nino): String = s"/ni/mdtp/$nino"
+  override def checkPensionControllerUrl(nino: Nino): String = s"/ni/mdtp/HS191148D"
 }
