@@ -27,12 +27,10 @@ import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.auth.core.{AuthConnector, UnsupportedCredentialRole}
-import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.{AuthConnector, UnsupportedCredentialRole}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.statepension.controllers.auth.MdtpAuthActionSpec.retrievalsTestingSyntax
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import scala.concurrent.Future
@@ -84,22 +82,22 @@ class MdtpAuthActionSpec
 
   "MdtpAuthAction" should {
     "return ok when valid" in {
-      val (result, _) = testMdtpAuthActionWith(Future.successful(Some(testNino) ~ Some(TrustedHelper("", "", "", Some(notTestNino)))))
+      val (result, _) = testMdtpAuthActionWith(Future.successful(Some(testNino)))
       status(result) mustBe OK
     }
 
     "return unauthorised when nino does not match nino in uri" in {
-      val (result, _) = testMdtpAuthActionWith(Future.successful(None ~ Some(TrustedHelper("", "", "", Some(notTestNino)))))
+      val (result, _) = testMdtpAuthActionWith(Future.successful(None))
       status(result) mustBe UNAUTHORIZED
     }
 
     "return bad request when there are no matches in uri" in {
-      val (result, _) = testMdtpAuthActionWith(Future.successful(None ~ Some(TrustedHelper("", "", "", Some(notTestNino)))), "badURI")
+      val (result, _) = testMdtpAuthActionWith(Future.successful(None), "badURI")
       status(result) mustBe BAD_REQUEST
     }
 
     "return unauthorized when retrievals returns both none" in {
-      val (result, _) = testMdtpAuthActionWith(Future.successful(None ~ None))
+      val (result, _) = testMdtpAuthActionWith(Future.successful(None))
       status(result) mustBe UNAUTHORIZED
     }
 
