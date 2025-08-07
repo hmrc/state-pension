@@ -21,12 +21,11 @@ import play.api.Logging
 import play.api.mvc.*
 import play.api.mvc.Results.{BadRequest, InternalServerError, Unauthorized}
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{nino, trustedHelper}
-import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.nino
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, AuthorisedFunctions}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.statepension.connectors.FandFConnector
+import uk.gov.hmrc.statepension.services.FandFService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
@@ -36,7 +35,7 @@ class MdtpAuthActionImpl @Inject()(
                                     val authConnector: AuthConnector,
                                     val parse: BodyParsers.Default,
                                     val ec: ExecutionContext,
-                                    fandFConnector: FandFConnector
+                                    fandFService: FandFService
                                   )
   extends MdtpAuthAction with AuthorisedFunctions with Logging {
 
@@ -63,24 +62,20 @@ class MdtpAuthActionImpl @Inject()(
     if (matches.isEmpty) {
       Future.successful(Some(BadRequest))
     } else {
-      fandFConnector.getTrustedHelper().flatMap {
-        case Some(th) =>
-          th.principalNino match {
+      authorised(predicate).retrieve(nino) {
+        case Some(nino) => check(nino)
+        case _ =>
+          fandFService.getTrustedHelperNino.flatMap {
             case Some(nino) => check(nino)
             case _ => Future.successful(Some(Unauthorized))
           }
-        case None =>
-          authorised(predicate).retrieve(nino) {
-            case Some(nino) => check(nino)
-            case _ => Future.successful(Some(Unauthorized))
-          } recover {
-            case e: AuthorisationException =>
-              logger.info("Debug info - " + e.getMessage, e)
-              Some(Unauthorized)
-            case e: Throwable =>
-              logger.error("Unexpected Error", e)
-              Some(InternalServerError)
-          }
+      } recover {
+        case e: AuthorisationException =>
+          logger.info("Debug info - " + e.getMessage, e)
+          Some(Unauthorized)
+        case e: Throwable =>
+          logger.error("Unexpected Error", e)
+          Some(InternalServerError)
       }
     }
   }

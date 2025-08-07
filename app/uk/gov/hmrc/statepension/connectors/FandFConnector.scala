@@ -35,7 +35,7 @@ class FandFConnector @Inject()(
                               )(implicit val ec: ExecutionContext)
   extends Logging {
 
-  def getTrustedHelper()(implicit hc: HeaderCarrier): Future[Option[TrustedHelper]] = {
+  def getTrustedHelper(implicit hc: HeaderCarrier): Future[Option[TrustedHelper]] = {
     httpClient
       .get(url"${appConfig.fandfHost}/delegation/get")
       .execute[HttpResponse]

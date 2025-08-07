@@ -20,9 +20,6 @@ import utils.StatePensionBaseSpec
 
 import java.time.{LocalDate, LocalDateTime}
 import org.scalatest.matchers.should.Matchers.shouldBe
-import uk.gov.hmrc.statepension.services.TaxYearResolver.taxYearFor
-
-import java.time.LocalDate.now
 
 class TaxYearResolverSpec extends StatePensionBaseSpec {
 
