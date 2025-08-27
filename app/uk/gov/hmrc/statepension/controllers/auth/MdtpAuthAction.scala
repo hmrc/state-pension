@@ -21,11 +21,11 @@ import play.api.Logging
 import play.api.mvc.*
 import play.api.mvc.Results.{BadRequest, InternalServerError, Unauthorized}
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{nino, trustedHelper}
-import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.nino
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, AuthorisedFunctions}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.statepension.services.FandFService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
@@ -34,7 +34,8 @@ class MdtpAuthActionImpl @Inject()(
                                     cc: ControllerComponents,
                                     val authConnector: AuthConnector,
                                     val parse: BodyParsers.Default,
-                                    val ec: ExecutionContext
+                                    val ec: ExecutionContext,
+                                    fandFService: FandFService
                                   )
   extends MdtpAuthAction with AuthorisedFunctions with Logging {
 
@@ -61,16 +62,19 @@ class MdtpAuthActionImpl @Inject()(
     if (matches.isEmpty) {
       Future.successful(Some(BadRequest))
     } else {
-      authorised(predicate).retrieve(nino and trustedHelper) {
-        case Some(nino) ~ _ => check(nino)
-        case _ ~ Some(trusted) => check(trusted.principalNino.getOrElse(""))
-        case _ => Future.successful(Some(Unauthorized))
+      authorised(predicate).retrieve(nino) {
+        case Some(nino) => check(nino)
+        case _ =>
+          fandFService.getTrustedHelperNino.flatMap {
+            case Some(nino) => check(nino)
+            case _ => Future.successful(Some(Unauthorized))
+          }
       } recover {
         case e: AuthorisationException =>
           logger.info("Debug info - " + e.getMessage, e)
           Some(Unauthorized)
         case e: Throwable =>
-          logger.error(s"Unexpected Error $e", e)
+          logger.error("Unexpected Error", e)
           Some(InternalServerError)
       }
     }
