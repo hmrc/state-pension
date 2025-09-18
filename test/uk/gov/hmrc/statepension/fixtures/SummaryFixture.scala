@@ -21,11 +21,11 @@ import uk.gov.hmrc.statepension.domain.nps.{AmountA2016, AmountB2016, PensionAmo
 
 object SummaryFixture {
 
-  val exampleSummaryJson: String = """
+  val exampleSummaryJson: String = s"""
   {
     "contractedOutFlag": 0,
     "sensitiveCaseFlag": 0,
-    "spaDate": "2025-09-06",
+    "spaDate": "${LocalDate.now().getYear + 1}-09-06",
     "finalRelevantYear": 2018,
     "accountNotMaintainedFlag": null,
     "penForecast": {
@@ -73,7 +73,7 @@ object SummaryFixture {
 
   val exampleSummary: Summary = Summary(
     LocalDate.of(2016, 4, 5),
-    statePensionAgeDate = LocalDate.of(2025, 9, 6),
+    statePensionAgeDate = LocalDate.of(LocalDate.now().getYear + 1, 9, 6),
     finalRelevantStartYear = 2018,
     pensionSharingOrderSERPS = true,
     dateOfBirth = LocalDate.of(1954, 3, 9),
