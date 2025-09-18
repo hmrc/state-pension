@@ -18,7 +18,6 @@ package uk.gov.hmrc.statepension.repositories
 
 import com.google.inject.Inject
 import org.apache.pekko.Done
-import org.mongodb.scala.gridfs.SingleObservableFuture
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set

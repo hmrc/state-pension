@@ -63,12 +63,15 @@ class MdtpAuthActionImpl @Inject()(
       Future.successful(Some(BadRequest))
     } else {
       authorised(predicate).retrieve(nino) {
-        case Some(nino) => check(nino)
-        case _ =>
+        case Some(nino) =>
           fandFService.getTrustedHelperNino.flatMap {
-            case Some(nino) => check(nino)
-            case _ => Future.successful(Some(Unauthorized))
+            case Some(trustedHelperNino) =>
+              check(trustedHelperNino)
+            case None =>
+              check(nino)
           }
+        case _ =>
+          Future.successful(Some(Unauthorized))
       } recover {
         case e: AuthorisationException =>
           logger.info("Debug info - " + e.getMessage, e)
