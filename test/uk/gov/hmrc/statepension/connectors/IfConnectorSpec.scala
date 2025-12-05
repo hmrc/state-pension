@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.mockito.Mockito
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -27,13 +27,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId, UpstreamErrorResponse}
 import uk.gov.hmrc.statepension.fixtures.{LiabilitiesFixture, NIRecordFixture, SummaryFixture}
 import uk.gov.hmrc.statepension.services.ApplicationMetrics
-import utils.{NinoGenerator, StatePensionBaseSpec, WireMockHelper}
+import utils.{GenerateNino, StatePensionBaseSpec, WireMockHelper}
 
 class IfConnectorSpec
   extends StatePensionBaseSpec
     with ScalaFutures
     with IntegrationPatience
-    with NinoGenerator
+    with GenerateNino
     with WireMockHelper {
 
   val mockApplicationMetrics: ApplicationMetrics = mock[ApplicationMetrics](Mockito.RETURNS_DEEP_STUBS)

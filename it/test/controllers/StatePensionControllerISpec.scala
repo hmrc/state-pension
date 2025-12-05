@@ -30,7 +30,7 @@ import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.{NinoGenerator, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
+import utils.{GenerateNino, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,7 +39,7 @@ trait StatePensionControllerISpec
     with GuiceOneAppPerSuite
     with WireMockHelper
     with ResponseHelpers
-    with NinoGenerator {
+    with GenerateNino {
 
   val FIXED_DELAY = 25000
 

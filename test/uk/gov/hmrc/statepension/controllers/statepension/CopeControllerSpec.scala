@@ -22,7 +22,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Injecting}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{NinoGenerator, Nino}
 import uk.gov.hmrc.statepension.controllers.ErrorResponses.{CODE_COPE_PROCESSING, CODE_COPE_PROCESSING_FAILED}
 import uk.gov.hmrc.statepension.controllers.{ErrorResponseCopeFailed, ErrorResponseCopeProcessing}
 import uk.gov.hmrc.statepension.services.CopeService
@@ -34,7 +34,7 @@ import scala.util.Random
 
 trait CopeControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with CopeRepositoryHelper {
 
-  val nino: Nino = new Generator(new Random()).nextNino
+  val nino: Nino = new NinoGenerator().nextNino
   val mockCopeService: CopeService = mock[CopeService]
 
   val controller: CopeController

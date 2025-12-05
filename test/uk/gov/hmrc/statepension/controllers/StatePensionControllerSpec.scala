@@ -26,7 +26,7 @@ import play.api.mvc.{AnyContentAsEmpty, BodyParsers, ControllerComponents}
 import uk.gov.hmrc.statepension.controllers.statepension.StatePensionController
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers, Injecting}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{NinoGenerator, Nino}
 import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.controllers.auth.FakeApiAuthAction
 import uk.gov.hmrc.statepension.domain.Exclusion.{IsleOfMan, ManualCorrespondenceIndicator}
@@ -43,7 +43,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
   def testCheckPensionController(cpService: CheckPensionService): StatePensionController
   def linkUrl: String
 
-  val nino: Nino = new Generator(new Random()).nextNino
+  val nino: Nino = new NinoGenerator().nextNino
 
   val emptyRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val emptyRequestWithHeader: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
