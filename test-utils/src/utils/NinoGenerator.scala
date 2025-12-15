@@ -18,8 +18,6 @@ package utils
 
 import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 
-import scala.util.Random
-
 trait GenerateNino {
   private val ninoGenerator = new NinoGenerator()
   def generateNino(): Nino = ninoGenerator.nextNino

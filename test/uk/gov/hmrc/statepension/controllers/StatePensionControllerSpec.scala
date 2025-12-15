@@ -36,7 +36,6 @@ import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import java.time.LocalDate
 import scala.concurrent.Future
-import scala.util.Random
 
 trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite with Injecting with CopeRepositoryHelper {
 

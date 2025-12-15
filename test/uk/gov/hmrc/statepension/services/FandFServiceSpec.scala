@@ -23,7 +23,6 @@ import uk.gov.hmrc.statepension.connectors.FandFConnector
 import utils.StatePensionBaseSpec
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
 
 class FandFServiceSpec extends StatePensionBaseSpec {
 
