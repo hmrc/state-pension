@@ -40,7 +40,7 @@ trait StatePensionBaseSpec
   extends AnyWordSpec
     with Matchers
     with OptionValues
-    with NinoGenerator
+    with GenerateNino
     with BeforeAndAfterEach {
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()

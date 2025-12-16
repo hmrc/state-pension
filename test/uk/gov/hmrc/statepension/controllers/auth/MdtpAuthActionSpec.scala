@@ -29,7 +29,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, UnsupportedCredentialRole}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
@@ -44,7 +44,7 @@ class MdtpAuthActionSpec
     with CopeRepositoryHelper {
 
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
-  private val ninoGenerator: Generator = new Generator()
+  private val ninoGenerator: NinoGenerator = new NinoGenerator()
   private val testNino: String = ninoGenerator.nextNino.nino
   val notTestNino = testNino.take(testNino.length - 1) + "X"
   private val goodUriWithNino: String = s"/ni/$testNino/"
