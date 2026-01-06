@@ -50,7 +50,7 @@ class ApiAuthActionSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite wi
   private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): AuthConnector = {
     val connector = mock[AuthConnector]
 
-    when(connector.authorise[T](any(), any())(any(), any()))
+    when(connector.authorise[T](any(), any())(using any(), any()))
       .thenReturn(authoriseResult)
 
     connector

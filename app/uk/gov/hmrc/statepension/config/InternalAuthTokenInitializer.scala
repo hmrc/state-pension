@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,13 +52,13 @@ class InternalAuthTokenInitializerImpl @Inject()(
   Await.result(initializeToken, 30.seconds)
   
   private def validateToken(token: String): Future[Boolean] =
-    httpClient.get(url"$internalAuthServiceUrl/test-only/token")(HeaderCarrier())
+    httpClient.get(url"$internalAuthServiceUrl/test-only/token")(using HeaderCarrier())
       .setHeader("Authorization" -> token)
       .execute
       .map(_.status == 200)
 
   private def reinitializeToken(token: String): Future[Done] =
-    httpClient.post(url"$internalAuthServiceUrl/test-only/token")(HeaderCarrier())
+    httpClient.post(url"$internalAuthServiceUrl/test-only/token")(using HeaderCarrier())
       .withBody(Json.obj(
         "token" -> token,
         "principal" -> appName,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -564,7 +564,7 @@ class DesConnectorSpec
           get(urlEqualTo(summaryUrl)).willReturn(ok().withBody(exampleSummaryJson))
         )
 
-        desConnector.getSummary(nino)(hc).futureValue
+        desConnector.getSummary(nino)(using hc).futureValue
 
         server.verify(
           getRequestedFor(urlEqualTo(summaryUrl))
@@ -578,7 +578,7 @@ class DesConnectorSpec
           get(urlEqualTo(liabilitiesUrl)).willReturn(ok().withBody("{}"))
         )
 
-        desConnector.getLiabilities(nino)(hc).futureValue
+        desConnector.getLiabilities(nino)(using hc).futureValue
 
         server.verify(
           getRequestedFor(urlEqualTo(liabilitiesUrl))
@@ -592,7 +592,7 @@ class DesConnectorSpec
           get(urlEqualTo(niRecordUrl)).willReturn(ok().withBody("{}"))
         )
 
-        desConnector.getNIRecord(nino)(hc).futureValue
+        desConnector.getNIRecord(nino)(using hc).futureValue
 
         server.verify(
           getRequestedFor(urlEqualTo(niRecordUrl))

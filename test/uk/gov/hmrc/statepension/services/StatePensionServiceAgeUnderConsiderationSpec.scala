@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
       val dateOfBirth = LocalDate.of(1970, 4, 5)
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
           niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -136,7 +136,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
       }
 
       "log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
             niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -171,7 +171,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
       val dateOfBirth = LocalDate.of(1970, 4, 6)
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
           niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -186,7 +186,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
       }
 
       "log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
             niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -240,7 +240,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -256,7 +256,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
       "log a summary metric" in {
 
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -293,7 +293,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
           niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -308,7 +308,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
       }
 
       "log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
             niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -345,7 +345,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
 
       val regularStatement = regularStatementWithDateOfBirth(dateOfBirth, statePensionAgeDate)
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = regularStatement,
           niRecord = NIRecord(qualifyingYears = 36, List()),
@@ -360,7 +360,7 @@ class StatePensionServiceAgeUnderConsiderationSpec extends StatePensionBaseSpec 
       }
 
       "log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = regularStatement,
             niRecord = NIRecord(qualifyingYears = 36, List()),

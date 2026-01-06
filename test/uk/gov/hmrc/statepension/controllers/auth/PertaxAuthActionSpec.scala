@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ class PertaxAuthActionSpec extends UnitSpec with GuiceOneAppPerSuite {
   private def mockPertaxConnectorWithResult[T](pertaxResult: EitherT[Future, UpstreamErrorResponse, PertaxAuthResponse]): PertaxConnector = {
     val connector = mock[PertaxConnector]
 
-    when(connector.authorise(any, any))
+    when(connector.authorise(using any, any))
     .thenReturn(pertaxResult)
 
     connector

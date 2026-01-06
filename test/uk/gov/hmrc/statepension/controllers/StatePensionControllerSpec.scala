@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     "return status code 406 when the headers are invalid" in {
       val mockCheckPensionService = mock[CheckPensionService]
 
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePension)))
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(Right(testStatePension)))
 
       val response = testCheckPensionController(mockCheckPensionService).get(nino)(emptyRequest)
 
@@ -103,7 +103,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
     "return 200 with a Response" in {
       val mockCheckPensionService = mock[CheckPensionService]
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePension)))
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(Right(testStatePension)))
 
       val response = testCheckPensionController(mockCheckPensionService).get(nino)(emptyRequestWithHeader)
 
@@ -142,7 +142,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       val testStatePensionRRE = testStatePension.copy(reducedRateElection = true, reducedRateElectionCurrentWeeklyAmount = Some(155.65))
 
       val mockCheckPensionService = mock[CheckPensionService]
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePensionRRE)))
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(Right(testStatePensionRRE)))
 
       val response = testCheckPensionController(mockCheckPensionService).get(nino)(emptyRequestWithHeader)
 
@@ -180,7 +180,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
       val testStatePensionAgeUnderConsideration = testStatePension.copy(statePensionAgeUnderConsideration = true)
 
       val mockCheckPensionService = mock[CheckPensionService]
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(Right(testStatePensionAgeUnderConsideration)))
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(Right(testStatePensionAgeUnderConsideration)))
 
       val response = testCheckPensionController(mockCheckPensionService).get(nino)(emptyRequestWithHeader)
 
@@ -215,7 +215,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
 
     "return 200 with an exclusion" in {
       val mockCheckPensionService = mock[CheckPensionService]
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(
         Left(
           StatePensionExclusion(
             exclusionReasons = List(IsleOfMan),
@@ -241,7 +241,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     "return 403 with an error message for an MCI exclusion" in {
       val mockCheckPensionService = mock[CheckPensionService]
 
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(
         Left(
           StatePensionExclusion(
             exclusionReasons = List(ManualCorrespondenceIndicator),
@@ -262,7 +262,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     "return 403 with an error message for a Dead exclusion" in {
       val mockCheckPensionService = mock[CheckPensionService]
 
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(
         Left(
           StatePensionExclusion(List(Exclusion.Dead),
             0,
@@ -280,7 +280,7 @@ trait StatePensionControllerSpec extends StatePensionBaseSpec with GuiceOneAppPe
     "return 403 with the dead error message if user is Dead and has MCI" in {
       val mockCheckPensionService = mock[CheckPensionService]
 
-      when(mockCheckPensionService.getStatement(any())(any())).thenReturn(Future.successful(
+      when(mockCheckPensionService.getStatement(any())(using any())).thenReturn(Future.successful(
         Left(StatePensionExclusion(
           List(Exclusion.Dead, Exclusion.ManualCorrespondenceIndicator),
           0,
