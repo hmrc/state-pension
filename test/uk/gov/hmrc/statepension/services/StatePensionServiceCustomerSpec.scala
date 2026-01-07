@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.statepension.services
 
-import org.mockito.ArgumentMatchers.{eq => mockEq, _}
+import org.mockito.ArgumentMatchers.{eq as mockEq, *}
 import org.mockito.Mockito
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
@@ -28,9 +28,9 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.statepension.builders.RateServiceBuilder
 import uk.gov.hmrc.statepension.config.{AppConfig, StatePensionExclusionOffset}
 import uk.gov.hmrc.statepension.connectors.{NpsConnector, ProxyCacheConnector}
+import uk.gov.hmrc.statepension.domain.*
 import uk.gov.hmrc.statepension.domain.MQPScenario.ContinueWorking
-import uk.gov.hmrc.statepension.domain._
-import uk.gov.hmrc.statepension.domain.nps._
+import uk.gov.hmrc.statepension.domain.nps.*
 import utils.{CopeRepositoryHelper, StatePensionBaseSpec}
 
 import java.time.LocalDate
@@ -123,7 +123,7 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -150,7 +150,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "log an exclusion metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -165,7 +165,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "not log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -195,7 +195,7 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -221,7 +221,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "log an exclusion metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -267,7 +267,7 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -285,7 +285,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = NIRecord(
@@ -349,7 +349,7 @@ class StatePensionServiceCustomerSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -375,7 +375,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "log an exclusion metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -390,7 +390,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "not log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -405,7 +405,7 @@ class StatePensionServiceCustomerSpec
 
     "the customer has contributed national insurance in the isle of man" should {
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -432,7 +432,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "log an exclusion metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -447,7 +447,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "not log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -461,7 +461,7 @@ class StatePensionServiceCustomerSpec
     }
 
     "the customer has a manual correspondence indicator" should {
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(ProxyCacheData(
           summary = summary,
           niRecord = niRecord,
@@ -483,7 +483,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "not have the statePensionAgeUnderConsideration flag enabled" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -494,7 +494,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "log an exclusion metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,
@@ -509,7 +509,7 @@ class StatePensionServiceCustomerSpec
       }
 
       "not log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(ProxyCacheData(
             summary = summary,
             niRecord = niRecord,

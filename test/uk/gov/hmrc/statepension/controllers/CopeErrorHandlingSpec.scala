@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ class CopeErrorHandlingSpec extends StatePensionBaseSpec with GuiceOneAppPerSuit
             status(result) shouldBe 403
             contentAsJson(result) shouldBe Json.toJson(ExclusionCopeProcessing(appConfig))
             verify(mockCopeRepository, times(1))
-              .insert(ArgumentMatchers.eq(CopeRecord(HashedNino(nino).generateHash()(appConfig), LocalDate.now(), LocalDate.now().plusWeeks(appConfig.returnToServiceWeeks))))
+              .insert(ArgumentMatchers.eq(CopeRecord(HashedNino(nino).generateHash()(using appConfig), LocalDate.now(), LocalDate.now().plusWeeks(appConfig.returnToServiceWeeks))))
           }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,16 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{unauthorized, *}
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.when
-import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status as statusResult, *}
-import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
-import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 import utils.{GenerateNino, ResponseHelpers, StatePensionBaseSpec, WireMockHelper}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait StatePensionControllerISpec
   extends StatePensionBaseSpec

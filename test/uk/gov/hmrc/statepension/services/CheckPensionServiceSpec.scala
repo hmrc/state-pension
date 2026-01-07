@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
   }
 
   "getStatement" should {
-    when(mockProxyCacheConnector.get(any())(any()))
+    when(mockProxyCacheConnector.get(any())(using any()))
       .thenReturn(Future.successful(ProxyCacheData(
         summary = summary,
         niRecord = NIRecord(qualifyingYears = NUMBER_OF_QUALIFYING_YEARS, List()),
@@ -68,7 +68,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
     "return StatePension data" when {
       "citizen details returns false for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(using any(), any()))
           .thenReturn(Future.successful(false))
 
         val result = await(sut.getStatement(generateNino()))
@@ -78,7 +78,7 @@ class CheckPensionServiceSpec extends StatePensionBaseSpec with EitherValues {
 
     "return MCI exclusion" when {
       "citizen details returns true for MCI check" in {
-        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(any(), any()))
+        when(mockCitizenDetailsService.checkManualCorrespondenceIndicator(any())(using any(), any()))
           .thenReturn(Future.successful(true))
 
         val result = await(sut.getStatement(generateNino()))

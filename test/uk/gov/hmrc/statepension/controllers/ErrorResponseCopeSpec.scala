@@ -17,12 +17,11 @@
 package uk.gov.hmrc.statepension.controllers
 
 
-import org.scalatest.matchers.must.Matchers
-
-import java.time.LocalDate
+import org.scalatest.matchers.must.Matchers.mustBe
 import play.api.libs.json.{JsSuccess, Json}
 import utils.StatePensionBaseSpec
-import org.scalatest.matchers.must.Matchers.mustBe
+
+import java.time.LocalDate
 
 
 class ErrorResponseCopeSpec extends StatePensionBaseSpec {

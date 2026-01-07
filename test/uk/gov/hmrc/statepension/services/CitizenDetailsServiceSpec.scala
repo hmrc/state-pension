@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,17 +37,17 @@ class CitizenDetailsServiceSpec extends StatePensionBaseSpec {
 
   "CitizenDetailsService" should {
     "return ManualCorrespondenceIndicator status is false when Response is 200" in {
-      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(using ArgumentMatchers.any()))
         .thenReturn(Future.successful(OK))
       
-      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, global)
+      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(using hc, global)
       resultF.futureValue shouldBe false
     }
     "return ManualCorrespondenceIndicator status is true when Response is 423" in {
-      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(mockCitizenDetailsConnector.connectToGetPersonDetails(ArgumentMatchers.any())(using ArgumentMatchers.any()))
         .thenReturn(Future.successful(LOCKED))
       
-      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(hc, global)
+      val resultF = citizenDetailsService.checkManualCorrespondenceIndicator(nino)(using hc, global)
       resultF.futureValue shouldBe true
     }
   }

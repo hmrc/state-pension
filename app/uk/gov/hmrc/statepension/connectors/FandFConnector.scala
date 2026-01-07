@@ -43,7 +43,7 @@ class FandFConnector @Inject()(
         httpResponse.status match {
           case NOT_FOUND => None
           case OK =>
-            Try(httpResponse.json.as[TrustedHelper](uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper.reads)) match {
+            Try(httpResponse.json.as[TrustedHelper](using uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper.reads)) match {
               case Success(trustedHelper) => Some(trustedHelper)
               case Failure(ex) =>
                 logger.error(s"Failed to parse TrustedHelper", ex)

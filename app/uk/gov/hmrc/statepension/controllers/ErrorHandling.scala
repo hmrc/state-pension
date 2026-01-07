@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ class CopeErrorHandling @Inject()(
 
     copeRepository.find(HashedNino(nino)) map {
       case None =>
-        copeRepository.insert(CopeRecord(HashedNino(nino).generateHash()(appConfig), today, today.plusWeeks(appConfig.returnToServiceWeeks), None))
+        copeRepository.insert(CopeRecord(HashedNino(nino).generateHash()(using appConfig), today, today.plusWeeks(appConfig.returnToServiceWeeks), None))
         Forbidden(Json.toJson(ErrorResponses.ExclusionCopeProcessing(appConfig)))
       case Some(entry) =>
         val availableDateFromConfig: LocalDate = entry.firstLoginDate.plusWeeks(appConfig.returnToServiceWeeks)

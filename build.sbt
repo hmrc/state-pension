@@ -7,7 +7,7 @@ import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
 lazy val appName = "state-pension"
 
-ThisBuild / scalaVersion := "3.6.3"
+ThisBuild / scalaVersion := "3.7.3"
 ThisBuild / majorVersion := 2
 
 ThisBuild / scalacOptions ++= Seq(
@@ -16,7 +16,8 @@ ThisBuild / scalacOptions ++= Seq(
   "-Wconf:msg=unused.import&src=html/.*:s",
   "-Wconf:msg=unused.import&src=txt/.*:s",
   "-feature",
-  "-deprecation"
+  "-deprecation",
+  "-Werror"
 )
 
 lazy val plugins: Seq[Plugins] = Seq(

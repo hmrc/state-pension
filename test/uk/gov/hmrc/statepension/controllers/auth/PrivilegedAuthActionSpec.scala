@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import org.mockito.Mockito.{verify, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.matchers.must.Matchers.mustBe
-import play.api.inject.bind
+import play.api.inject.{Injector, bind}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
 import play.api.test.Helpers.{INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
@@ -39,9 +39,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class PrivilegedAuthActionSpec extends StatePensionBaseSpec {
 
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val controllerComponents = Helpers.stubControllerComponents()
+  val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
 
-  val injector = new GuiceApplicationBuilder()
+  val injector: Injector = new GuiceApplicationBuilder()
     .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
     .injector()
 
@@ -55,7 +55,7 @@ class PrivilegedAuthActionSpec extends StatePensionBaseSpec {
     when(mockAuthConnector.authorise(
       ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
       ArgumentMatchers.eq(EmptyRetrieval))(
-      ArgumentMatchers.any[HeaderCarrier],
+      using ArgumentMatchers.any[HeaderCarrier],
       ArgumentMatchers.any[ExecutionContext]
     )).thenReturn(result)
 
@@ -73,7 +73,7 @@ class PrivilegedAuthActionSpec extends StatePensionBaseSpec {
       verify(mockAuthConnector).authorise(
         ArgumentMatchers.eq(AuthProviders(PrivilegedApplication)),
         ArgumentMatchers.eq(EmptyRetrieval))(
-        ArgumentMatchers.any[HeaderCarrier],
+        using ArgumentMatchers.any[HeaderCarrier],
         ArgumentMatchers.any[ExecutionContext]
       )
     }

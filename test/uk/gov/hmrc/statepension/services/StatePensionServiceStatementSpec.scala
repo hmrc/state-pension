@@ -156,13 +156,13 @@ class StatePensionServiceStatementSpec
           manualCorrespondenceIndicator = None
         )
 
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(proxyCacheData(natInRecord = NIRecord(qualifyingYears = 36, List()))))
 
         val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
         "log a summary metric" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement,
               natInRecord = NIRecord(qualifyingYears = 36, List())
@@ -191,7 +191,7 @@ class StatePensionServiceStatementSpec
         }
 
         "not log an exclusion metric" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(natInRecord = NIRecord(qualifyingYears = 36, List()))))
 
           service.getStatement(generateNino()).futureValue
@@ -260,7 +260,7 @@ class StatePensionServiceStatementSpec
         }
 
         "when there is a pensionSharingOrder return true" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(pensionSharingOrderSERPS = true),
               natInRecord = NIRecord(qualifyingYears = 36, List()))
@@ -270,7 +270,7 @@ class StatePensionServiceStatementSpec
         }
 
         "when there is no pensionSharingOrder return false" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(pensionSharingOrderSERPS = false),
               natInRecord = NIRecord(qualifyingYears = 36, List()))
@@ -290,7 +290,7 @@ class StatePensionServiceStatementSpec
         }
 
         "when there is a protected payment of some value return true" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 0)),
               natInRecord = NIRecord(qualifyingYears = 36, List()))
@@ -299,7 +299,7 @@ class StatePensionServiceStatementSpec
         }
 
         "when there is a protected payment of 0 return false" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(amounts = regularStatement.amounts.copy(protectedPayment2016 = 6.66)),
               natInRecord = NIRecord(qualifyingYears = 36, List()))
@@ -309,7 +309,7 @@ class StatePensionServiceStatementSpec
 
         "when there is a rebate derived amount of 12.34 it" should {
 
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(amounts = regularStatement.amounts.copy(
                 amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 12.34))),
@@ -351,7 +351,7 @@ class StatePensionServiceStatementSpec
 
         "when there is a rebate derived amount of 0 it" should {
 
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(amounts = regularStatement.amounts.copy(
                 amountB2016 = regularStatement.amounts.amountB2016.copy(rebateDerivedAmount = 0))),
@@ -376,7 +376,7 @@ class StatePensionServiceStatementSpec
         }
 
         "when there is all amounts of 0 it" should {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(amounts = regularStatement.amounts.copy(
                 pensionEntitlement = 0,
@@ -408,7 +408,7 @@ class StatePensionServiceStatementSpec
 
         "when there is an entitlement of 161.18 it" should {
 
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(
                 amounts = regularStatement.amounts.copy(pensionEntitlement = 161.18)),
@@ -457,7 +457,7 @@ class StatePensionServiceStatementSpec
 
         "when there is an entitlement of 0 it" should {
 
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement.copy(amounts = PensionAmounts()),
               natInRecord = NIRecord(qualifyingYears = 36, List()))
@@ -516,7 +516,7 @@ class StatePensionServiceStatementSpec
         "there is a starting amount of 0 it" should {
 
           "return an AmountDissonance exclusion" in {
-            when(mockProxyCacheConnector.get(any())(any()))
+            when(mockProxyCacheConnector.get(any())(using any()))
               .thenReturn(Future.successful(proxyCacheData(
                 summary = regularStatement,
                 natInRecord = NIRecord(qualifyingYears = 36, List()))
@@ -560,7 +560,7 @@ class StatePensionServiceStatementSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(proxyCacheData(
           summary = regularStatement,
           natInRecord = NIRecord(qualifyingYears = 20, List()))
@@ -621,7 +621,7 @@ class StatePensionServiceStatementSpec
         }
 
         "log a summary metric" in {
-          when(mockProxyCacheConnector.get(any())(any()))
+          when(mockProxyCacheConnector.get(any())(using any()))
             .thenReturn(Future.successful(proxyCacheData(
               summary = regularStatement,
               natInRecord = NIRecord(qualifyingYears = 20, List()))
@@ -683,7 +683,7 @@ class StatePensionServiceStatementSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(proxyCacheData(
           summary = regularStatement,
           natInRecord = NIRecord(qualifyingYears = 20, List()))
@@ -731,12 +731,12 @@ class StatePensionServiceStatementSpec
         manualCorrespondenceIndicator = None
       )
 
-      when(mockProxyCacheConnector.get(any())(any()))
+      when(mockProxyCacheConnector.get(any())(using any()))
         .thenReturn(Future.successful(proxyCacheData(summary = regularStatement)))
 
       val statement: StatePension = service.getStatement(generateNino()).futureValue.toOption.get
 
-      val summary: Summary = mockProxyCacheConnector.get(any())(any()).futureValue.summary
+      val summary: Summary = mockProxyCacheConnector.get(any())(using any()).futureValue.summary
 
 
       "the personal maximum amount" should {
@@ -818,7 +818,7 @@ class StatePensionServiceStatementSpec
       }
 
       "log a summary metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(proxyCacheData(summary = regularStatement)))
 
         service.getStatement(generateNino()).futureValue.toOption.get
@@ -844,7 +844,7 @@ class StatePensionServiceStatementSpec
       }
 
       "not log an exclusion metric" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(proxyCacheData(summary = regularStatement)))
 
         verify(mockMetrics, never).exclusion(any())
@@ -875,7 +875,7 @@ class StatePensionServiceStatementSpec
       )
 
       "return 0 for the current amount" in {
-        when(mockProxyCacheConnector.get(any())(any()))
+        when(mockProxyCacheConnector.get(any())(using any()))
           .thenReturn(Future.successful(proxyCacheData(
             summary = regularStatement,
             natInRecord = NIRecord(qualifyingYears = 9, List())
