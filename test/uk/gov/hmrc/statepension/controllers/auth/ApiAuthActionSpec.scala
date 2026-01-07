@@ -42,7 +42,7 @@ class ApiAuthActionSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite wi
   private val goodUriWithNino: String = s"/ni/$testNino/"
 
   class AuthActionTestHarness(apiAuthActionImpl: ApiAuthAction) extends BackendController(controllerComponents) {
-    def onPageLoad(): Action[AnyContent] = apiAuthActionImpl { request =>
+    def onPageLoad(): Action[AnyContent] = apiAuthActionImpl { _ =>
       Ok
     }
   }

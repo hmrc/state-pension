@@ -25,11 +25,11 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
   object Resolver {
 
     def apply(currentTime: LocalDateTime) = new TaxYearResolver {
-      override lazy val now = () => currentTime
+      override lazy val now: () => LocalDateTime = () => currentTime
     }
 
     def apply() = new TaxYearResolver {
-      override lazy val now = () => LocalDateTime.of(2013, 9, 24, 11, 39, 55, 222)
+      override lazy val now: () => LocalDateTime = () => LocalDateTime.of(2013, 9, 24, 11, 39, 55, 222)
     }
   }
 
@@ -164,7 +164,7 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
     }
 
     "return true when issue date is today" in {
-      TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.of(2024, 4, 6)) shouldBe true
+      TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.now) shouldBe true
     }
   }
 

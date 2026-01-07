@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class InternalAuthInitializerISpec
         val app = builder(isTestOnlyEndpoint = false).build()
 
         running(app) {
-          app.injector.instanceOf[InternalAuthTokenInitializer].initializeToken.futureValue shouldBe Done
+          app.injector.instanceOf[InternalAuthTokenInitializer].initializeToken.futureValue.shouldBe(Done)
 
           wireMockServer.verify(0, getRequestedFor(urlMatching("/test-only/token")))
           wireMockServer.verify(0, postRequestedFor(urlMatching("/test-only/token")))

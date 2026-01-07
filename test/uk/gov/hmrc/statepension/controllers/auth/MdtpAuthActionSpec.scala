@@ -50,7 +50,7 @@ class MdtpAuthActionSpec
   private val goodUriWithNino: String = s"/ni/$testNino/"
 
   class AuthActionTestHarness(mdtpAuthActionImpl: MdtpAuthActionImpl) extends BackendController(controllerComponents) {
-    def onPageLoad(): Action[AnyContent] = mdtpAuthActionImpl { request =>
+    def onPageLoad(): Action[AnyContent] = mdtpAuthActionImpl { _ =>
       Ok
     }
   }
