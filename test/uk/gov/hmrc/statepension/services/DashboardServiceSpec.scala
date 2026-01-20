@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,16 +53,16 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockIfConnector.getLiabilities(any())(any()))
+    when(mockIfConnector.getLiabilities(any())(using any()))
       .thenReturn(Future.successful(List()))
-    when(mockIfConnector.getNIRecord(any())(any()))
+    when(mockIfConnector.getNIRecord(any())(using any()))
       .thenReturn(Future.successful(NIRecord(qualifyingYears = 36, List())))
   }
 
   "getStatement" should {
     "return StatePension data" when {
       "Summary data has false for MCI check" in {
-        when(mockIfConnector.getSummary(any())(any()))
+        when(mockIfConnector.getSummary(any())(using any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(false))))
 
         val result = await(sut.getStatement(nino))
@@ -73,7 +73,7 @@ class DashboardServiceSpec extends StatePensionBaseSpec with EitherValues {
 
     "return MCI exclusion" when {
       "summary data has true for MCI check" in {
-        when(mockIfConnector.getSummary(any())(any()))
+        when(mockIfConnector.getSummary(any())(using any()))
           .thenReturn(Future.successful(summary.copy(manualCorrespondenceIndicator = Some(true))))
 
         val result = await(sut.getStatement(nino))

@@ -50,7 +50,7 @@ class MdtpAuthActionSpec
   private val goodUriWithNino: String = s"/ni/$testNino/"
 
   class AuthActionTestHarness(mdtpAuthActionImpl: MdtpAuthActionImpl) extends BackendController(controllerComponents) {
-    def onPageLoad(): Action[AnyContent] = mdtpAuthActionImpl { request =>
+    def onPageLoad(): Action[AnyContent] = mdtpAuthActionImpl { _ =>
       Ok
     }
   }
@@ -58,7 +58,7 @@ class MdtpAuthActionSpec
   private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): AuthConnector = {
     val connector = mock[AuthConnector]
 
-    when(connector.authorise[T](any(), any())(any(), any()))
+    when(connector.authorise[T](any(), any())(using any(), any()))
       .thenReturn(authoriseResult)
 
     connector

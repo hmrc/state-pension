@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ class ProxyCacheConnectorSpec
       server.stubFor(get(urlEqualTo(url))
         .willReturn(ok(proxyCacheDataJson)))
 
-      val result = await(connector.get(nino)(headerCarrier))
+      val result = await(connector.get(nino)(using headerCarrier))
 
       result.liabilities shouldBe liabilities
       result.summary shouldBe summary
@@ -97,7 +97,7 @@ class ProxyCacheConnectorSpec
         server.stubFor(get(urlEqualTo(url))
           .willReturn(errorResponse))
 
-        await(connector.get(nino)(headerCarrier).failed) shouldBe a[UpstreamErrorResponse]
+        await(connector.get(nino)(using headerCarrier).failed) shouldBe a[UpstreamErrorResponse]
       }
     }
 
@@ -106,7 +106,7 @@ class ProxyCacheConnectorSpec
         .willReturn(ok("""{"number": 456, "name": "def"}""")))
 
       val ex: Exception =
-        await(recoverToExceptionIf[Exception](connector.get(nino)(headerCarrier)))
+        await(recoverToExceptionIf[Exception](connector.get(nino)(using headerCarrier)))
 
       ex shouldBe a[connectorUtil.JsonValidationException]
     }
@@ -116,7 +116,7 @@ class ProxyCacheConnectorSpec
         .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
 
       val ex: Exception =
-        await(recoverToExceptionIf[Exception](connector.get(nino)(headerCarrier)))
+        await(recoverToExceptionIf[Exception](connector.get(nino)(using headerCarrier)))
 
       ex shouldBe a[Exception]
     }
@@ -128,7 +128,7 @@ class ProxyCacheConnectorSpec
       server.stubFor(get(urlEqualTo(url))
         .willReturn(ok(proxyCacheDataJson)))
 
-      await(connector.get(nino)(headerCarrier))
+      await(connector.get(nino)(using headerCarrier))
 
       server.verify(getRequestedFor(urlEqualTo(url))
         .withHeader(HeaderNames.authorisation, equalTo(appConfig.internalAuthToken))

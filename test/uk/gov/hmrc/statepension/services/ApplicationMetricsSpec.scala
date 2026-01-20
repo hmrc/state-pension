@@ -17,8 +17,8 @@
 package uk.gov.hmrc.statepension.services
 
 import com.codahale.metrics.{Counter, MetricRegistry, Timer}
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, when}
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar

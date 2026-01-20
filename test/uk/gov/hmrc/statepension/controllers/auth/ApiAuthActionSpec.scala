@@ -42,7 +42,7 @@ class ApiAuthActionSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite wi
   private val goodUriWithNino: String = s"/ni/$testNino/"
 
   class AuthActionTestHarness(apiAuthActionImpl: ApiAuthAction) extends BackendController(controllerComponents) {
-    def onPageLoad(): Action[AnyContent] = apiAuthActionImpl { request =>
+    def onPageLoad(): Action[AnyContent] = apiAuthActionImpl { _ =>
       Ok
     }
   }
@@ -50,7 +50,7 @@ class ApiAuthActionSpec extends StatePensionBaseSpec with GuiceOneAppPerSuite wi
   private def newMockConnectorWithAuthResult[T](authoriseResult: Future[T]): AuthConnector = {
     val connector = mock[AuthConnector]
 
-    when(connector.authorise[T](any(), any())(any(), any()))
+    when(connector.authorise[T](any(), any())(using any(), any()))
       .thenReturn(authoriseResult)
 
     connector

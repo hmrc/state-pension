@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,17 @@ package uk.gov.hmrc.statepension.services
 import utils.StatePensionBaseSpec
 
 import java.time.{LocalDate, LocalDateTime}
-import org.scalatest.matchers.should.Matchers.shouldBe
 
 class TaxYearResolverSpec extends StatePensionBaseSpec {
 
   object Resolver {
 
     def apply(currentTime: LocalDateTime) = new TaxYearResolver {
-      override lazy val now = () => currentTime
+      override lazy val now: () => LocalDateTime = () => currentTime
     }
 
     def apply() = new TaxYearResolver {
-      override lazy val now = () => LocalDateTime.of(2013, 9, 24, 11, 39, 55, 222)
+      override lazy val now: () => LocalDateTime = () => LocalDateTime.of(2013, 9, 24, 11, 39, 55, 222)
     }
   }
 
@@ -165,7 +164,7 @@ class TaxYearResolverSpec extends StatePensionBaseSpec {
     }
 
     "return true when issue date is today" in {
-      TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.of(2024, 4, 6)) shouldBe true
+      TaxYearResolverForTest.fallsInThisTaxYear(LocalDate.now) shouldBe true
     }
   }
 
