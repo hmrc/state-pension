@@ -22,7 +22,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
-import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+import uk.gov.hmrc.statepension.domain.TrustedHelper
 import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2

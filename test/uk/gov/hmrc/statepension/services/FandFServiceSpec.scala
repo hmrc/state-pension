@@ -17,7 +17,7 @@
 package uk.gov.hmrc.statepension.services
 
 import org.mockito.Mockito.when
-import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+import uk.gov.hmrc.statepension.domain.TrustedHelper
 import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.statepension.connectors.FandFConnector
 import utils.StatePensionBaseSpec
