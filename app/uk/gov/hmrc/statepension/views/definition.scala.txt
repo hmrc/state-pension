@@ -11,7 +11,7 @@
         "version": "1.0",
         "status": "@status",
         "endpointsEnabled": true,
-        "access" : @Json.toJson(access)
+        "access" : "@access"
       }
     ]
   }

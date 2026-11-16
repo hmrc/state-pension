@@ -67,14 +67,14 @@ class DocumentationControllerSpec
 
     "return INTERNAL if the application config says INTERNAL" in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "INTERNAL"))))
+      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("access" -> "INTERNAL"))))
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
     "return PUBLIC if the application config says PUBLIC" in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC"))))
+      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("access" -> "PUBLIC"))))
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions") (0) \ "access" shouldBe JsDefined(JsString("PUBLIC"))
     }
