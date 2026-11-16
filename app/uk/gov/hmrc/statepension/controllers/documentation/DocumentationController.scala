@@ -21,8 +21,7 @@ import controllers.Assets
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppConfig}
-import uk.gov.hmrc.statepension.domain.APIAccess
-import uk.gov.hmrc.statepension.views._
+import uk.gov.hmrc.statepension.views.*
 
 class DocumentationController @Inject()(appContext: AppConfig,
                                         controllerComponents: ControllerComponents,
@@ -36,9 +35,8 @@ class DocumentationController @Inject()(appContext: AppConfig,
     assets.at(s"/public/api/conf/$version", file)
   }
 
-  private def buildAccess(): APIAccess = {
-    val access = APIAccessConfig(appContext.access)
-    APIAccess(access.accessType)
+  private def buildAccess(): String = {
+    APIAccessConfig(appContext.access).accessType
   }
 
   private def buildStatus(): String = appContext.status.getOrElse("BETA")

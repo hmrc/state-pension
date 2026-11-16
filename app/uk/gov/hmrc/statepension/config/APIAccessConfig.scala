@@ -20,17 +20,13 @@ import play.api.Configuration
 
 case class APIAccessConfig(value: Option[Configuration]) {
 
-  val PRIVATE = "PRIVATE"
+  private val INTERNAL = "INTERNAL"
 
-  def accessType: String = {
-    value match {
-      case Some(config) => config.getOptional[String]("type").getOrElse(PRIVATE)
-      case None => PRIVATE
-    }
-  }
+  def accessType: String =
+    value.flatMap(_.getOptional[String]("type")).getOrElse(INTERNAL)
 
   def whiteListedApplicationIds: Option[Seq[String]] = {
-    if(accessType == PRIVATE) {
+    if(accessType == INTERNAL) {
       value match {
         case Some(config) => Some(config.getOptional[Seq[String]]("whitelist.applicationIds").getOrElse(Seq()))
         case None => Some(Seq())

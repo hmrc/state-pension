@@ -58,25 +58,25 @@ class DocumentationControllerSpec
 
   "/definition access" should {
 
-    "return PRIVATE if there is no application config" in {
+    "return INTERNAL if there is no application config" in {
 
       val result: Future[Result] = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
-    "return PRIVATE if the application config says PRIVATE" in {
+    "return INTERNAL if the application config says INTERNAL" in {
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE"))))
+      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "INTERNAL"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
     "return PUBLIC if the application config says PUBLIC" in {
 
       val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PUBLIC"))
+      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" shouldBe JsDefined(JsString("PUBLIC"))
     }
   }
 
