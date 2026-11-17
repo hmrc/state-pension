@@ -60,8 +60,8 @@ class DesConnectorSpec
         "microservice.services.des-hod.originatoridkey" -> "testOriginatorKey",
         "microservice.services.des-hod.originatoridvalue" -> "testOriginatorId",
         "microservice.services.des-hod.environment" -> "testEnvironment",
+        "api.access" -> "INTERNAL",
         "api.access.whitelist.applicationIds.0" -> "abcdefg-12345-abddefg-12345",
-        "api.access.type" -> "INTERNAL",
         "cope.dwp.originatorId" -> "dwpId",
         "internal-auth.isTestOnlyEndpoint" -> false
       )
