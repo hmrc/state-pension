@@ -44,12 +44,12 @@ class DocumentationControllerSpec
   val assets: Assets = inject[Assets]
   val systemLocalDate: SystemLocalDate = inject[SystemLocalDate]
 
-  def getDefinitionResultFromConfig(apiConfig: Option[String] = None, apiStatus: Option[String] = None): Future[Result] = {
+  def getDefinitionResultFromConfig(apiAccess: Option[String] = None, apiStatus: Option[String] = None): Future[Result] = {
 
     val appContext = new AppConfig(app.configuration, serviceConfig, systemLocalDate) {
       override val appName: String = ""
       override val apiGatewayContext: String = ""
-      override val access: Option[String] = apiConfig
+      override val access: Option[String] = apiAccess
       override val status: Option[String] = apiStatus
     }
 
@@ -60,21 +60,21 @@ class DocumentationControllerSpec
   "/definition access" should {
 
     "return INTERNAL if there is no application config" in {
-      val result = getDefinitionResultFromConfig(apiConfig = None)
+      val result = getDefinitionResultFromConfig(apiAccess = None)
 
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions")(0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
     "return INTERNAL if the application config says INTERNAL" in {
-      val result = getDefinitionResultFromConfig(apiConfig = Some("INTERNAL"))
+      val result = getDefinitionResultFromConfig(apiAccess = Some("INTERNAL"))
 
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions")(0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
     "return PUBLIC if the application config says PUBLIC" in {
-      val result = getDefinitionResultFromConfig(apiConfig = Some("PUBLIC"))
+      val result = getDefinitionResultFromConfig(apiAccess = Some("PUBLIC"))
 
       status(result) shouldBe OK
       (contentAsJson(result) \ "api" \ "versions")(0) \ "access" shouldBe JsDefined(JsString("PUBLIC"))
