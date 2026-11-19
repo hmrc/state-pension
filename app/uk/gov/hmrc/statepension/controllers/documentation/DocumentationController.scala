@@ -23,21 +23,22 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppConfig}
 import uk.gov.hmrc.statepension.views.*
 
-class DocumentationController @Inject()(appContext: AppConfig,
-                                        controllerComponents: ControllerComponents,
-                                        assets: Assets) extends BackendController(controllerComponents){
+class DocumentationController @Inject()(
+                                         appContext: AppConfig,
+                                         controllerComponents: ControllerComponents,
+                                         assets: Assets
+                                       ) extends BackendController(controllerComponents) {
 
   def definition(): Action[AnyContent] = Action {
-    Ok(txt.definition(buildAccess(), buildStatus())).as("application/json")
+    Ok(
+      txt.definition(
+        APIAccessConfig(appContext.access).accessType,
+        appContext.status.getOrElse("BETA")
+      )
+    ).as("application/json")
   }
 
-  def conf(version: String, file: String): Action[AnyContent] = {
+  def conf(version: String, file: String): Action[AnyContent] =
     assets.at(s"/public/api/conf/$version", file)
-  }
-
-  private def buildAccess(): String = {
-    APIAccessConfig(appContext.access).accessType
-  }
-
-  private def buildStatus(): String = appContext.status.getOrElse("BETA")
 }
+
