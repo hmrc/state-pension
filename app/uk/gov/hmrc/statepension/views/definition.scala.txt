@@ -1,7 +1,4 @@
-@import uk.gov.hmrc.statepension.domain.APIAccess
-@import play.api.libs.json.Json
-
-@(access: APIAccess, status: String)
+@(access: String, status: String)
 {
   "api": {
     "name": "State Pension",
@@ -12,7 +9,7 @@
         "version": "1.0",
         "status": "@status",
         "endpointsEnabled": true,
-        "access" : @Json.toJson(access)
+        "access" : "@access"
       }
     ]
   }

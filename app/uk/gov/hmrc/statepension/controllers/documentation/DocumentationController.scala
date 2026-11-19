@@ -20,26 +20,25 @@ import com.google.inject.Inject
 import controllers.Assets
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppConfig}
-import uk.gov.hmrc.statepension.domain.APIAccess
-import uk.gov.hmrc.statepension.views._
+import uk.gov.hmrc.statepension.config.AppConfig
+import uk.gov.hmrc.statepension.views.*
 
-class DocumentationController @Inject()(appContext: AppConfig,
-                                        controllerComponents: ControllerComponents,
-                                        assets: Assets) extends BackendController(controllerComponents){
+class DocumentationController @Inject()(
+                                         appConfig: AppConfig,
+                                         controllerComponents: ControllerComponents,
+                                         assets: Assets
+                                       ) extends BackendController(controllerComponents) {
 
   def definition(): Action[AnyContent] = Action {
-    Ok(txt.definition(buildAccess(), buildStatus())).as("application/json")
+    Ok(
+      txt.definition(
+        appConfig.access.getOrElse("INTERNAL"),
+        appConfig.status.getOrElse("BETA")
+      )
+    ).as("application/json")
   }
 
-  def conf(version: String, file: String): Action[AnyContent] = {
+  def conf(version: String, file: String): Action[AnyContent] =
     assets.at(s"/public/api/conf/$version", file)
-  }
-
-  private def buildAccess(): APIAccess = {
-    val access = APIAccessConfig(appContext.access)
-    APIAccess(access.accessType)
-  }
-
-  private def buildStatus(): String = appContext.status.getOrElse("BETA")
 }
+

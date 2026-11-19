@@ -27,17 +27,18 @@ import uk.gov.hmrc.statepension.util.SystemLocalDate
 
 
 class AppConfig @Inject()(
-  configuration: Configuration,
-  servicesConfig: ServicesConfig,
-  systemLocalDate: SystemLocalDate
-) {
+                           configuration: Configuration,
+                           servicesConfig: ServicesConfig,
+                           systemLocalDate: SystemLocalDate
+                         ) {
+
   import servicesConfig._
 
   implicit val dateLoader: ConfigLoader[LocalDate] = ConfigLoader(_.getString).map(LocalDate.parse(_))
 
   val appName: String = configuration.get[String]("appName")
   val apiGatewayContext: String = configuration.get[String]("api.gateway.context")
-  val access: Option[Configuration] = configuration.getOptional[Configuration]("api.access")
+  val access: Option[String] = configuration.getOptional[String]("api.access.type")
   val status: Option[String] = configuration.getOptional[String]("api.status")
   val effectiveFromDate: LocalDate = configuration.getOptional[LocalDate]("rates.effectiveFromDate")
     .getOrElse(TaxYearResolver.startOfCurrentTaxYear)
@@ -60,7 +61,16 @@ class AppConfig @Inject()(
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
   val internalAuthBaseUrl: String = baseUrl("internal-auth")
 
-  def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
+  def dwpApplicationId: Option[Seq[String]] =
+    if (access.getOrElse("INTERNAL") == "INTERNAL") {
+      Some(
+        configuration
+          .getOptional[Seq[String]]("api.access.allowlist.applicationIds")
+          .getOrElse(Seq.empty)
+      )
+    } else {
+      None
+    }
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")

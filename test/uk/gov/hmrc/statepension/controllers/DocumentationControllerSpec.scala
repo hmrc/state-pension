@@ -17,11 +17,11 @@
 package uk.gov.hmrc.statepension.controllers
 
 import controllers.Assets
+import org.apache.pekko.stream.Materializer
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.libs.json.{JsDefined, JsString}
 import play.api.mvc.{ControllerComponents, Result}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.statepension.config.AppConfig
@@ -44,39 +44,40 @@ class DocumentationControllerSpec
   val assets: Assets = inject[Assets]
   val systemLocalDate: SystemLocalDate = inject[SystemLocalDate]
 
-  def getDefinitionResultFromConfig(apiConfig: Option[Configuration] = None, apiStatus: Option[String] = None): Future[Result] = {
+  def getDefinitionResultFromConfig(apiAccess: Option[String] = None, apiStatus: Option[String] = None): Future[Result] = {
 
     val appContext = new AppConfig(app.configuration, serviceConfig, systemLocalDate) {
       override val appName: String = ""
       override val apiGatewayContext: String = ""
-      override val access: Option[Configuration] = apiConfig
+      override val access: Option[String] = apiAccess
       override val status: Option[String] = apiStatus
     }
 
     new DocumentationController(appContext, controllerComponents, assets).definition()(FakeRequest())
   }
 
+
   "/definition access" should {
 
-    "return PRIVATE if there is no application config" in {
+    "return INTERNAL if there is no application config" in {
+      val result = getDefinitionResultFromConfig(apiAccess = None)
 
-      val result: Future[Result] = getDefinitionResultFromConfig(apiConfig = None)
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
+      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
-    "return PRIVATE if the application config says PRIVATE" in {
+    "return INTERNAL if the application config says INTERNAL" in {
+      val result = getDefinitionResultFromConfig(apiAccess = Some("INTERNAL"))
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PRIVATE"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PRIVATE"))
+      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" shouldBe JsDefined(JsString("INTERNAL"))
     }
 
     "return PUBLIC if the application config says PUBLIC" in {
+      val result = getDefinitionResultFromConfig(apiAccess = Some("PUBLIC"))
 
-      val result = getDefinitionResultFromConfig(apiConfig = Some(Configuration.from(Map("type" -> "PUBLIC"))))
       status(result) shouldBe OK
-      (contentAsJson(result) \ "api" \ "versions") (0) \ "access" \ "type" shouldBe JsDefined(JsString("PUBLIC"))
+      (contentAsJson(result) \ "api" \ "versions")(0) \ "access" shouldBe JsDefined(JsString("PUBLIC"))
     }
   }
 
@@ -111,7 +112,7 @@ class DocumentationControllerSpec
     }
 
     "return the correct conf for a given version and path" in {
-      implicit val materializer = app.materializer
+      implicit val materializer: Materializer = app.materializer
       val expectedYaml: String = getResource("/public/api/conf/1.0/application.yaml")
 
       val documentationController = inject[DocumentationController]
