@@ -22,13 +22,13 @@ case class APIAccessConfig(value: Option[Configuration]) {
 
   private val INTERNAL = "INTERNAL"
 
-  def accessType: String =
+  private def accessType: String =
     value.flatMap(_.getOptional[String]("access")).getOrElse(INTERNAL)
 
-  def whiteListedApplicationIds: Option[Seq[String]] = {
+  def allowListedApplicationIds: Option[Seq[String]] = {
     if(accessType == INTERNAL) {
       value match {
-        case Some(config) => Some(config.getOptional[Seq[String]]("whitelist.applicationIds").getOrElse(Seq()))
+        case Some(config) => Some(config.getOptional[Seq[String]]("allowlist.applicationIds").getOrElse(Seq()))
         case None => Some(Seq())
       }
     } else {

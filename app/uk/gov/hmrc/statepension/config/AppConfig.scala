@@ -60,7 +60,7 @@ class AppConfig @Inject()(
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
   val internalAuthBaseUrl: String = baseUrl("internal-auth")
 
-  def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(configuration.getOptional[Configuration]("api.access")).whiteListedApplicationIds
+  def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(configuration.getOptional[Configuration]("api.access")).allowListedApplicationIds
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")
