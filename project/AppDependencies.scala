@@ -18,9 +18,9 @@ import play.sbt.PlayImport.*
 import sbt.*
 
 object AppDependencies {
-  val bootstrapVersion = "10.7.0"
+  val bootstrapVersion = "10.9.0"
   val playVersion = "play-30"
-  val hmrcMongoVersion = "2.12.0"
+  val hmrcMongoVersion = "2.14.0"
 
   val compile: Seq[ModuleID] = Seq(
     caffeine,
