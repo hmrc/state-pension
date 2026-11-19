@@ -37,7 +37,7 @@ class AppConfig @Inject()(
 
   val appName: String = configuration.get[String]("appName")
   val apiGatewayContext: String = configuration.get[String]("api.gateway.context")
-  val access: Option[Configuration] = configuration.getOptional[Configuration]("api.access")
+  val access: Option[String] = configuration.getOptional[String]("api.access.type")
   val status: Option[String] = configuration.getOptional[String]("api.status")
   val effectiveFromDate: LocalDate = configuration.getOptional[LocalDate]("rates.effectiveFromDate")
     .getOrElse(TaxYearResolver.startOfCurrentTaxYear)
@@ -60,7 +60,7 @@ class AppConfig @Inject()(
   val internalAuthToken: String = configuration.get[String]("internal-auth.token")
   val internalAuthBaseUrl: String = baseUrl("internal-auth")
 
-  def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(access).whiteListedApplicationIds
+  def dwpApplicationId:Option[Seq[String]] = APIAccessConfig(configuration.getOptional[Configuration]("api.access")).whiteListedApplicationIds
 
   val dwpOriginatorId: String = configuration.get[String]("cope.dwp.originatorId")
   val returnToServiceWeeks: Int = configuration.get[Int]("cope.returnToServiceWeeks")

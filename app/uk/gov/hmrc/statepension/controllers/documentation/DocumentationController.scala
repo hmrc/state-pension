@@ -20,11 +20,11 @@ import com.google.inject.Inject
 import controllers.Assets
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.statepension.config.{APIAccessConfig, AppConfig}
+import uk.gov.hmrc.statepension.config.AppConfig
 import uk.gov.hmrc.statepension.views.*
 
 class DocumentationController @Inject()(
-                                         appContext: AppConfig,
+                                         appConfig: AppConfig,
                                          controllerComponents: ControllerComponents,
                                          assets: Assets
                                        ) extends BackendController(controllerComponents) {
@@ -32,8 +32,8 @@ class DocumentationController @Inject()(
   def definition(): Action[AnyContent] = Action {
     Ok(
       txt.definition(
-        APIAccessConfig(appContext.access).accessType,
-        appContext.status.getOrElse("BETA")
+        appConfig.access.getOrElse("INTERNAL"),
+        appConfig.status.getOrElse("BETA")
       )
     ).as("application/json")
   }
